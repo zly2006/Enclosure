@@ -1,0 +1,53 @@
+{
+  "schemaVersion": 1,
+  "id": "enclosure",
+  "version": "${version}",
+  "name": "Enclosure",
+  "description": "This is a server-side mod that allows players to manage and protect their homes. It also has some client-side features to improve the gaming experience.",
+  "authors": [
+    {
+      "name": "zly2006",
+      "contact": {
+        "homepage": "https://github.com/zly2006"
+      }
+    },
+    {
+      "name": "The Land of StarLight Team",
+      "contact": {
+        "homepage": "https://www.starlight.cool/"
+      }
+    }
+  ],
+  "contact": {
+    "sources": "https://github.com/zly2006/Enclosure"
+  },
+  "license": "Enclosure Open Source License",
+  "icon": "assets/enclosure/icon.png",
+  "environment": "*",
+  "entrypoints": {
+    "server": [
+      "com.github.zly2006.enclosure.ServerMain",
+      "com.github.zly2006.enclosure.PaidMain"
+    ],
+    "client": [
+      "com.github.zly2006.enclosure.client.ClientMain"
+    ],
+    "rei_client": [
+      "com.github.zly2006.enclosure.rei.ReiMain"
+    ]
+  },
+  "mixins": [
+    "enclosure.mixins.json",
+    "client.mixins.json"
+  ],
+  "accessWidener": "enclosure.server.accesswidener",
+  "depends": {
+    "fabricloader": ">=0.13.0",
+    "fabric-api": "*",
+    "minecraft": "~1.19",
+    "java": ">=17"
+  },
+  "suggests": {
+    "luckperms": "*"
+  }
+}

@@ -1,0 +1,116 @@
+plugins {
+    id 'fabric-loom' version '1.0-SNAPSHOT' apply false
+    id 'maven-publish'
+    id "org.ajoberstar.grgit" version "4.1.0"
+}
+
+allprojects {
+    apply plugin: "fabric-loom"
+    apply plugin: "maven-publish"
+
+    repositories {
+        mavenCentral()
+        maven { url = "https://maven.fabricmc.net/" }
+        maven { url "https://maven.shedaniel.me" }
+    }
+
+    processResources {
+        inputs.property "version", rootProject.version
+
+        filesMatching("fabric.mod.json") {
+            expand "version": rootProject.version
+        }
+    }
+
+    dependencies {
+        // To change the versions see the gradle.properties file
+        minecraft "com.mojang:minecraft:${rootProject.minecraft_version}"
+        mappings "net.fabricmc:yarn:${rootProject.yarn_mappings}:v2"
+        modImplementation "net.fabricmc:fabric-loader:${rootProject.loader_version}"
+
+        // Fabric API. This is technically optional, but you probably want it anyway.
+        modImplementation "net.fabricmc.fabric-api:fabric-api:${rootProject.fabric_version}"
+    }
+
+    this.tasks.withType(JavaCompile).configureEach {
+        it.options.release = 17
+    }
+}
+
+sourceCompatibility = JavaVersion.VERSION_17
+targetCompatibility = JavaVersion.VERSION_17
+
+archivesBaseName = project.archives_base_name
+if (project.archices_preview_version.empty) {
+    version = project.mod_version
+} else {
+    version = project.mod_version + "-" + project.archices_preview_version + "+" + grgit.branch.current().name + "-" + grgit.head().id.substring(0, 8)
+}
+group = project.maven_group
+
+
+subprojects {
+    dependencies {
+//        exclude group: "net.fabricmc", module: "fabric-loader"
+    }
+}
+
+loom {
+    accessWidenerPath = file("src/main/resources/enclosure.server.accesswidener")
+}
+
+dependencies {
+    //implementation 'org.projectlombok:lombok:1.18.22'
+    //compileOnly "net.luckperms:api:5.4"
+
+    // SnakeYAML. To convert the old config
+    include(modImplementation("org.yaml:snakeyaml:1.33"))
+
+    // REI. To avoid the REI GUI overlap with the Enclosure GUI
+    modCompileOnly "me.shedaniel:RoughlyEnoughItems-api-fabric:${project.rei_version}"
+
+    println("Loading subprojects...")
+    subprojects.each {
+        it.dependencies {
+            implementation project(':')
+        }
+        implementation project(path: ":${it.name}", configuration: "namedElements")
+        include project("${it.name}:")
+        clean.dependsOn("${it.name}:clean")
+        println("Loaded " + it.name)
+    }
+}
+
+java {
+    // Loom will automatically attach sourcesJar to a RemapSourcesJar task and to the "build" task
+    // if it is present.
+    // If you remove this line, sources will not be generated.
+    withSourcesJar()
+}
+
+jar {
+    from("LICENSE") {
+        rename { "${it}_${project.archivesBaseName}" }
+    }
+}
+
+// configure the maven publication
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            from components.java
+        }
+    }
+
+    // See https://docs.gradle.org/current/userguide/publishing_maven.html for information on how to set up publishing.
+    repositories {
+        // Add repositories to publish to here.
+        // Notice: This block does NOT have the same function as the block in the top level.
+        // The repositories here will be used for publishing your artifact, not for
+        // retrieving dependencies.
+    }
+}
+
+task 'rebuild' {
+    dependsOn 'clean', 'remapJar'
+}
