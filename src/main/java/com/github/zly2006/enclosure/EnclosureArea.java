@@ -5,6 +5,7 @@ import com.github.zly2006.enclosure.exceptions.PermissionTargetException;
 import com.github.zly2006.enclosure.utils.Permission;
 import com.github.zly2006.enclosure.utils.TrT;
 import com.github.zly2006.enclosure.utils.Utils;
+import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
@@ -13,7 +14,6 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.nbt.*;
-import net.minecraft.registry.Registries;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
@@ -242,31 +242,27 @@ public class EnclosureArea extends PersistentState implements PermissionHolder {
         if (father != null && father.isOwner(source)) {
             return true;
         }
-        if (source.getPlayer() != null) {
-            return source.getPlayer().getUuid().equals(owner);
+        if (source.getEntity() instanceof ServerPlayerEntity player) {
+            return player.getUuid().equals(owner);
         } else {
             return false;
         }
     }
 
     @Override
-    public boolean isOwnerOrFatherAdmin(ServerCommandSource source) {
+    public boolean isOwnerOrFatherAdmin(ServerCommandSource source) throws CommandSyntaxException {
         if (source.hasPermissionLevel(4)) {
             return true;
         }
         if (father != null && father.isOwnerOrFatherAdmin(source)) {
             return true;
         }
-        if (source.getPlayer() != null) {
-            return source.getPlayer().getUuid().equals(owner) || hasPerm(source.getPlayer().getUuid(), Permission.ADMIN);
-        } else {
-            return false;
-        }
+        return source.getPlayer().getUuid().equals(owner) || hasPerm(source.getPlayer().getUuid(), Permission.ADMIN);
     }
 
     @Override
     public void setPermission(@Nullable ServerCommandSource source, @NotNull UUID uuid, @NotNull Permission perm, @Nullable Boolean value) throws PermissionTargetException {
-        if (source != null && source.getPlayer() != null && !hasPerm(source.getPlayer(), Permission.ADMIN)) {
+        if (source != null && source.getEntity() instanceof ServerPlayerEntity player && !hasPerm(player, Permission.ADMIN)) {
             ServerMain.LOGGER.warn("Player " + source.getName() + " try to set permission of " + uuid + " in " + name + " without admin permission");
             ServerMain.LOGGER.warn("allowing, if you have any problem please report to the author");
         }
@@ -316,29 +312,29 @@ public class EnclosureArea extends PersistentState implements PermissionHolder {
     public MutableText serialize(@NotNull SerializationSettings settings, @Nullable ServerPlayerEntity player) {
         switch (settings) {
             case Name:
-                return Text.literal(getFullName());
+                return new LiteralText(getFullName());
             case Hover: {
                 return TrT.of("enclosure.message.select.from")
-                    .append(Text.literal("[").formatted(Formatting.DARK_GREEN))
-                    .append(Text.literal(String.valueOf(minX)).formatted(Formatting.GREEN))
-                    .append(Text.literal(", ").formatted(Formatting.DARK_GREEN))
-                    .append(Text.literal(String.valueOf(minY)).formatted(Formatting.GREEN))
-                    .append(Text.literal(", ").formatted(Formatting.DARK_GREEN))
-                    .append(Text.literal(String.valueOf(minZ)).formatted(Formatting.GREEN))
-                    .append(Text.literal("]").formatted(Formatting.DARK_GREEN))
+                    .append(new LiteralText("[").formatted(Formatting.DARK_GREEN))
+                    .append(new LiteralText(String.valueOf(minX)).formatted(Formatting.GREEN))
+                    .append(new LiteralText(", ").formatted(Formatting.DARK_GREEN))
+                    .append(new LiteralText(String.valueOf(minY)).formatted(Formatting.GREEN))
+                    .append(new LiteralText(", ").formatted(Formatting.DARK_GREEN))
+                    .append(new LiteralText(String.valueOf(minZ)).formatted(Formatting.GREEN))
+                    .append(new LiteralText("]").formatted(Formatting.DARK_GREEN))
                     .append(TrT.of("enclosure.message.select.to"))
-                    .append(Text.literal("[").formatted(Formatting.DARK_GREEN))
-                    .append(Text.literal(String.valueOf(maxX)).formatted(Formatting.GREEN))
-                    .append(Text.literal(", ").formatted(Formatting.DARK_GREEN))
-                    .append(Text.literal(String.valueOf(maxY)).formatted(Formatting.GREEN))
-                    .append(Text.literal(", ").formatted(Formatting.DARK_GREEN))
-                    .append(Text.literal(String.valueOf(maxZ)).formatted(Formatting.GREEN))
-                    .append(Text.literal("]").formatted(Formatting.DARK_GREEN))
+                    .append(new LiteralText("[").formatted(Formatting.DARK_GREEN))
+                    .append(new LiteralText(String.valueOf(maxX)).formatted(Formatting.GREEN))
+                    .append(new LiteralText(", ").formatted(Formatting.DARK_GREEN))
+                    .append(new LiteralText(String.valueOf(maxY)).formatted(Formatting.GREEN))
+                    .append(new LiteralText(", ").formatted(Formatting.DARK_GREEN))
+                    .append(new LiteralText(String.valueOf(maxZ)).formatted(Formatting.GREEN))
+                    .append(new LiteralText("]").formatted(Formatting.DARK_GREEN))
                     .append(TrT.of("enclosure.message.select.world"))
-                    .append(Text.literal(world.getRegistryKey().getValue().toString()).formatted(Formatting.GREEN))
+                    .append(new LiteralText(world.getRegistryKey().getValue().toString()).formatted(Formatting.GREEN))
                     .append("\n")
                     .append(TrT.of("enclosure.info.created_on"))
-                    .append(Text.literal(new SimpleDateFormat().format(new Date(createdOn))).formatted(Formatting.GOLD));
+                    .append(new LiteralText(new SimpleDateFormat().format(new Date(createdOn))).formatted(Formatting.GOLD));
             }
             case Summarize: {
                 MutableText text = serialize(SerializationSettings.Name, player);
@@ -350,15 +346,15 @@ public class EnclosureArea extends PersistentState implements PermissionHolder {
                 String ownerName = Utils.getNameByUUID(owner);
                 text.append((ownerName == null
                     ? TrT.of("enclosure.message.unknown_user").styled(style -> style.withColor(Formatting.RED))
-                    : Text.literal(ownerName).formatted(Formatting.GOLD))
+                    : new LiteralText(ownerName).formatted(Formatting.GOLD))
                     .styled(style -> style.withHoverEvent(
                         new HoverEvent(HoverEvent.Action.SHOW_TEXT,
-                            Text.literal("UUID: " + owner))
+                            new LiteralText("UUID: " + owner))
                     )));
                 return text;
             }
             case Full: {
-                MutableText text = Text.empty();
+                MutableText text = new LiteralText("");
 
                 if (father != null) {
                     text.append(TrT.of("enclosure.info.father_land").styled(style -> style.withColor(Formatting.WHITE)));
@@ -375,9 +371,9 @@ public class EnclosureArea extends PersistentState implements PermissionHolder {
                 return text;
             }
             case BarredFull: {
-                final MutableText bar = Text.literal("------------------------------")
+                final MutableText bar = new LiteralText("------------------------------")
                     .styled(style -> style.withColor(Formatting.YELLOW).withBold(true));
-                return Text.empty()
+                return new LiteralText("")
                     .append(bar)
                     .append("\n")
                     .append(serialize(SerializationSettings.Full, player))
@@ -636,7 +632,7 @@ public class EnclosureArea extends PersistentState implements PermissionHolder {
         Box box = new Box(minX, minY, minZ, maxX + 1, maxY + 1, maxZ + 1);
         world.getEntitiesByClass(ServerPlayerEntity.class, box, player -> true)
             .forEach(player -> {
-                player.sendMessage(TrT.of("enclosure.message.kick.rollback"));
+                player.sendMessage(TrT.of("enclosure.message.kick.rollback"), false);
                 this.kickPlayer(player);
             });
         profiler.push("block");
@@ -652,7 +648,7 @@ public class EnclosureArea extends PersistentState implements PermissionHolder {
                         if (block.isEmpty()) {
                             world.setBlockState(pos, Blocks.AIR.getDefaultState());
                         } else {
-                            world.setBlockState(pos, NbtHelper.toBlockState(Registries.BLOCK.getReadOnlyWrapper(), block.getCompound("state")),
+                            world.setBlockState(pos, NbtHelper.toBlockState(block.getCompound("state")),
                                 // don't update neighbors & light
                                 Block.NOTIFY_LISTENERS & Block.SKIP_LIGHTING_UPDATES);
                             if (block.contains("blockEntity")) {

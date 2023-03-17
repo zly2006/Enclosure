@@ -17,12 +17,11 @@ import com.github.zly2006.enclosure.utils.Utils;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
-import com.mojang.brigadier.arguments.FloatArgumentType;
 import com.mojang.brigadier.tree.CommandNode;
 import net.fabricmc.api.DedicatedServerModInitializer;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
+import net.fabricmc.fabric.api.command.v1.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerWorldEvents;
 import net.fabricmc.fabric.api.event.player.*;
@@ -30,18 +29,17 @@ import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.loader.api.Version;
 import net.minecraft.block.*;
-import net.minecraft.command.argument.Vec3ArgumentType;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.decoration.ArmorStandEntity;
 import net.minecraft.entity.passive.*;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.*;
-import net.minecraft.registry.RegistryKey;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
+import net.minecraft.text.LiteralText;
 import net.minecraft.text.Text;
 import net.minecraft.text.TextColor;
 import net.minecraft.util.ActionResult;
@@ -49,7 +47,7 @@ import net.minecraft.util.Formatting;
 import net.minecraft.util.TypedActionResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.registry.RegistryKey;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -69,7 +67,6 @@ import static com.github.zly2006.enclosure.EnclosureGroup.Groups;
 import static com.github.zly2006.enclosure.EnclosureList.DATA_VERSION_KEY;
 import static com.github.zly2006.enclosure.EnclosureList.ENCLOSURE_LIST_KEY;
 import static com.github.zly2006.enclosure.utils.Permission.*;
-import static net.minecraft.server.command.CommandManager.argument;
 import static net.minecraft.server.command.CommandManager.literal;
 
 public class ServerMain implements DedicatedServerModInitializer {
@@ -83,11 +80,11 @@ public class ServerMain implements DedicatedServerModInitializer {
     private static final Path COMMON_PATH = Path.of("config", "enclosure", "common.json");
     public static final int DATA_VERSION = 2;
     public static ServerMain Instance;
-    public static final Text HEADER = Text.empty()
-            .append(Text.literal("[").styled(style -> style.withColor(TextColor.fromRgb(0x00FF00))))
-            .append(Text.literal("Enclosure").styled(style -> style.withColor(TextColor.fromRgb(0x00FFFF))))
-            .append(Text.literal("]").styled(style -> style.withColor(TextColor.fromRgb(0x00FF00))))
-            .append(Text.literal(" ").formatted(Formatting.RESET));
+    public static final Text HEADER = new LiteralText("")
+            .append(new LiteralText("[").styled(style -> style.withColor(TextColor.fromRgb(0x00FF00))))
+            .append(new LiteralText("Enclosure").styled(style -> style.withColor(TextColor.fromRgb(0x00FFFF))))
+            .append(new LiteralText("]").styled(style -> style.withColor(TextColor.fromRgb(0x00FF00))))
+            .append(new LiteralText(" ").formatted(Formatting.RESET));
     public static boolean PAID = true;
     Map<RegistryKey<World>, EnclosureList> enclosures = new HashMap<>();
     Item operationItem;
@@ -127,7 +124,7 @@ public class ServerMain implements DedicatedServerModInitializer {
                 context.block == Blocks.CAVE_VINES_PLANT ||
                 context.block == Blocks.CAVE_VINES);
         put(DYE, context -> context.item instanceof DyeItem && context.entity instanceof SheepEntity);
-        put(HORSE, context -> context.entity instanceof AbstractHorseEntity || context.entity instanceof StriderEntity || context.entity instanceof PigEntity);
+        put(HORSE, context -> context.entity instanceof HorseBaseEntity || context.entity instanceof StriderEntity || context.entity instanceof PigEntity);
         put(FEED_ANIMAL, context -> context.entity instanceof AnimalEntity animal && animal.isBreedingItem(context.item.getDefaultStack()));
         put(FISH, context -> context.item == Items.FISHING_ROD);
         put(USE_BONE_MEAL, context -> context.item == Items.BONE_MEAL);
@@ -136,7 +133,7 @@ public class ServerMain implements DedicatedServerModInitializer {
                 (context.block == Blocks.GRASS_BLOCK && (context.item instanceof ShovelItem || context.item == Items.BONE_MEAL)) ||
                 (context.block == Blocks.DIRT && context.item instanceof PotionItem potion));
         put(USE_JUKEBOX, context -> context.block == Blocks.JUKEBOX);
-        put(REDSTONE, context -> context.block instanceof ButtonBlock
+        put(REDSTONE, context -> context.block instanceof AbstractButtonBlock
                 || context.block == Blocks.LEVER
                 || context.block == Blocks.DAYLIGHT_DETECTOR);
         put(STRIP_LOG, context ->
@@ -145,11 +142,9 @@ public class ServerMain implements DedicatedServerModInitializer {
                 context.block == Blocks.OAK_LOG ||
                 context.block == Blocks.DARK_OAK_LOG ||
                 context.block == Blocks.JUNGLE_LOG ||
-                context.block == Blocks.MANGROVE_LOG ||
                 context.block == Blocks.SPRUCE_LOG) &&
                 context.item instanceof AxeItem);
         put(VEHICLE, context -> context.item instanceof BoatItem || context.item instanceof MinecartItem);
-        put(ALLAY, context -> context.entity instanceof AllayEntity);
         put(CAULDRON, context -> context.block instanceof AbstractCauldronBlock);
     }};
 
@@ -347,11 +342,12 @@ public class ServerMain implements DedicatedServerModInitializer {
 
         ServerPlayConnectionEvents.JOIN.register((handler, sender, server) -> {
             if (minecraftServer.getPlayerManager().isOperator(handler.player.getGameProfile()) && commonConfig.developMode) {
-                handler.player.sendMessage(Text.literal("This server is running in development environment, and this is dangerous! To turn this feature off, please modify the config file.").formatted(Formatting.RED), false);
+                handler.player.sendMessage(new LiteralText("This server is running in development environment, and this is dangerous! To turn this feature off, please modify the config file.").formatted(Formatting.RED), false);
             }
         });
-        CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> {
-            ConfirmManager.register(dispatcher, registryAccess, environment);
+        CommandRegistrationCallback.EVENT.register((dispatcher, d) -> {
+            if (!d) return; // don't work on integrated server
+            ConfirmManager.register(dispatcher);
             EnclosureCommand.register(dispatcher);
             CommandNode<ServerCommandSource> node = dispatcher.getRoot().getChild("enclosure");
             if (commonConfig.developMode) {
@@ -371,16 +367,6 @@ public class ServerMain implements DedicatedServerModInitializer {
                     player.networkHandler.disconnect(Text.of("Logout"));
                     return 0;
                 }));
-                dispatcher.register(CommandManager.literal("explosion")
-                        .then(argument("pos", Vec3ArgumentType.vec3())
-                                .then(argument("radius", FloatArgumentType.floatArg(0))
-                                        .executes(context -> {
-                                            Vec3d pos = Vec3ArgumentType.getVec3(context, "pos");
-                                            float radius = FloatArgumentType.getFloat(context, "radius");
-                                            ServerWorld world = context.getSource().getWorld();
-                                            world.createExplosion(null, pos.x, pos.y, pos.z, radius, World.ExplosionSourceType.TNT);
-                                            return 0;
-                                        }))));
             }
             commonConfig.aliases.forEach(alias -> dispatcher.register(literal(alias).redirect(node)));
         });
@@ -390,7 +376,7 @@ public class ServerMain implements DedicatedServerModInitializer {
         PlayerBlockBreakEvents.BEFORE.register((world, player, pos, state, blockEntity) -> {
             if (player instanceof ServerPlayerEntity serverPlayer) {
                 if (!checkPermission(serverPlayer, BREAK_BLOCK, pos)) {
-                    player.sendMessage(BREAK_BLOCK.getNoPermissionMsg(player));
+                    player.sendMessage(BREAK_BLOCK.getNoPermissionMsg(player), false);
                     return false;
                 }
             }
@@ -431,7 +417,7 @@ public class ServerMain implements DedicatedServerModInitializer {
                     }
                     else {
                         player.currentScreenHandler.syncState();
-                        player.sendMessage(PLACE_BLOCK.getNoPermissionMsg(player));
+                        player.sendMessage(PLACE_BLOCK.getNoPermissionMsg(player), false);
                         return ActionResult.FAIL;
                     }
                 }
@@ -442,7 +428,7 @@ public class ServerMain implements DedicatedServerModInitializer {
                             }
                             else {
                                 player.currentScreenHandler.syncState();
-                                player.sendMessage(permission.getNoPermissionMsg(player));
+                                player.sendMessage(permission.getNoPermissionMsg(player), false);
                                 return ActionResult.FAIL;
                             }
                         })
@@ -467,7 +453,7 @@ public class ServerMain implements DedicatedServerModInitializer {
                             }
                             else {
                                 player.currentScreenHandler.syncState();
-                                player.sendMessage(permission.getNoPermissionMsg(player));
+                                player.sendMessage(permission.getNoPermissionMsg(player), false);
                                 return TypedActionResult.fail(serverPlayer.getStackInHand(hand));
                             }
                         })
@@ -482,7 +468,7 @@ public class ServerMain implements DedicatedServerModInitializer {
         UseEntityCallback.EVENT.register((player, world, hand, entity, hitResult) -> {
             if (entity instanceof ArmorStandEntity) {
                 if (!checkPermission(world, entity.getBlockPos(), player, ARMOR_STAND)) {
-                    player.sendMessage(ARMOR_STAND.getNoPermissionMsg(player));
+                    player.sendMessage(ARMOR_STAND.getNoPermissionMsg(player), false);
                     return ActionResult.FAIL;
                 }
             }
@@ -502,7 +488,7 @@ public class ServerMain implements DedicatedServerModInitializer {
                             }
                             else {
                                 player.currentScreenHandler.syncState();
-                                player.sendMessage(permission.getNoPermissionMsg(player));
+                                player.sendMessage(permission.getNoPermissionMsg(player), false);
                                 return ActionResult.FAIL;
                             }
                         })

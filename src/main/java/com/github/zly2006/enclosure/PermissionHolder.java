@@ -5,6 +5,7 @@ import com.github.zly2006.enclosure.utils.Permission;
 import com.github.zly2006.enclosure.utils.Serializable2Text;
 import com.github.zly2006.enclosure.utils.TrT;
 import com.github.zly2006.enclosure.utils.Utils;
+import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.datafixers.util.Pair;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -22,7 +23,7 @@ public interface PermissionHolder extends Serializable2Text {
 
     UUID getOwner();
 
-    boolean isOwnerOrFatherAdmin(ServerCommandSource source);
+    boolean isOwnerOrFatherAdmin(ServerCommandSource source) throws CommandSyntaxException;
 
     PermissionHolder getFather();
 
@@ -33,8 +34,12 @@ public interface PermissionHolder extends Serializable2Text {
         if (player.getCommandSource().hasPermissionLevel(4) && perm.isIgnoreOp()) {
             return true;
         }
-        if (perm == Permission.ADMIN && isOwnerOrFatherAdmin(player.getCommandSource())) {
-            return true;
+        try {
+            if (perm == Permission.ADMIN && isOwnerOrFatherAdmin(player.getCommandSource())) {
+                return true;
+            }
+        } catch (CommandSyntaxException e) {
+            return false;
         }
         return hasPerm(player.getUuid(), perm);
     }
@@ -62,7 +67,7 @@ public interface PermissionHolder extends Serializable2Text {
 
     default boolean hasPubPerm(@NotNull Permission perm) throws PermissionTargetException {
         if (!perm.getTarget().fitEnclosure()) {
-            throw new PermissionTargetException(TrT.of("enclosure.message.permission_target_error").append(Text.literal(perm.getTarget().name())));
+            throw new PermissionTargetException(TrT.of("enclosure.message.permission_target_error").append(new LiteralText(perm.getTarget().name())));
         }
         return hasPerm(CONSOLE, perm);
     }
@@ -90,12 +95,12 @@ public interface PermissionHolder extends Serializable2Text {
     }
 
     default Text serializePermission(Map<String, Boolean> map) {
-        MutableText text = Text.literal("");
+        MutableText text = new LiteralText("");
         map.forEach((key, value) -> {
             if (value) {
-                text.append(Text.literal(key).setStyle(Style.EMPTY.withColor(Formatting.GREEN)));
+                text.append(new LiteralText(key).setStyle(Style.EMPTY.withColor(Formatting.GREEN)));
             } else {
-                text.append(Text.literal(key).setStyle(Style.EMPTY.withColor(Formatting.RED)));
+                text.append(new LiteralText(key).setStyle(Style.EMPTY.withColor(Formatting.RED)));
             }
             text.append(" ");
         });
@@ -118,7 +123,7 @@ public interface PermissionHolder extends Serializable2Text {
                             .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT,
                                     key.equals(CONSOLE) ? serializePermission(value) :
                                             // 不是默认的，就显示uuid
-                                            Text.literal("UUID=" + key + ": ").setStyle(Style.EMPTY.withColor(Formatting.GOLD))
+                                            new LiteralText("UUID=" + key + ": ").setStyle(Style.EMPTY.withColor(Formatting.GOLD))
                                                     .append(serializePermission(value))));
                     String name = null;
                     if (key.equals(CONSOLE)) {
@@ -139,7 +144,7 @@ public interface PermissionHolder extends Serializable2Text {
                         style = style.withColor(Formatting.RED);
                         ordinal = 3;
                     }
-                    MutableText item = Text.literal(name).setStyle(style).append(" ");
+                    MutableText item = new LiteralText(name).setStyle(style).append(" ");
                     return Pair.of(item, ordinal);
                 })
                 .sorted(Comparator.comparingInt(Pair::getSecond))

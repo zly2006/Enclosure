@@ -7,7 +7,6 @@ import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.Element;
-import net.minecraft.client.gui.PlayerSkinDrawer;
 import net.minecraft.client.gui.Selectable;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.ButtonWidget;
@@ -15,7 +14,9 @@ import net.minecraft.client.gui.widget.ElementListWidget;
 import net.minecraft.client.gui.widget.TextFieldWidget;
 import net.minecraft.client.network.PlayerListEntry;
 import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.text.LiteralText;
 import net.minecraft.text.Text;
+import net.minecraft.text.TranslatableText;
 
 import java.util.Comparator;
 import java.util.List;
@@ -93,12 +94,11 @@ public class PermissionTargetListWidget extends ElementListWidget<PermissionTarg
         PlayerEntry(Text name, UUID uuid) {
             this.name = name;
             this.uuid = uuid;
-            this.setButton = ButtonWidget.builder(Text.translatable("enclosure.widget.set"), button -> {
+            this.setButton = new ButtonWidget(0, 0, 40, 20, new TranslatableText("enclosure.widget.set"), button -> {
                 if (screen == null) {
                     screen = new PermissionScreen(area, uuid, fullName, parent);
                 }
-                client.setScreen(screen);
-            }).size(40, 20).build();
+            });
         }
 
         @Override
@@ -114,15 +114,15 @@ public class PermissionTargetListWidget extends ElementListWidget<PermissionTarg
         @Override
         public void render(MatrixStack matrices, int index, int y, int x, int entryWidth, int entryHeight, int mouseX, int mouseY, boolean hovered, float tickDelta) {
             client.textRenderer.draw(matrices, name, x + 20, y + 3, 0xffffff);
-            setButton.setX(x + entryWidth - 40);
-            setButton.setY(y);
+            setButton.x = x + entryWidth - 40;
+            setButton.y = y;
             setButton.render(matrices, mouseX, mouseY, tickDelta);
             assert client.player != null;
             Optional.ofNullable(client.player.networkHandler.getPlayerListEntry(uuid))
                     .map(PlayerListEntry::getSkinTexture)
                     .ifPresent(texture -> {
                         RenderSystem.setShaderTexture(0, texture);
-                        PlayerSkinDrawer.draw(matrices, x, y, 16);
+                        // todo: PlayerSkinDrawer.draw(matrices, x, y, 16);
                     });
         }
     }
@@ -139,9 +139,9 @@ public class PermissionTargetListWidget extends ElementListWidget<PermissionTarg
                 switch (mode) {
                     case Players -> entryStream = area.getPermissionsMap().keySet().stream()
                             .filter(uuid -> !uuid.equals(CONSOLE))
-                            .map(uuid -> new PlayerEntry(Text.literal(UUIDCacheS2CPacket.getName(uuid)), uuid));
+                            .map(uuid -> new PlayerEntry(new LiteralText(UUIDCacheS2CPacket.getName(uuid)), uuid));
                     case Unspecified -> entryStream = UUIDCacheS2CPacket.uuid2name.keySet().stream()
-                            .map(uuid -> new PlayerEntry(Text.literal(UUIDCacheS2CPacket.getName(uuid)), uuid));
+                            .map(uuid -> new PlayerEntry(new LiteralText(UUIDCacheS2CPacket.getName(uuid)), uuid));
                 }
                 entryStream.filter(entry -> entry.name.getString().contains(s))
                         .sorted(Comparator.comparing(o -> o.name.getString()))
@@ -151,11 +151,11 @@ public class PermissionTargetListWidget extends ElementListWidget<PermissionTarg
 
         @Override
         public void render(MatrixStack matrices, int index, int y, int x, int entryWidth, int entryHeight, int mouseX, int mouseY, boolean hovered, float tickDelta) {
-            searchWidget.setY(y);
+            searchWidget.y = y;
             searchWidget.setX(x + 70);
             searchWidget.setWidth(entryWidth - 70 - 2);
             searchWidget.render(matrices, mouseX, mouseY, tickDelta);
-            client.textRenderer.draw(matrices, Text.translatable("enclosure.widget.search"), x, y + 3, 0xFFFFFF);
+            client.textRenderer.draw(matrices, new TranslatableText("enclosure.widget.search"), x, y + 3, 0xFFFFFF);
         }
 
         @Override

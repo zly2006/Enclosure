@@ -1,14 +1,15 @@
 package com.github.zly2006.enclosure;
 
 import com.github.zly2006.enclosure.utils.Utils;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.nbt.NbtString;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.HoverEvent;
+import net.minecraft.text.LiteralText;
 import net.minecraft.text.MutableText;
-import net.minecraft.text.Text;
 import net.minecraft.world.PersistentState;
 import org.jetbrains.annotations.NotNull;
 
@@ -54,20 +55,20 @@ public class EnclosureGroup implements PermissionHolder {
     @Override
     public MutableText serialize(@NotNull SerializationSettings settings, ServerPlayerEntity player) {
         return switch (settings) {
-            case Name -> Text.literal(name);
+            case Name -> new LiteralText(name);
             case Summarize -> serialize(SerializationSettings.Name, player).styled(style -> style
                     .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, serialize(SerializationSettings.Hover, player))));
             case Full -> {
-                MutableText text = Text.empty();
+                MutableText text = new LiteralText("");
                 for (String enclosure : enclosures) {
                     text.append(Instance.getEnclosure(enclosure).serialize(SerializationSettings.Summarize, player)).append(", ");
                 }
-                yield Text.literal("Group: ").append(serialize(SerializationSettings.Name, player))
+                yield new LiteralText("Group: ").append(serialize(SerializationSettings.Name, player))
                         .append("\nOwner: ").append(Utils.getDisplayNameByUUID(owner))
                         .append("\nEnclosures: ").append(text)
                         .append("\n").append(PermissionHolder.super.serialize(SerializationSettings.Full, player));
             }
-            case Hover -> Text.literal("Owner: ").append(Utils.getDisplayNameByUUID(owner));
+            case Hover -> new LiteralText("Owner: ").append(Utils.getDisplayNameByUUID(owner));
             default -> null;
         };
     }
@@ -76,8 +77,8 @@ public class EnclosureGroup implements PermissionHolder {
     public boolean isOwner(ServerCommandSource source) {
         if (source.hasPermissionLevel(4)) {
             return true;
-        } else if (source.getPlayer() != null) {
-            return source.getPlayer().getUuid().equals(owner);
+        } else if (source.getEntity() instanceof PlayerEntity player) {
+            return player.getUuid().equals(owner);
         } else {
             return false;
         }

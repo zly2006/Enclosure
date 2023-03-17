@@ -76,15 +76,15 @@ public class EnclosureCommand {
                 .executes(handleException(context -> {
                     ServerCommandSource source = context.getSource();
                     ServerPlayerEntity player = source.getPlayer();
-                    source.sendMessage(TrT.of("enclosure.about.author"));
-                    source.sendMessage(TrT.of("enclosure.about.translator"));
-                    source.sendMessage(TrT.of("enclosure.about.team_page"));
-                    source.sendMessage(TrT.of("enclosure.about.version.server").append(MOD_VERSION.getFriendlyString()));
+                    source.sendFeedback(TrT.of("enclosure.about.author"), false);
+                    source.sendFeedback(TrT.of("enclosure.about.translator"), false);
+                    source.sendFeedback(TrT.of("enclosure.about.team_page"), false);
+                    source.sendFeedback(TrT.of("enclosure.about.version.server").append(MOD_VERSION.getFriendlyString()), false);
                     if (source.getPlayer() != null && EnclosureInstalledC2SPacket.isInstalled(source.getPlayer())) {
                         Version version = EnclosureInstalledC2SPacket.clientVersion(source.getPlayer());
-                        source.sendMessage(TrT.of("enclosure.about.version.client").append(version.getFriendlyString()));
+                        source.sendFeedback(TrT.of("enclosure.about.version.client").append(version.getFriendlyString()), false);
                     }
-                    source.sendMessage(TrT.of("enclosure.about.copyright"));
+                    source.sendFeedback(TrT.of("enclosure.about.copyright"), false);
                     return 0;
                 }))
             )
@@ -95,7 +95,7 @@ public class EnclosureCommand {
                         .executes(handleException(context -> {
                             try {
                                 reloadLimits();
-                                context.getSource().sendMessage(Text.literal("Reloaded"));
+                                context.getSource().sendMessage(new LiteralText("Reloaded"));
                             } catch (IOException e) {
                                 context.getSource().sendError(Text.of(e.toString()));
                             }
@@ -105,57 +105,22 @@ public class EnclosureCommand {
                         .executes(handleException(context -> {
                             try {
                                 reloadCommon();
-                                context.getSource().sendMessage(Text.literal("Reloaded, some changes may not take effect until server restart"));
+                                context.getSource().sendMessage(new LiteralText("Reloaded, some changes may not take effect until server restart"));
                             } catch (IOException e) {
                                 context.getSource().sendError(Text.of(e.toString()));
                             }
                             return 0;
                         }))))
-                .then(literal("limit_exceeded")
-                    .then(literal("count").executes(context -> {
-                        Map<UUID, List<Enclosure>> map = new HashMap<>();
-                        for (Enclosure e : Instance.getAllEnclosures()) {
-                            List<Enclosure> l = map.get(e.getOwner());
-                            if (l == null) {
-                                l = new ArrayList<>();
-                                l.add(e);
-                                map.put(e.getOwner(), l);
-                            } else {
-                                l.add(e);
-                            }
-                        }
-                        map.entrySet().stream().filter(e -> e.getValue().size() > limits.maxLands)
-                            .sorted(Comparator.comparingInt(e -> -e.getValue().size()))
-                            .map(entry -> Text.literal("Player ")
-                                .append(Utils.getDisplayNameByUUID(entry.getKey()))
-                                .append(Text.literal(" has %d enclosures: ".formatted(entry.getValue().size())))
-                                .append(entry.getValue().stream()
-                                    .map(en -> en.serialize(Name, context.getSource().getPlayer())
-                                        .styled(style -> style.withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, en.serialize(Hover, context.getSource().getPlayer())))))
-                                    .reduce(Text.empty(), (t1, t2) -> {
-                                        Text.empty().append("");
-                                        if (t1.getContent() == TextContent.EMPTY) {
-                                            return t2;
-                                        } else {
-                                            return t1.append(Text.literal(", ")).append(t2);
-                                        }
-                                    })))
-                            .forEach(context.getSource()::sendMessage);
-                        return 0;
-                    })))
                 .then(literal("closest")
-                    .requires(ServerCommandSource::isExecutedByPlayer)
                     .executes(context -> {
-                        ServerPlayerEntity player = context.getSource().getPlayer();
-                        assert player != null;
-                        BlockPos pos = player.getBlockPos();
-                        Optional<EnclosureArea> enclosure = Instance.getAllEnclosures(player.getWorld()).getAreas().stream()
+                        BlockPos pos = context.getSource().getEntity().getBlockPos();
+                        Optional<EnclosureArea> enclosure = Instance.getAllEnclosures((ServerWorld) context.getSource().getEntity().getWorld()).getAreas().stream()
                             .min(Comparator.comparingDouble(e -> e.distanceTo(pos).getSquaredDistance(Vec3i.ZERO)));
                         if (enclosure.isEmpty()) {
-                            context.getSource().sendMessage(Text.literal("No enclosure found"));
+                            context.getSource().sendFeedback(new LiteralText("No enclosure found"), false);
                         } else {
-                            context.getSource().sendMessage(Text.literal("Closest enclosure: " + enclosure.get().getFullName() + ", click to show info").styled(style ->
-                                style.withClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/enclosure info " + enclosure.get().getFullName()))));
+                            context.getSource().sendFeedback(new LiteralText("Closest enclosure: " + enclosure.get().getFullName() + ", click to show info").styled(style ->
+                                style.withClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/enclosure info " + enclosure.get().getFullName()))), false);
                         }
                         return 0;
                     }))
@@ -167,15 +132,15 @@ public class EnclosureCommand {
                                 error(TrT.of("enclosure.message.invalid_permission"), context);
                             }
                             MutableText text = Text.empty()
-                                .append(Text.literal("Name: "))
+                                .append(new LiteralText("Name: "))
                                 .append(permission.getName())
-                                .append(Text.literal(" Target: "))
+                                .append(new LiteralText(" Target: "))
                                 .append(permission.getTarget().toString())
-                                .append(Text.literal("\nDescription: "))
+                                .append(new LiteralText("\nDescription: "))
                                 .append(permission.getDescription())
-                                .append(Text.literal("\nDefault: "))
+                                .append(new LiteralText("\nDefault: "))
                                 .append(String.valueOf(permission.getDefaultValue()))
-                                .append(Text.literal("\nComponents: "))
+                                .append(new LiteralText("\nComponents: "))
                                 .append(permission.getPermissions().stream().reduce("", (s, p) -> s.isEmpty() ? p : s + ", " + p));
                             context.getSource().sendMessage(text);
                             return 0;
@@ -335,18 +300,18 @@ public class EnclosureCommand {
                         session.trySync();
                         EnclosureArea intersectArea = session.intersect(Instance.getAllEnclosures(session.world));
                         ServerCommandSource source = context.getSource();
-                        source.sendMessage(TrT.of("enclosure.message.select.from")
+                        source.sendFeedback(TrT.of("enclosure.message.select.from")
                             .append((blockPos2string(session.pos1)))
                             .append(TrT.of("enclosure.message.select.to"))
                             .append((blockPos2string(session.pos2)))
                             .append(TrT.of("enclosure.message.select.world"))
                             .append((session.world.getRegistryKey().getValue().toString()))
                         );
-                        source.sendMessage(TrT.of("enclosure.message.total_size")
+                        source.sendFeedback(TrT.of("enclosure.message.total_size")
                             .append(String.valueOf(session.size()))
                         );
                         if (intersectArea != null) {
-                            source.sendMessage(TrT.of("enclosure.message.intersected")
+                            source.sendFeedback(TrT.of("enclosure.message.intersected")
                                 .append(intersectArea.serialize(Name, context.getSource().getPlayer()))
                             );
                         }
@@ -563,7 +528,7 @@ public class EnclosureCommand {
                     MutableText translatable = TrT.of("enclosure.message.limit.header");
                     Arrays.stream(limits.getClass().getFields()).map(field -> {
                             try {
-                                return Text.literal("\n")
+                                return new LiteralText("\n")
                                     .append(TrT.limit(field).append(": ").styled(style -> style.withColor(Formatting.GOLD)))
                                     .append(field.get(limits).toString());
                             } catch (IllegalAccessException ignored) {
@@ -584,9 +549,9 @@ public class EnclosureCommand {
                     MutableText text = area.serialize(BarredFull, context.getSource().getPlayer());
                     if (context.getSource().getPlayer() != null &&
                         EnclosureInstalledC2SPacket.isInstalled(context.getSource().getPlayer())) {
-                        text.append(Text.literal("\n(Open GUI)")
+                        text.append(new LiteralText("\n(Open GUI)")
                             .styled(style -> style.withColor(Formatting.AQUA)
-                                .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Text.translatable("enclosure.message.suggest_gui")))
+                                .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new TranslatableText("enclosure.message.suggest_gui")))
                                 .withClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/enclosure gui " + area.getFullName()))));
                     }
                     context.getSource().sendMessage(text);
@@ -696,7 +661,7 @@ public class EnclosureCommand {
                             Utils.getDisplayNameByUUID(uuid).formatted(Formatting.GOLD),
                             permission.serialize(Summarize, context.getSource().getPlayer()).formatted(Formatting.GOLD),
                             area.serialize(Name, context.getSource().getPlayer()).formatted(Formatting.GOLD),
-                            Text.literal(value ? "true" : "false").formatted(value ? Formatting.GREEN : Formatting.RED))
+                            new LiteralText(value ? "true" : "false").formatted(value ? Formatting.GREEN : Formatting.RED))
                     );
                 },
                 (node, command, string) -> {
@@ -837,7 +802,7 @@ public class EnclosureCommand {
                             context.getSource().sendMessage(TrT.of("enclosure.message.default_message"));
                         } else {
                             Text ctp = TrT.of("enclosure.message.click_to_copy").styled(style -> style.withColor(Formatting.AQUA));
-                            context.getSource().sendMessage(Text.literal(msg).append(" ").append(ctp).styled(style -> style
+                            context.getSource().sendMessage(new LiteralText(msg).append(" ").append(ctp).styled(style -> style
                                 .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, ctp))
                                 .withClickEvent(new ClickEvent(ClickEvent.Action.COPY_TO_CLIPBOARD, msg))));
                         }
@@ -877,7 +842,7 @@ public class EnclosureCommand {
                             checkSessionSize(session, context);
                             long count = enclosure.get().getSubEnclosures().getAreas().size();
                             if (count > limits.maxSubLands) {
-                                error(TrT.of("enclosure.message.scle").append(Text.literal(String.valueOf(limits.maxSubLands))), context);
+                                error(TrT.of("enclosure.message.scle").append(new LiteralText(String.valueOf(limits.maxSubLands))), context);
                             }
                         }
                         area.setWorld(session.getWorld()); // setFather 要求在同一个世界
@@ -1078,7 +1043,7 @@ public class EnclosureCommand {
                 }
                 area.setPermission(context.getSource(), uuid, permission, value);
             }
-            default -> throw new SimpleCommandExceptionType(Text.literal("Invalid argument")).create();
+            default -> throw new SimpleCommandExceptionType(new LiteralText("Invalid argument")).create();
         }
 
         area.markDirty();
@@ -1211,17 +1176,17 @@ public class EnclosureCommand {
         if (child == null) {
             EnclosureCommand.error(TrT.of("enclosure.help.no_child"));
         }
-        source.sendMessage(Text.literal("/enclosure " + child.getUsageText()).styled(style -> style.withColor(Formatting.GOLD))
+        source.sendFeedback(new LiteralText("/enclosure " + child.getUsageText()).styled(style -> style.withColor(Formatting.GOLD))
             .append(": ")
             .append(TrT.of("enclosure.help." + subcommand).styled(style -> style.withColor(Formatting.WHITE))));
     }
 
     static void showHelp(@NotNull ServerCommandSource source) {
-        source.sendMessage(TrT.of("enclosure.help.header"));
+        source.sendFeedback(TrT.of("enclosure.help.header"));
         minecraftServer.getCommandManager().getDispatcher()
             .getSmartUsage(node, source)
-            .forEach((name, s) -> source.sendMessage(
-                Text.literal("/enclosure " + s).styled(style -> style.withColor(Formatting.GOLD))
+            .forEach((name, s) -> source.sendFeedback(
+                new LiteralText("/enclosure " + s).styled(style -> style.withColor(Formatting.GOLD))
                     .append(": ")
                     .append(TrT.of("enclosure.help." + name.getName()).styled(style -> style.withColor(Formatting.WHITE)))));
     }
@@ -1275,7 +1240,7 @@ public class EnclosureCommand {
                 long count = Instance.getAllEnclosures(player.getUuid()).size();
                 if (count >= limits.maxLands) {
                     error(TrT.of("enclosure.message.rcle.self")
-                        .append(Text.literal(String.valueOf(limits.maxLands))), context);
+                        .append(new LiteralText(String.valueOf(limits.maxLands))), context);
                 }
             }
         }

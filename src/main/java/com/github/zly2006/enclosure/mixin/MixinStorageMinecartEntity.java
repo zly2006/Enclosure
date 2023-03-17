@@ -28,7 +28,7 @@ public abstract class MixinStorageMinecartEntity extends AbstractMinecartEntity 
         if (player instanceof ServerPlayerEntity serverPlayer) {
             EnclosureArea area = Instance.getAllEnclosures((ServerWorld) this.getWorld()).getArea(getBlockPos());
             if (area != null && !area.areaOf(getBlockPos()).hasPerm(serverPlayer, Permission.CONTAINER)) {
-                serverPlayer.sendMessage(CONTAINER.getNoPermissionMsg(serverPlayer));
+                serverPlayer.sendMessage(CONTAINER.getNoPermissionMsg(serverPlayer), false);
                 cir.setReturnValue(false);
             }
         }

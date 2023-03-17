@@ -18,7 +18,7 @@ public class MixinLeadItem {
     @Inject(method = "attachHeldMobsToBlock", at = @At("HEAD"), cancellable = true)
     private static void onAttachHeldMobsToBlock(PlayerEntity player, World world, BlockPos pos, CallbackInfoReturnable<ActionResult> cir) {
         if (!Instance.checkPermission(world, pos, player, PLACE_BLOCK)) {
-            player.sendMessage(PLACE_BLOCK.getNoPermissionMsg(player));
+            player.sendMessage(PLACE_BLOCK.getNoPermissionMsg(player), false);
             cir.setReturnValue(ActionResult.PASS);
         }
     }

@@ -8,7 +8,6 @@ import net.minecraft.block.Blocks;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.mob.HostileEntity;
-import net.minecraft.entity.passive.AllayEntity;
 import net.minecraft.entity.passive.IronGolemEntity;
 import net.minecraft.entity.passive.PassiveEntity;
 import net.minecraft.entity.passive.SnowGolemEntity;
@@ -32,8 +31,7 @@ public class Utils {
     public static boolean isAnimal(Entity entity) {
         return entity instanceof PassiveEntity
                 || entity instanceof IronGolemEntity
-                || entity instanceof SnowGolemEntity
-                || entity instanceof AllayEntity;
+                || entity instanceof SnowGolemEntity;
     }
     public static boolean isMonster(Entity entity) {
         return entity instanceof HostileEntity;
@@ -125,7 +123,7 @@ public class Utils {
         }
         if (source.getAttacker() instanceof ServerPlayerEntity attacker) {
             if (area != null && !area.hasPerm(attacker, permission)) {
-                attacker.sendMessage(permission.getNoPermissionMsg(attacker));
+                attacker.sendMessage(permission.getNoPermissionMsg(attacker), false);
                 return false;
             }
         }
@@ -141,7 +139,7 @@ public class Utils {
         }
         if (source.getAttacker() instanceof ServerPlayerEntity attacker) {
             if (area != null && !area.hasPerm(attacker, permission)) {
-                attacker.sendMessage(permission.getNoPermissionMsg(attacker));
+                attacker.sendMessage(permission.getNoPermissionMsg(attacker), false);
                 return false;
             }
         }
@@ -161,13 +159,13 @@ public class Utils {
             return player.getDisplayName().copy();
         }
         if (uuid.equals(EnclosureCommand.CONSOLE)) {
-            return Text.literal(serverName);
+            return new LiteralText(serverName);
         }
         String name = getNameByUUID(uuid);
         if (name != null) {
-            return Text.literal(name);
+            return new LiteralText(name);
         }
-        return Text.literal(uuid.toString());
+        return new LiteralText(uuid.toString());
     }
     public static BlockPos toBlockPos(Vec3d vec3d) {
         return new BlockPos((int) vec3d.x, (int) vec3d.y, (int) vec3d.z);

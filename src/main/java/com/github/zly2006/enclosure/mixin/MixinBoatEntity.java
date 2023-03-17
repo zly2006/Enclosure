@@ -33,7 +33,7 @@ public abstract class MixinBoatEntity extends Entity {
     @Inject(method = "interact", at = @At("HEAD"), cancellable = true)
     private void onInteract(PlayerEntity player, Hand hand, CallbackInfoReturnable<ActionResult> cir) {
         if (!Instance.checkPermission(getWorld(), getBlockPos(), player, VEHICLE)) {
-            player.sendMessage(VEHICLE.getNoPermissionMsg(player));
+            player.sendMessage(VEHICLE.getNoPermissionMsg(player), false);
             cir.setReturnValue(ActionResult.FAIL);
         }
     }

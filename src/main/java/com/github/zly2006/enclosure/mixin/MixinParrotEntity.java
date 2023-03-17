@@ -38,7 +38,7 @@ public abstract class MixinParrotEntity extends AnimalEntity {
                 EnclosureArea area = Instance.getAllEnclosures((ServerWorld) getWorld()).getArea(getBlockPos());
 
                 if (area != null && !area.areaOf(getBlockPos()).hasPerm(player, PARROT_COOKIE)) {
-                    player.sendMessage(PARROT_COOKIE.getNoPermissionMsg(player));
+                    player.sendMessage(PARROT_COOKIE.getNoPermissionMsg(player), false);
                     cir.setReturnValue(ActionResult.FAIL);
                 }
             }

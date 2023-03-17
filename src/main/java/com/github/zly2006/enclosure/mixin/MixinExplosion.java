@@ -3,7 +3,6 @@ package com.github.zly2006.enclosure.mixin;
 import com.github.zly2006.enclosure.EnclosureArea;
 import com.github.zly2006.enclosure.EnclosureList;
 import com.github.zly2006.enclosure.utils.Permission;
-import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import net.minecraft.entity.Entity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
@@ -23,7 +22,7 @@ import static com.github.zly2006.enclosure.ServerMain.Instance;
 public abstract class MixinExplosion {
     @Shadow
     @Final
-    private ObjectArrayList<BlockPos> affectedBlocks;
+    private List<BlockPos> affectedBlocks;
 
     @Shadow
     @Final

@@ -31,7 +31,7 @@ public abstract class MixinMobEntity extends LivingEntity {
             if (!Instance.checkPermission(getWorld(), getBlockPos(), player, Permission.FISH)) {
                 ServerPlayerEntity serverPlayer = (ServerPlayerEntity) player;
                 serverPlayer.networkHandler.sendPacket(createSpawnPacket());
-                serverPlayer.sendMessage(Permission.FISH.getNoPermissionMsg(player));
+                serverPlayer.sendMessage(Permission.FISH.getNoPermissionMsg(player), false);
                 serverPlayer.currentScreenHandler.syncState();
                 cir.setReturnValue(ActionResult.FAIL);
             }
@@ -43,7 +43,7 @@ public abstract class MixinMobEntity extends LivingEntity {
         if (!Instance.checkPermission(getWorld(), getBlockPos(), player, Permission.LEASH)) {
             ServerPlayerEntity serverPlayer = (ServerPlayerEntity) player;
             serverPlayer.networkHandler.sendPacket(new EntityAttachS2CPacket(this, null));
-            serverPlayer.sendMessage(Permission.LEASH.getNoPermissionMsg(player));
+            serverPlayer.sendMessage(Permission.LEASH.getNoPermissionMsg(player), false);
             serverPlayer.currentScreenHandler.syncState();
             cir.setReturnValue(false);
         }

@@ -5,6 +5,7 @@ import net.minecraft.item.Item;
 import net.minecraft.item.Items;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.HoverEvent;
+import net.minecraft.text.LiteralText;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
@@ -114,8 +115,6 @@ public class Permission implements Serializable2Text {
 
     public static final Permission WITHER_ENTER = new Permission("wither_enter", Permission.Target.Enclosure, true, Items.WITHER_SKELETON_SKULL);
 
-    public static final Permission SCULK_SPREAD = new Permission("sculk_spread", Permission.Target.Enclosure, false, Items.SCULK_CATALYST);
-
     public static final Permission DROP_ITEM = new Permission("drop_item", Target.Both, true, Items.DIRT);
 
     public static final Permission PICKUP_ITEM = new Permission("pickup_item", Target.Both, true, Items.DIRT);
@@ -125,8 +124,6 @@ public class Permission implements Serializable2Text {
     public static final Permission FARMLAND_DESTROY = new Permission("farmland_destroy", Target.Both, false, Items.FARMLAND);
 
     public static final Permission ARMOR_STAND = new Permission("armor_stand", Target.Both, false, Items.ARMOR_STAND);
-
-    public static final Permission ALLAY = new Permission("allay", Target.Both, false, Items.ALLAY_SPAWN_EGG);
 
     public static final Permission CONSUMPTIVELY_EXTINGUISH = new Permission("consumptively_extinguish", Target.Enclosure, false, Items.POWDER_SNOW_BUCKET);
 
@@ -187,14 +184,12 @@ public class Permission implements Serializable2Text {
         register(DRAGON_DESTROY);
         register(WITHER_DESTROY);
         register(WITHER_ENTER);
-        register(SCULK_SPREAD);
         register(FEED_ANIMAL);
         register(DROP_ITEM);
         register(PICKUP_ITEM);
         register(FISH);
         register(FARMLAND_DESTROY);
         register(ARMOR_STAND);
-        register(ALLAY);
         register(CONSUMPTIVELY_EXTINGUISH);
         register(CAULDRON);
     }
@@ -305,8 +300,8 @@ public class Permission implements Serializable2Text {
     @Override
     public MutableText serialize(SerializationSettings settings, ServerPlayerEntity player) {
         return switch (settings) {
-            case Name -> Text.literal(this.name);
-            case Full -> Text.literal(this.name).styled(style -> style.withColor(Formatting.YELLOW)
+            case Name -> new LiteralText(this.name);
+            case Full -> new LiteralText(this.name).styled(style -> style.withColor(Formatting.YELLOW)
                             .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, TrT.of("enclosure.widget.default_value_is")
                                     .append(" ").append(String.valueOf(defaultValue)))))
                     .append(" - ")

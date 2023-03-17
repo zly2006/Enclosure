@@ -37,7 +37,7 @@ public class MixinCampfireBlock {
             EnclosureArea area = list.getArea(pos);
             if (area != null && !area.areaOf(pos).hasPubPerm(Permission.USE_CAMPFIRE)) {
                 if(entity instanceof ServerPlayerEntity player){
-                    player.sendMessage(USE_CAMPFIRE.getNoPermissionMsg(player));
+                    player.sendMessage(USE_CAMPFIRE.getNoPermissionMsg(player), false);
                 }
 
                 world.setBlockState(pos, state.with(WATERLOGGED, false).with(LIT, true), 252);

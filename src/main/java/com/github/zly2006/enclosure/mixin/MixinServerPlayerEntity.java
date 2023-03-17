@@ -63,11 +63,9 @@ public abstract class MixinServerPlayerEntity extends PlayerEntity implements Pl
         this.permissionDeniedMsgTime = permissionDeniedMsgTime;
     }
 
-    @Shadow public abstract void sendMessage(Text message);
-
     @Shadow public abstract ServerWorld getWorld();
 
-    @Shadow public abstract void sendMessage(Text message, boolean overlay);
+    @Shadow public abstract void sendMessage(Text message, boolean actionBar);
 
     @Shadow @Final public MinecraftServer server;
 
@@ -86,7 +84,7 @@ public abstract class MixinServerPlayerEntity extends PlayerEntity implements Pl
             }
             if (attackerArea != null && !attackerArea.areaOf(attacker.getBlockPos()).hasPubPerm(Permission.PVP)
                     && !attacker.getCommandSource().hasPermissionLevel(4)) {
-                attacker.sendMessage(PVP.getNoPermissionMsg(attacker));
+                attacker.sendMessage(PVP.getNoPermissionMsg(attacker), false);
                 cir.setReturnValue(false);
             }
         }
@@ -155,7 +153,7 @@ public abstract class MixinServerPlayerEntity extends PlayerEntity implements Pl
                 text.append(formatMessage(area.getLeaveMessage(), area, player));
             }
         }
-        player.sendMessage(text);
+        player.sendMessage(text, false);
     }
     @Inject(method = "tick", at = @At("HEAD"))
     private void onTick(CallbackInfo ci) {
@@ -175,7 +173,7 @@ public abstract class MixinServerPlayerEntity extends PlayerEntity implements Pl
             }
             if (area != null) {
                 if (!area.hasPerm(player, MOVE)) {
-                    player.sendMessage(MOVE.getNoPermissionMsg(player));
+                    player.sendMessage(MOVE.getNoPermissionMsg(player), false);
                     if (area != lastArea) {
                         // teleport back
                         player.teleport(lastWorld, lastPos.x, lastPos.y, lastPos.z, 0, 0);
