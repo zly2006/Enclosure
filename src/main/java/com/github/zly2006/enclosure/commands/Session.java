@@ -118,15 +118,13 @@ public class Session {
             return null;
         }
         if (lessThan) {
-            return TrT.of("")
-                    .append(TrT.of("enclosure.limit." + Utils.camelCaseToSnakeCase(name)))
+            return TrT.of("enclosure.limit." + Utils.camelCaseToSnakeCase(name))
                     .append(TrT.of("enclosure.message.limit_exceeded.0"))
                     .append(String.valueOf(limit))
                     .append(TrT.of("enclosure.message.limit_exceeded.1"))
                     .append(Text.literal(String.valueOf(value)));
         } else {
-            return TrT.of("")
-                    .append(TrT.of("enclosure.limit." + Utils.camelCaseToSnakeCase(name)))
+            return TrT.of("enclosure.limit." + Utils.camelCaseToSnakeCase(name))
                     .append(TrT.of("enclosure.message.limit_exceeded.2"))
                     .append(String.valueOf(limit))
                     .append(TrT.of("enclosure.message.limit_exceeded.1"))
@@ -142,31 +140,31 @@ public class Session {
         int maxY = Math.max(pos1.getY(), pos2.getY());
         int maxZ = Math.max(pos1.getZ(), pos2.getZ());
 
-        Text text = singleCheck(maxX - minX + 1, limits.maxXRange, true, "X range");
+        Text text = singleCheck(maxX - minX + 1, limits.maxXRange, true, "maxXRange");
         if (text != null) {
             return text;
         }
-        text = singleCheck(maxZ - minZ + 1, limits.maxZRange, true, "Z range");
+        text = singleCheck(maxZ - minZ + 1, limits.maxZRange, true, "maxZRange");
         if (text != null) {
             return text;
         }
-        text = singleCheck(maxY - minY + 1, limits.maxHeight, true, "Height");
+        text = singleCheck(maxY - minY + 1, limits.maxHeight, true, "maxHeight");
         if (text != null) {
             return text;
         }
-        text = singleCheck(maxX - minX + 1, limits.minXRange, false, "X range");
+        text = singleCheck(maxX - minX + 1, limits.minXRange, false, "minXRange");
         if (text != null) {
             return text;
         }
-        text = singleCheck(maxZ - minZ + 1, limits.minZRange, false, "Z range");
+        text = singleCheck(maxZ - minZ + 1, limits.minZRange, false, "minZRange");
         if (text != null) {
             return text;
         }
-        text = singleCheck(minY, limits.minY, false, "min Y");
+        text = singleCheck(minY, limits.minY, false, "minY");
         if (text != null) {
             return text;
         }
-        text = singleCheck(maxY, limits.maxY, true, "max Y");
+        text = singleCheck(maxY, limits.maxY, true, "maxY");
         return text;
     }
 

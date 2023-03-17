@@ -7,6 +7,8 @@ import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import org.jetbrains.annotations.NotNull;
 
+import java.lang.reflect.Field;
+
 public class TrT {
     public static @NotNull MutableText of(String key, Object... arguments) {
         if (FabricLoader.getInstance().getEnvironmentType() == EnvType.SERVER) {
@@ -16,5 +18,9 @@ public class TrT {
             }
         }
         return Text.translatable(key, arguments);
+    }
+
+    public static @NotNull MutableText limit(Field field) {
+        return of("enclosure.limit." + Utils.camelCaseToSnakeCase(field.getName()));
     }
 }

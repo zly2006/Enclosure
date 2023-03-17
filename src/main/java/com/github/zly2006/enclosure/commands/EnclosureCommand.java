@@ -160,9 +160,9 @@ public class EnclosureCommand {
                         return 0;
                     }))
                 .then(literal("perm-info")
-                    .then(permissionArgument(Permission.Target.Both)
+                    .then(permissionArgument(Target.Both)
                         .executes(handleException(context -> {
-                            Permission permission = Permission.get(StringArgumentType.getString(context, "permission"));
+                            Permission permission = get(StringArgumentType.getString(context, "permission"));
                             if (permission == null) {
                                 error(TrT.of("enclosure.message.invalid_permission"), context);
                             }
@@ -198,13 +198,13 @@ public class EnclosureCommand {
             .then(literal("flags")
                 .executes(handleException(context -> {
                     if (context.getSource().getPlayer() == null) {
-                        Permission.PERMISSIONS.values().stream()
+                        PERMISSIONS.values().stream()
                             .sorted(Comparator.comparing(Permission::getName))
                             .map(perm -> perm.serialize(Full, null))
                             .forEach(context.getSource()::sendMessage);
                     } else {
                         ServerPlayerEntity player = context.getSource().getPlayer();
-                        player.sendMessage(Utils.pager(5, 1, Permission.PERMISSIONS.values().stream()
+                        player.sendMessage(Utils.pager(5, 1, PERMISSIONS.values().stream()
                             .sorted(Comparator.comparing(Permission::getName))
                             .map(perm -> perm.serialize(Full, player))
                             .map(Serializable2Text::of)
@@ -215,7 +215,7 @@ public class EnclosureCommand {
                 .then(argument("page", IntegerArgumentType.integer(0))
                     .executes(context -> {
                         ServerPlayerEntity player = context.getSource().getPlayer();
-                        context.getSource().sendMessage(Utils.pager(5, IntegerArgumentType.getInteger(context, "page"), Permission.PERMISSIONS.values().stream()
+                        context.getSource().sendMessage(Utils.pager(5, IntegerArgumentType.getInteger(context, "page"), PERMISSIONS.values().stream()
                             .sorted(Comparator.comparing(Permission::getName))
                             .map(perm -> perm.serialize(Full, player))
                             .map(Serializable2Text::of)
@@ -292,13 +292,11 @@ public class EnclosureCommand {
                         ServerPlayerEntity player = context.getSource().getPlayer();
                         assert player != null;
                         Session session = sessionOf(context.getSource());
-                        session.pos1 = player.getBlockPos();
-                        session.pos2 = player.getBlockPos();
                         int expandX = (limits.maxXRange - 1) / 2;
                         int expandZ = (limits.maxZRange - 1) / 2;
                         session.setWorld(player.getWorld());
-                        session.setPos1(player.getBlockPos().add(-expandX, limits.minY, -expandZ));
-                        session.setPos2(player.getBlockPos().add(expandX, limits.maxY, expandZ));
+                        session.setPos1(new BlockPos(player.getBlockPos().getX() - expandX, limits.minY, player.getBlockPos().getZ() - expandZ));
+                        session.setPos2(new BlockPos(player.getBlockPos().getX() + expandX, Math.min(limits.maxY, limits.maxHeight + limits.minY - 1), player.getBlockPos().getZ() + expandZ));
                         session.setOwner(player.getUuid());
                         return createEnclosure(context);
                     }))))
@@ -566,10 +564,7 @@ public class EnclosureCommand {
                     Arrays.stream(limits.getClass().getFields()).map(field -> {
                             try {
                                 return Text.literal("\n")
-                                    .append(TrT.of("enclosure.limit." + Utils.camelCaseToSnakeCase(field.getName()))
-                                        .append(": ")
-
-                                        .styled(style -> style.withColor(Formatting.GOLD)))
+                                    .append(TrT.limit(field).append(": ").styled(style -> style.withColor(Formatting.GOLD)))
                                     .append(field.get(limits).toString());
                             } catch (IllegalAccessException ignored) {
                                 return null;
@@ -618,7 +613,7 @@ public class EnclosureCommand {
                         error(ADMIN.getNoPermissionMsg(playerExecutor));
                     }
                     Boolean value = getOptionalBoolean(context).orElse(null);
-                    Permission permission = Permission.get(StringArgumentType.getString(context, "permission"));
+                    Permission permission = get(StringArgumentType.getString(context, "permission"));
                     if (permission == null) {
                         context.getSource().sendMessage(TrT.of("enclosure.message.invalid_permission"));
                         return;
@@ -651,17 +646,17 @@ public class EnclosureCommand {
                 (node, command, string) -> {
                     switch (string) {
                         case "global" -> node.then(literal("global")
-                            .then(permissionArgument(Permission.Target.Enclosure)
+                            .then(permissionArgument(Target.Enclosure)
                                 .then(optionalBooleanArgument()
                                     .executes(command))));
                         case "user" -> node.then(literal("user")
                             .then(offlinePlayerArgument()
-                                .then(permissionArgument(Permission.Target.Player)
+                                .then(permissionArgument(Target.Player)
                                     .then(optionalBooleanArgument()
                                         .executes(command)))));
                         case "uuid" -> node.then(literal("uuid")
                             .then(argument("uuid", UuidArgumentType.uuid())
-                                .then(permissionArgument(Permission.Target.Both)
+                                .then(permissionArgument(Target.Both)
                                     .then(optionalBooleanArgument()
                                         .executes(command)))));
                     }
@@ -671,7 +666,7 @@ public class EnclosureCommand {
             .then(optionalEnclosure(literal("check"),
                 string -> (area, context, extra) -> {
                     boolean value;
-                    Permission permission = Permission.get(StringArgumentType.getString(context, "permission"));
+                    Permission permission = get(StringArgumentType.getString(context, "permission"));
                     if (permission == null) {
                         throw new SimpleCommandExceptionType(TrT.of("enclosure.message.invalid_permission")).create();
                     }
@@ -707,15 +702,15 @@ public class EnclosureCommand {
                 (node, command, string) -> {
                     switch (string) {
                         case "global" -> node.then(literal("global")
-                            .then(permissionArgument(Permission.Target.Enclosure)
+                            .then(permissionArgument(Target.Enclosure)
                                 .executes(command)));
                         case "user" -> node.then(literal("user")
                             .then(offlinePlayerArgument()
-                                .then(permissionArgument(Permission.Target.Player)
+                                .then(permissionArgument(Target.Player)
                                     .executes(command))));
                         case "uuid" -> node.then(literal("uuid")
                             .then(argument("uuid", UuidArgumentType.uuid())
-                                .then(permissionArgument(Permission.Target.Both)
+                                .then(permissionArgument(Target.Both)
                                     .executes(command))));
                     }
                 },
@@ -853,7 +848,7 @@ public class EnclosureCommand {
                     .executes(handleException(context -> {
                         ServerPlayerEntity executor = context.getSource().getPlayer();
                         String name = StringArgumentType.getString(context, "name");
-                        if (name.length() > ServerMain.commonConfig.maxEnclosureNameLength) {
+                        if (name.length() > commonConfig.maxEnclosureNameLength) {
                             error(TrT.of("enclosure.message.res_name_too_long"), context);
                         }
                         Session session = sessionOf(context.getSource());
@@ -899,6 +894,7 @@ public class EnclosureCommand {
             .then(literal("experimental")
                 .requires(source -> source.hasPermissionLevel(4))
                 .then(literal("backup")
+                    .requires(source -> source.hasPermissionLevel(4))
                     .then(literal("save")
                         .then(landArgument()
                             .executes(handleException(context -> {
@@ -1305,6 +1301,7 @@ public class EnclosureCommand {
             .createWithContext(reader);
     }
 
+    @Contract("_ -> fail")
     private static void error(Text text) throws CommandSyntaxException {
         throw new SimpleCommandExceptionType(text).create();
     }
@@ -1312,7 +1309,7 @@ public class EnclosureCommand {
     private static void checkSession(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
         Session session = sessionOf(context.getSource());
         if (session.world == null || session.pos1 == null || session.pos2 == null) {
-            throw new SimpleCommandExceptionType(TrT.of("enclosure.message.null_select_point")).create();
+            error(TrT.of("enclosure.message.null_select_point"));
         }
     }
 

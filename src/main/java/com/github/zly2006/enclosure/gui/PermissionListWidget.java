@@ -115,18 +115,16 @@ public class PermissionListWidget extends ElementListWidget<PermissionListWidget
             }
             if (buttonWidget.isHovered()) {
                 parent.renderTooltip(matrices, List.of(
-                        Text.translatable("enclosure.widget.click.left").styled(style -> style.withColor(Formatting.GREEN)),
-                        Text.translatable("enclosure.widget.click.right").styled(style -> style.withColor(Formatting.RED))
+                    Text.translatable("enclosure.widget.click.left").styled(style -> style.withColor(Formatting.GREEN)),
+                    Text.translatable("enclosure.widget.click.right").styled(style -> style.withColor(Formatting.RED))
                 ), mouseX, mouseY);
             }
             else if (hovered) {
                 parent.renderTooltip(matrices,
-                        List.of(permission.getDescription(),
-                                Text.translatable("enclosure.widget.default_value_is").setStyle(Style.EMPTY.withColor(Formatting.GOLD))
-                                        .append(" ")
-                                        .append(value(permission.getDefaultValue()))),
-                        mouseX,
-                        mouseY);
+                    List.of(permission.getDescription(),
+                        Text.translatable("enclosure.widget.default_value_is").setStyle(Style.EMPTY.withColor(Formatting.GOLD))
+                            .append(" ").append(value(permission.getDefaultValue()))),
+                    mouseX, mouseY);
             }
         }
 

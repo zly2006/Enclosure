@@ -45,6 +45,7 @@ public class ClickableTextWidget implements Element, Drawable, Selectable {
     int x;
     int y;
     int width;
+    int renderedWidth;
     private int height;
     TextRenderer textRenderer;
     public int getHeight() {
@@ -67,7 +68,7 @@ public class ClickableTextWidget implements Element, Drawable, Selectable {
     }
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
-        if (mouseX >= x && mouseX <= x + width) {
+        if (mouseX >= x && mouseX <= x + renderedWidth) {
             if (mouseY >= y && mouseY <= y + height) {
                 selected = true;
                 if (onClick != null) {
@@ -104,6 +105,11 @@ public class ClickableTextWidget implements Element, Drawable, Selectable {
             width = Math.min(textRenderer.getWidth(text), parent.width);
         }
         List<OrderedText> orderedTexts = textRenderer.wrapLines(text, width);
+        if (orderedTexts.size() == 1) {
+            renderedWidth = textRenderer.getWidth(orderedTexts.get(0));
+        } else {
+            renderedWidth = width;
+        }
         for (OrderedText orderedText : orderedTexts) {
             textRenderer.draw(matrices, orderedText, x, y + height, 0xffffff);
             height += textRenderer.fontHeight + 1;
