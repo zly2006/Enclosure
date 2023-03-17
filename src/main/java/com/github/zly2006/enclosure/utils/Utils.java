@@ -33,6 +33,7 @@ public class Utils {
                 || entity instanceof IronGolemEntity
                 || entity instanceof SnowGolemEntity;
     }
+
     public static boolean isMonster(Entity entity) {
         return entity instanceof HostileEntity;
     }
@@ -43,6 +44,12 @@ public class Utils {
 
     public static <T extends Serializable2Text> Text pager(int size, int page, List<T> list, String command, @Nullable ServerPlayerEntity player) {
         int totalPage = (list.size() + size - 1) / size;
+        if (page < 1 || page > totalPage) { // 如果选取页码超过范围限制，则采用第一页
+            page = 1;
+        }
+        boolean firstPage = page == 1;
+        boolean lastPage = page == totalPage;
+
         MutableText ret = TrT.of("enclosure.menu.page.0")
                 .append(String.valueOf(page))
                 .append(TrT.of("enclosure.menu.page.1"))
@@ -53,15 +60,15 @@ public class Utils {
             ret.append("\n");
         }
         ret.append(TrT.of("enclosure.menu.previous")
-                .setStyle(Style.EMPTY.withColor(page <= 1 ? Formatting.GRAY : Formatting.DARK_GREEN)
-                        .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Text.of("Page " + (page - 1))))
-                        .withClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND,
+                .setStyle(Style.EMPTY.withColor(firstPage ? Formatting.GRAY : Formatting.DARK_GREEN)
+                        .withHoverEvent(firstPage ? null : new HoverEvent(HoverEvent.Action.SHOW_TEXT, Text.of("Page " + (page - 1))))
+                        .withClickEvent(firstPage ? null : new ClickEvent(ClickEvent.Action.RUN_COMMAND,
                                 "%s %d".formatted(command, page - 1)))));
         ret.append("    ");
         ret.append(TrT.of("enclosure.menu.next")
-                .setStyle(Style.EMPTY.withColor(page >= totalPage ? Formatting.GRAY : Formatting.DARK_GREEN)
-                        .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Text.of("Page " + (page + 1))))
-                        .withClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND,
+                .setStyle(Style.EMPTY.withColor(lastPage ? Formatting.GRAY : Formatting.DARK_GREEN)
+                        .withHoverEvent(lastPage ? null : new HoverEvent(HoverEvent.Action.SHOW_TEXT, Text.of("Page " + (page + 1))))
+                        .withClickEvent(lastPage ? null : new ClickEvent(ClickEvent.Action.RUN_COMMAND,
                                 "%s %d".formatted(command, page + 1)))));
         return ret;
     }
@@ -113,6 +120,7 @@ public class Utils {
         }
         return sb.toString();
     }
+
     public static boolean commonOnPlayerDamage(DamageSource source, BlockPos pos, World world, Permission permission) {
         if (world.isClient) {
             return true;
@@ -129,6 +137,7 @@ public class Utils {
         }
         return true;
     }
+
     public static boolean commonOnDamage(DamageSource source, BlockPos pos, World world, Permission permission) {
         if (world.isClient) {
             return true;
@@ -142,8 +151,7 @@ public class Utils {
                 attacker.sendMessage(permission.getNoPermissionMsg(attacker), false);
                 return false;
             }
-        }
-        else {
+        } else {
             return area == null || area.hasPubPerm(permission);
         }
         return true;
@@ -167,11 +175,20 @@ public class Utils {
         }
         return new LiteralText(uuid.toString());
     }
+
     public static BlockPos toBlockPos(Vec3d vec3d) {
         return new BlockPos((int) vec3d.x, (int) vec3d.y, (int) vec3d.z);
     }
 
     public static BlockPos toBlockPos(double g, double h, double j) {
         return new BlockPos((int) g, (int) h, (int) j);
+    }
+
+    public static boolean mark4updateChecked(ServerWorld world, BlockPos pos) {
+        if (world.getWorldBorder().contains(pos) && pos.getY() >= world.getBottomY() && pos.getY() < world.getTopY()) {
+            world.getChunkManager().markForUpdate(pos);
+            return true;
+        }
+        return false;
     }
 }

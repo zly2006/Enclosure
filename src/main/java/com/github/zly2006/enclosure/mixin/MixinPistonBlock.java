@@ -1,6 +1,7 @@
 package com.github.zly2006.enclosure.mixin;
 
 import com.github.zly2006.enclosure.utils.Permission;
+import com.github.zly2006.enclosure.utils.Utils;
 import net.fabricmc.api.Environment;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
@@ -61,14 +62,11 @@ public class MixinPistonBlock extends FacingBlock {
                 // 活塞向内收
                 pistonPos = pos.offset(pistonDir.getOpposite(), 2);
             }
-            if (!checkPermissionInDifferentEnclosure((ServerWorld) world, pistonPos, newPos, Permission.PISTON)) {
-                serverWorld.getChunkManager().markForUpdate(pos);
-                serverWorld.getChunkManager().markForUpdate(newPos);
-                cir.setReturnValue(false);
-            }
-            if (!checkPermissionInDifferentEnclosure(serverWorld, pos, newPos, Permission.PISTON)) {
-                serverWorld.getChunkManager().markForUpdate(pos);
-                serverWorld.getChunkManager().markForUpdate(newPos);
+            if (!checkPermissionInDifferentEnclosure(serverWorld, pistonPos, newPos, Permission.PISTON) ||
+                !checkPermissionInDifferentEnclosure(serverWorld, pos, newPos, Permission.PISTON)) {
+                // this method will be called even the target pos is out of the world.
+                Utils.mark4updateChecked(serverWorld, pos);
+                Utils.mark4updateChecked(serverWorld, newPos);
                 cir.setReturnValue(false);
             }
         }

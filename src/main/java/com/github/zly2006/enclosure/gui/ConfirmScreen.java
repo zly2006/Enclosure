@@ -24,21 +24,15 @@ public class ConfirmScreen extends Screen {
         this.parent = parent;
         this.message = message;
         this.action = action;
-        yesButton = ButtonWidget.builder(new TranslatableText("enclosure.widget.yes"), button -> {
-                action.run();
-                assert client != null;
-                client.setScreen(parent);
-            })
-            .position(parent.width / 2 - 95, 0)
-            .size(90, 20)
-            .build();
-        noButton = ButtonWidget.builder(new TranslatableText("enclosure.widget.no"), button -> {
-                assert client != null;
-                client.setScreen(parent);
-            })
-            .position(parent.width / 2 + 5, 0)
-            .size(90, 20)
-            .build();
+        yesButton = new ButtonWidget(parent.width / 2 - 95, 0, 90, 20, new TranslatableText("enclosure.widget.yes"), button -> {
+            action.run();
+            assert client != null;
+            client.setScreen(parent);
+        });
+        noButton = new ButtonWidget(parent.width / 2 + 5, 0, 90, 20, new TranslatableText("enclosure.widget.no"), button -> {
+            assert client != null;
+            client.setScreen(parent);
+        });
         addDrawableChild(yesButton);
         addDrawableChild(noButton);
     }
