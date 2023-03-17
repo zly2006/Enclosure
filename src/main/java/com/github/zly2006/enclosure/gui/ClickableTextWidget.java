@@ -92,7 +92,7 @@ public class ClickableTextWidget implements Element, Drawable, Selectable {
 
     @Override
     public void render(MatrixStack matrices, int mouseX, int mouseY, float delta) {
-        if (mouseX >= x && mouseX <= x + width) {
+        if (mouseX >= x && mouseX <= x + renderedWidth) {
             if (mouseY >= y && mouseY <= y + height) {
                 hovered = true;
                 if (hover != null) {

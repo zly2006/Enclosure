@@ -55,8 +55,8 @@ public class AboutScreen extends Screen {
         for (ClickableTextWidget textWidget : textWidgets) {
             textWidget.x = 10;
             textWidget.y = renderStart;
-            renderStart += textWidget.calcHeight() + 10;
             textWidget.render(matrices, mouseX, mouseY, delta);
+            renderStart += textWidget.getHeight() + 10;
         }
     }
 
