@@ -47,6 +47,7 @@ public class PermissionListWidget extends ElementListWidget<PermissionListWidget
                                 (permission.getTarget().fitEnclosure() && target.fitEnclosure()))
                 .sorted(Comparator.comparing(Permission::getName))
                 .forEach(permission -> addEntry(new PermissionEntry(permission)));
+        //todo 修复我
         setRenderBackground(false); // 不渲染背景
         setRenderHorizontalShadows(true); // 渲染上下两道杠
     }
@@ -96,6 +97,7 @@ public class PermissionListWidget extends ElementListWidget<PermissionListWidget
 
         public PermissionEntry(Permission permission) {
             this.permission = permission;
+            //todo 修复我
             buttonWidget = new SetButtonWidget(0, 0, 40, 20, value(), buttonWidget -> {}, Supplier::get);
         }
 
@@ -126,7 +128,7 @@ public class PermissionListWidget extends ElementListWidget<PermissionListWidget
                     mouseX, mouseY);
             }
         }
-
+        //todo 修复我
         @Override
         public List<? extends Selectable> selectableChildren() {
             return List.of(buttonWidget);
@@ -137,6 +139,7 @@ public class PermissionListWidget extends ElementListWidget<PermissionListWidget
             return List.of(buttonWidget);
         }
         public class SetButtonWidget extends ButtonWidget {
+            //todo 修复我
             public SetButtonWidget(int x, int y, int width, int height, Text message, PressAction onPress, NarrationSupplier narrationSupplier) {
                 super(x, y, width, height, message, onPress, narrationSupplier);
             }
@@ -190,6 +193,7 @@ public class PermissionListWidget extends ElementListWidget<PermissionListWidget
                         .filter(permission -> {
                             if (permission.getName().contains(s))
                                 return true;
+                            //todo 修复我
                             if (permission.getDescription().getContent() instanceof TranslatableTextContent content) {
                                 return Language.getInstance().hasTranslation(content.getKey()) &&
                                         Language.getInstance().get(content.getKey()).contains(s);
@@ -209,7 +213,7 @@ public class PermissionListWidget extends ElementListWidget<PermissionListWidget
             searchWidget.render(matrices, mouseX, mouseY, tickDelta);
             client.textRenderer.draw(matrices, new TranslatableText("enclosure.widget.search"), x, y + 3, 0xFFFFFF);
         }
-
+        //todo 修复我
         @Override
         public List<? extends Selectable> selectableChildren() {
             return List.of(searchWidget);

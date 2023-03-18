@@ -14,7 +14,7 @@ import net.minecraft.text.Text;
 
 import java.util.List;
 import java.util.function.Consumer;
-
+//todo 修复我
 public class ClickableTextWidget implements Element, Drawable, Selectable {
     boolean hovered;
     boolean selected;

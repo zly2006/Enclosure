@@ -5,6 +5,7 @@ import net.minecraft.item.Item;
 import net.minecraft.item.Items;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.HoverEvent;
+import net.minecraft.text.LiteralText;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
@@ -113,8 +114,6 @@ public class Permission implements Serializable2Text {
     public static final Permission WITHER_DESTROY = new Permission("wither_destroy", Permission.Target.Enclosure, false, Items.WITHER_SKELETON_SKULL);
 
     public static final Permission WITHER_ENTER = new Permission("wither_enter", Permission.Target.Enclosure, true, Items.WITHER_SKELETON_SKULL);
-
-    public static final Permission SCULK_SPREAD = new Permission("sculk_spread", Permission.Target.Enclosure, false, Items.SCULK_CATALYST);
 
     public static final Permission DROP_ITEM = new Permission("drop_item", Target.Both, true, Items.DIRT);
 

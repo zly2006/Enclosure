@@ -36,7 +36,7 @@ import java.util.*;
 
 import static com.github.zly2006.enclosure.ServerMain.Instance;
 import static com.github.zly2006.enclosure.ServerMain.minecraftServer;
-
+//todo 修复我
 public class EnclosureArea extends PersistentState implements PermissionHolder {
     int minX;
     int minY;

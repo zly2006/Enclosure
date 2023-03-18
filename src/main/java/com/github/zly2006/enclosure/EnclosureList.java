@@ -17,7 +17,7 @@ import java.util.*;
 
 import static com.github.zly2006.enclosure.ServerMain.DATA_VERSION;
 import static com.github.zly2006.enclosure.ServerMain.Instance;
-
+//todo 修复我
 public class EnclosureList extends PersistentState {
     public static final String DATA_VERSION_KEY = "data_version";
     static final String SUB_ENCLOSURES_KEY = "sub_lands";

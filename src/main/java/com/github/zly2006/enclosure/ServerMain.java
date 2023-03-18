@@ -350,6 +350,7 @@ public class ServerMain implements DedicatedServerModInitializer {
             }
         });
         CommandRegistrationCallback.EVENT.register((dispatcher, environment) -> {
+            //todo 修复我
             ConfirmManager.register(dispatcher, environment);
             EnclosureCommand.register(dispatcher);
             CommandNode<ServerCommandSource> node = dispatcher.getRoot().getChild("enclosure");
@@ -527,6 +528,7 @@ public class ServerMain implements DedicatedServerModInitializer {
             AtomicBoolean update = new AtomicBoolean(false);
             EnclosureList list = world.getChunkManager()
                     .getPersistentStateManager().getOrCreate(nbtCompound -> {
+                        //todo 修复我
                         int version = nbtCompound.getInt(DATA_VERSION_KEY);
                         if (version != DATA_VERSION) {
                             LOGGER.info("Updating enclosure data from version {} to {}", version, DATA_VERSION);

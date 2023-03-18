@@ -43,6 +43,7 @@ public class ConfirmScreen extends Screen {
     public void render(MatrixStack matrices, int mouseX, int mouseY, float delta) {
         parent.render(matrices, 0, 0, delta);
         renderBackground(matrices);
+        //todo 修复我
         RenderSystem.setShaderTexture(0, TEXTURE);
         int height = 150;
         int x = (parent.width - 200) / 2;

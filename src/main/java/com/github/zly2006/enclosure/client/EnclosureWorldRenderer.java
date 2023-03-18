@@ -102,6 +102,7 @@ public abstract class EnclosureWorldRenderer {
         matrices.push();
         RenderSystem.disableCull();
         BufferBuilder bufferBuilder = Tessellator.getInstance().getBuffer();
+        //todo 修复我
         RenderSystem.setShader(GameRenderer::getPositionColorProgram);
 
         bufferBuilder.begin(GL11.GL_QUADS, VertexFormats.POSITION_COLOR);

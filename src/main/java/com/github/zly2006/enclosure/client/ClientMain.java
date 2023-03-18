@@ -37,6 +37,7 @@ public class ClientMain implements ClientModInitializer {
         UUIDCacheS2CPacket.register();
         SyncSelectionS2CPacket.register();
         ConfirmRequestS2CPacket.register();
+        //todo 修复我
         HandledScreens.register(EnclosureScreenHandler.ENCLOSURE_SCREEN_HANDLER, EnclosureScreen::new);
         EnclosureWorldRenderer.register();
         SyncPermissionS2CPacket.register();

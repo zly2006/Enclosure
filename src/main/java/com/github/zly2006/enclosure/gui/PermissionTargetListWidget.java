@@ -41,6 +41,7 @@ public class PermissionTargetListWidget extends ElementListWidget<PermissionTarg
         this.area = area;
         this.fullName = fullName;
         this.parent = parent;
+        //todo 修复我
         setRenderBackground(false); // 不渲染背景
     }
 
@@ -100,7 +101,7 @@ public class PermissionTargetListWidget extends ElementListWidget<PermissionTarg
                 client.openScreen(screen);
             });
         }
-
+        //todo 修复我
         @Override
         public List<? extends Selectable> selectableChildren() {
             return List.of(setButton);
@@ -121,6 +122,7 @@ public class PermissionTargetListWidget extends ElementListWidget<PermissionTarg
             Optional.ofNullable(client.player.networkHandler.getPlayerListEntry(uuid))
                     .map(PlayerListEntry::getSkinTexture)
                     .ifPresent(texture -> {
+                        //todo 修复我
                         RenderSystem.setShaderTexture(0, texture);
                         PlayerSkinDrawer.draw(matrices, x, y, 16);
                     });
@@ -157,7 +159,7 @@ public class PermissionTargetListWidget extends ElementListWidget<PermissionTarg
             searchWidget.render(matrices, mouseX, mouseY, tickDelta);
             client.textRenderer.draw(matrices, new TranslatableText("enclosure.widget.search"), x, y + 3, 0xFFFFFF);
         }
-
+        //todo 修复我
         @Override
         public List<? extends Selectable> selectableChildren() {
             return List.of(searchWidget);

@@ -115,7 +115,7 @@ public class EnclosureGroup implements PermissionHolder {
     public boolean inheritPermission() {
         return true;
     }
-
+    //todo 修复我
     public static class Groups extends PersistentState {
         Map<String, EnclosureGroup> groups = new HashMap<>();
         public Groups() {
