@@ -34,11 +34,11 @@ public abstract class MixinParrotEntity extends AnimalEntity {
     @Inject(at = @At("HEAD"), method = "interactMob", cancellable = true)
     private void interactMob(PlayerEntity p, Hand hand, CallbackInfoReturnable<ActionResult> cir) {
         if (p instanceof ServerPlayerEntity player) {
-            if (player.getStackInHand(hand).isOf(COOKIE)) {
-                EnclosureArea area = Instance.getAllEnclosures((ServerWorld) getWorld()).getArea(getBlockPos());
+            if (player.getStackInHand(hand).getItem()==COOKIE) {
+                EnclosureArea area = Instance.getAllEnclosures((ServerWorld) getEntityWorld()).getArea(getBlockPos());
 
                 if (area != null && !area.areaOf(getBlockPos()).hasPerm(player, PARROT_COOKIE)) {
-                    player.sendMessage(PARROT_COOKIE.getNoPermissionMsg(player));
+                    player.sendMessage(PARROT_COOKIE.getNoPermissionMsg(player),false);
                     cir.setReturnValue(ActionResult.FAIL);
                 }
             }

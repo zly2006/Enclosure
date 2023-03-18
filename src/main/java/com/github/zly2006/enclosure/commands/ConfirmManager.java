@@ -3,7 +3,7 @@ package com.github.zly2006.enclosure.commands;
 import com.github.zly2006.enclosure.utils.TrT;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import net.minecraft.command.CommandRegistryAccess;
+import net.fabricmc.fabric.api.registry.CommandRegistry;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.ClickEvent;
@@ -34,18 +34,18 @@ public class ConfirmManager {
         );
         if (player == null) {
             runnableMap.put(CONSOLE, runnable);
-            minecraftServer.getCommandSource().sendMessage(TrT.of("enclosure.message.operation_confirm"));
+            minecraftServer.getCommandSource().sendFeedback(TrT.of("enclosure.message.operation_confirm"),false);
         } else {
             runnableMap.put(player.getUuid(), runnable);
-            player.sendMessage(text);
+            player.sendMessage(text,false);
         }
     }
 
-    public static void register(@NotNull CommandDispatcher<ServerCommandSource> dispatcher, CommandRegistryAccess registryAccess, RegistrationEnvironment environment) {
+    public static void register(@NotNull CommandDispatcher<ServerCommandSource> dispatcher, RegistrationEnvironment environment) {
         dispatcher.register(literal("enclosure")
                 .then(literal("confirm")
                         .executes(context -> {
-                            if (context.getSource().isExecutedByPlayer()) {
+                            if (context.getSource().getPlayer() != null) {
                                 ServerPlayerEntity player = context.getSource().getPlayer();
                                 assert player != null;
                                 if (runnableMap.containsKey(player.getUuid())) {

@@ -6,6 +6,7 @@ import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.OrderedText;
 import net.minecraft.text.Text;
+import net.minecraft.text.TranslatableText;
 import net.minecraft.util.Identifier;
 
 import java.util.List;
@@ -23,24 +24,21 @@ public class ConfirmScreen extends Screen {
         this.parent = parent;
         this.message = message;
         this.action = action;
-        yesButton = ButtonWidget.builder(Text.translatable("enclosure.widget.yes"), button -> {
-                action.run();
-                assert client != null;
-                client.setScreen(parent);
-            })
-            .position(parent.width / 2 - 95, 0)
-            .size(90, 20)
-            .build();
-        noButton = ButtonWidget.builder(Text.translatable("enclosure.widget.no"), button -> {
-                assert client != null;
-                client.setScreen(parent);
-            })
-            .position(parent.width / 2 + 5, 0)
-            .size(90, 20)
-            .build();
-        addDrawableChild(yesButton);
-        addDrawableChild(noButton);
+        yesButton = new ButtonWidget(parent.width / 2 - 95, 0, 90, 20,
+                new TranslatableText("enclosure.widget.yes"),
+                button -> {
+                    action.run();
+                    assert client != null;
+                    client.openScreen(parent);
+                });
+        noButton = new ButtonWidget(parent.width / 2 + 5, 0, 90, 20,
+                new TranslatableText("enclosure.widget.no"),
+                button -> {
+                    assert client != null;
+                    client.openScreen(parent);
+                });
     }
+
     @Override
     public void render(MatrixStack matrices, int mouseX, int mouseY, float delta) {
         parent.render(matrices, 0, 0, delta);
@@ -56,8 +54,8 @@ public class ConfirmScreen extends Screen {
             textRenderer.draw(matrices, line, x + 10, linesY, 0xFFFFFF);
             linesY += 10;
         }
-        yesButton.setY(y + height - 30);
-        noButton.setY(y + height - 30);
+        yesButton.y = y + height - 30;
+        noButton.y = y + height - 30;
         yesButton.render(matrices, mouseX, mouseY, delta);
         noButton.render(matrices, mouseX, mouseY, delta);
     }

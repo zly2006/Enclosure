@@ -13,7 +13,6 @@ import net.minecraft.server.world.ServerWorld;
 import net.minecraft.state.property.BooleanProperty;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.WorldAccess;
-import net.minecraft.world.event.GameEvent;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -30,23 +29,23 @@ public class MixinCampfireBlock {
 
     @Shadow @Final public static BooleanProperty LIT;
 
-    @Inject(at = @At("HEAD"), method = "extinguish", cancellable = true)
-    private static void onExtinguish(Entity entity, WorldAccess world, BlockPos pos, BlockState state, CallbackInfo ci){
-        if(world instanceof ServerWorld){
-            EnclosureList list = ServerMain.Instance.getAllEnclosures((ServerWorld) world);
-            EnclosureArea area = list.getArea(pos);
-            if (area != null && !area.areaOf(pos).hasPubPerm(Permission.USE_CAMPFIRE)) {
-                if(entity instanceof ServerPlayerEntity player){
-                    player.sendMessage(USE_CAMPFIRE.getNoPermissionMsg(player));
-                }
-
-                world.setBlockState(pos, state.with(WATERLOGGED, false).with(LIT, true), 252);
-                world.emitGameEvent(entity, GameEvent.BLOCK_CHANGE, pos);
-
-                ci.cancel();
-            }
-        }
-    }
+//    @Inject(at = @At("HEAD"), method = "extinguish", cancellable = true)
+//    private static void onExtinguish(Entity entity, WorldAccess world, BlockPos pos, BlockState state, CallbackInfo ci){
+//        if(world instanceof ServerWorld){
+//            EnclosureList list = ServerMain.Instance.getAllEnclosures((ServerWorld) world);
+//            EnclosureArea area = list.getArea(pos);
+//            if (area != null && !area.areaOf(pos).hasPubPerm(Permission.USE_CAMPFIRE)) {
+//                if(entity instanceof ServerPlayerEntity player){
+//                    player.sendMessage(USE_CAMPFIRE.getNoPermissionMsg(player),false);
+//                }
+//
+//                world.setBlockState(pos, state.with(WATERLOGGED, false).with(LIT, true), 252);
+//                world.emitGameEvent(entity, GameEvent.BLOCK_CHANGE, pos);
+//
+//                ci.cancel();
+//            }
+//        }
+//    }
 
     @Inject(at = @At("HEAD"), method = "tryFillWithFluid", cancellable = true)
     private void onFillWithFluid(WorldAccess world, BlockPos pos, BlockState state, FluidState fluidState, CallbackInfoReturnable<Boolean> cir){

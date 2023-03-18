@@ -1,6 +1,7 @@
 package com.github.zly2006.enclosure.client.mixin;
 
 import net.minecraft.client.network.MultiplayerServerListPinger;
+import net.minecraft.network.ClientConnection;
 import net.minecraft.network.listener.ClientQueryPacketListener;
 import net.minecraft.network.listener.PacketListener;
 import net.minecraft.network.packet.s2c.query.QueryPongS2CPacket;
@@ -32,9 +33,10 @@ public class MixinServerPing {
             }
 
             @Override
-            public boolean isConnectionOpen() {
-                return listener.isConnectionOpen();
+            public ClientConnection getConnection() {
+                return listener.getConnection();
             }
+
         };
     }
 }

@@ -29,7 +29,7 @@ import static com.github.zly2006.enclosure.utils.Permission.PLACE_BLOCK;
 
 @Mixin(PlayerEntity.class)
 public abstract class MixinPlayerEntity extends LivingEntity {
-    @Shadow public abstract boolean isPlayer();
+
 
     @Shadow @Final private PlayerInventory inventory;
 
@@ -37,7 +37,7 @@ public abstract class MixinPlayerEntity extends LivingEntity {
 
     @Shadow public abstract void resetStat(Stat<?> stat);
 
-    @Shadow public abstract void remove(RemovalReason reason);
+
 
     public MixinPlayerEntity(EntityType<? extends LivingEntity> type, World world) {
         super(type, world);
@@ -46,9 +46,9 @@ public abstract class MixinPlayerEntity extends LivingEntity {
     @Inject(method = "interact", at = @At("HEAD"), cancellable = true)
     private void protectInteract(Entity entity, Hand hand, CallbackInfoReturnable<ActionResult> cir) {
         EntityHitResult hitResult = new EntityHitResult(entity);
-        NumberRangeArgumentType.floatRange();
+        new NumberRangeArgumentType.FloatRangeArgumentType();
 
-        ActionResult result = PlayerUseEntityEvent.onPlayerUseEntity(inventory.player, getWorld(), hand, entity, hitResult);
+        ActionResult result = PlayerUseEntityEvent.onPlayerUseEntity(inventory.player, getEntityWorld(), hand, entity, hitResult);
         if (result != ActionResult.PASS) {
             cir.setReturnValue(result);
         }
@@ -59,7 +59,7 @@ public abstract class MixinPlayerEntity extends LivingEntity {
     private void protectPlacing(BlockPos pos, Direction facing, ItemStack stack, CallbackInfoReturnable<Boolean> cir) {
         if (((LivingEntity) this) instanceof ServerPlayerEntity serverPlayer) {
             if (!ServerMain.Instance.checkPermission(serverPlayer, PLACE_BLOCK, pos)) {
-                serverPlayer.sendMessage(PLACE_BLOCK.getNoPermissionMsg(serverPlayer));
+                serverPlayer.sendMessage(PLACE_BLOCK.getNoPermissionMsg(serverPlayer),false);
                 cir.setReturnValue(false);
             }
         }

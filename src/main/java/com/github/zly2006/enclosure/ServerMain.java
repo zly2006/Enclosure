@@ -22,7 +22,7 @@ import com.mojang.brigadier.tree.CommandNode;
 import net.fabricmc.api.DedicatedServerModInitializer;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
+import net.fabricmc.fabric.api.command.v1.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerWorldEvents;
 import net.fabricmc.fabric.api.event.player.*;
@@ -36,12 +36,13 @@ import net.minecraft.entity.decoration.ArmorStandEntity;
 import net.minecraft.entity.passive.*;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.*;
-import net.minecraft.registry.RegistryKey;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
+import net.minecraft.text.LiteralText;
+import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.text.TextColor;
 import net.minecraft.util.ActionResult;
@@ -50,11 +51,13 @@ import net.minecraft.util.TypedActionResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.registry.RegistryKey;
 import net.minecraft.world.World;
+import net.minecraft.world.explosion.Explosion;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
@@ -76,18 +79,18 @@ public class ServerMain implements DedicatedServerModInitializer {
     public static final String MOD_ID = "enclosure"; // 模组标识符
     @SuppressWarnings("OptionalGetWithoutIsPresent")
     public static final Version MOD_VERSION = FabricLoader.getInstance().getModContainer(MOD_ID).get().getMetadata().getVersion(); // 模组版本
-    public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
+    public static final Logger LOGGER = LogManager.getLogger(MOD_ID);
     public static final Gson GSON = new GsonBuilder().disableHtmlEscaping().setPrettyPrinting().create();
     public static final Path OLD_CONF_PATH = Path.of("config", "enclosure", "old-config");
     private static final Path LIMITS_PATH = Path.of("config", "enclosure", "limits.json");
     private static final Path COMMON_PATH = Path.of("config", "enclosure", "common.json");
     public static final int DATA_VERSION = 2;
     public static ServerMain Instance;
-    public static final Text HEADER = Text.empty()
-            .append(Text.literal("[").styled(style -> style.withColor(TextColor.fromRgb(0x00FF00))))
-            .append(Text.literal("Enclosure").styled(style -> style.withColor(TextColor.fromRgb(0x00FFFF))))
-            .append(Text.literal("]").styled(style -> style.withColor(TextColor.fromRgb(0x00FF00))))
-            .append(Text.literal(" ").formatted(Formatting.RESET));
+        public static final Text HEADER = new LiteralText("")
+            .append(new LiteralText("[").styled(style -> style.withColor(TextColor.fromRgb(0x00FF00))))
+                .append(new LiteralText("Enclosure").styled(style -> style.withColor(TextColor.fromRgb(0x00FFFF))))
+                .append(new LiteralText("]").styled(style -> style.withColor(TextColor.fromRgb(0x00FF00))))
+            .append(new LiteralText(" ").formatted(Formatting.RESET));
     public static boolean PAID = true;
     Map<RegistryKey<World>, EnclosureList> enclosures = new HashMap<>();
     Item operationItem;
@@ -123,11 +126,9 @@ public class ServerMain implements DedicatedServerModInitializer {
                 || context.block instanceof WeepingVinesPlantBlock
                 || context.block instanceof PumpkinBlock));
         put(NAMETAG, context -> context.item == Items.NAME_TAG && context.entity != null);
-        put(PICK_BERRIES, context -> context.block == Blocks.SWEET_BERRY_BUSH ||
-                context.block == Blocks.CAVE_VINES_PLANT ||
-                context.block == Blocks.CAVE_VINES);
+        put(PICK_BERRIES, context -> context.block == Blocks.SWEET_BERRY_BUSH);
         put(DYE, context -> context.item instanceof DyeItem && context.entity instanceof SheepEntity);
-        put(HORSE, context -> context.entity instanceof AbstractHorseEntity || context.entity instanceof StriderEntity || context.entity instanceof PigEntity);
+        put(HORSE, context -> context.entity instanceof HorseEntity || context.entity instanceof StriderEntity || context.entity instanceof PigEntity);
         put(FEED_ANIMAL, context -> context.entity instanceof AnimalEntity animal && animal.isBreedingItem(context.item.getDefaultStack()));
         put(FISH, context -> context.item == Items.FISHING_ROD);
         put(USE_BONE_MEAL, context -> context.item == Items.BONE_MEAL);
@@ -136,7 +137,7 @@ public class ServerMain implements DedicatedServerModInitializer {
                 (context.block == Blocks.GRASS_BLOCK && (context.item instanceof ShovelItem || context.item == Items.BONE_MEAL)) ||
                 (context.block == Blocks.DIRT && context.item instanceof PotionItem potion));
         put(USE_JUKEBOX, context -> context.block == Blocks.JUKEBOX);
-        put(REDSTONE, context -> context.block instanceof ButtonBlock
+        put(REDSTONE, context -> context.block instanceof AbstractButtonBlock
                 || context.block == Blocks.LEVER
                 || context.block == Blocks.DAYLIGHT_DETECTOR);
         put(STRIP_LOG, context ->
@@ -145,12 +146,10 @@ public class ServerMain implements DedicatedServerModInitializer {
                 context.block == Blocks.OAK_LOG ||
                 context.block == Blocks.DARK_OAK_LOG ||
                 context.block == Blocks.JUNGLE_LOG ||
-                context.block == Blocks.MANGROVE_LOG ||
                 context.block == Blocks.SPRUCE_LOG) &&
                 context.item instanceof AxeItem);
         put(VEHICLE, context -> context.item instanceof BoatItem || context.item instanceof MinecartItem);
-        put(ALLAY, context -> context.entity instanceof AllayEntity);
-        put(CAULDRON, context -> context.block instanceof AbstractCauldronBlock);
+        put(CAULDRON, context -> context.block instanceof CauldronBlock);
     }};
 
     record UseContext(@NotNull ServerPlayerEntity player, @Nullable BlockPos pos, @Nullable BlockState state,
@@ -247,7 +246,7 @@ public class ServerMain implements DedicatedServerModInitializer {
     public boolean checkPermission(ServerPlayerEntity player, Permission permission, BlockPos pos) {
         if (player.getCommandSource().hasPermissionLevel(4) && permission.isIgnoreOp())
             return true;
-        var enclosure = getAllEnclosures(player.getWorld()).getArea(pos);
+        var enclosure = getAllEnclosures(player.getServerWorld()).getArea(pos);
         if (enclosure == null) {
             return true;
         } else {
@@ -347,11 +346,11 @@ public class ServerMain implements DedicatedServerModInitializer {
 
         ServerPlayConnectionEvents.JOIN.register((handler, sender, server) -> {
             if (minecraftServer.getPlayerManager().isOperator(handler.player.getGameProfile()) && commonConfig.developMode) {
-                handler.player.sendMessage(Text.literal("This server is running in development environment, and this is dangerous! To turn this feature off, please modify the config file.").formatted(Formatting.RED), false);
+                handler.player.sendMessage(new LiteralText("This server is running in development environment, and this is dangerous! To turn this feature off, please modify the config file.").formatted(Formatting.RED), false);
             }
         });
-        CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> {
-            ConfirmManager.register(dispatcher, registryAccess, environment);
+        CommandRegistrationCallback.EVENT.register((dispatcher, environment) -> {
+            ConfirmManager.register(dispatcher, environment);
             EnclosureCommand.register(dispatcher);
             CommandNode<ServerCommandSource> node = dispatcher.getRoot().getChild("enclosure");
             if (commonConfig.developMode) {
@@ -378,7 +377,7 @@ public class ServerMain implements DedicatedServerModInitializer {
                                             Vec3d pos = Vec3ArgumentType.getVec3(context, "pos");
                                             float radius = FloatArgumentType.getFloat(context, "radius");
                                             ServerWorld world = context.getSource().getWorld();
-                                            world.createExplosion(null, pos.x, pos.y, pos.z, radius, World.ExplosionSourceType.TNT);
+                                            world.createExplosion(null, pos.x, pos.y, pos.z, radius, Explosion.DestructionType.DESTROY);
                                             return 0;
                                         }))));
             }
@@ -390,7 +389,7 @@ public class ServerMain implements DedicatedServerModInitializer {
         PlayerBlockBreakEvents.BEFORE.register((world, player, pos, state, blockEntity) -> {
             if (player instanceof ServerPlayerEntity serverPlayer) {
                 if (!checkPermission(serverPlayer, BREAK_BLOCK, pos)) {
-                    player.sendMessage(BREAK_BLOCK.getNoPermissionMsg(player));
+                    player.sendMessage(BREAK_BLOCK.getNoPermissionMsg(player),false);
                     return false;
                 }
             }
@@ -412,7 +411,7 @@ public class ServerMain implements DedicatedServerModInitializer {
         });
         UseBlockCallback.EVENT.register((player, world, hand, hitResult) -> {
             if (player instanceof ServerPlayerEntity serverPlayer) {
-                BlockState state = player.getWorld().getBlockState(hitResult.getBlockPos());
+                BlockState state = ((ServerPlayerEntity) player).getServerWorld().getBlockState(hitResult.getBlockPos());
                 Block block = state.getBlock();
                 UseContext context = new UseContext(serverPlayer, hitResult.getBlockPos(), state, block, player.getStackInHand(hand).getItem(), null);
 
@@ -430,8 +429,8 @@ public class ServerMain implements DedicatedServerModInitializer {
                         return ActionResult.PASS;
                     }
                     else {
-                        player.currentScreenHandler.syncState();
-                        player.sendMessage(PLACE_BLOCK.getNoPermissionMsg(player));
+                        serverPlayer.refreshScreenHandler(serverPlayer.currentScreenHandler);
+                        player.sendMessage(PLACE_BLOCK.getNoPermissionMsg(player),false);
                         return ActionResult.FAIL;
                     }
                 }
@@ -441,8 +440,8 @@ public class ServerMain implements DedicatedServerModInitializer {
                                 return ActionResult.PASS;
                             }
                             else {
-                                player.currentScreenHandler.syncState();
-                                player.sendMessage(permission.getNoPermissionMsg(player));
+                                serverPlayer.refreshScreenHandler(serverPlayer.currentScreenHandler);
+                                player.sendMessage(permission.getNoPermissionMsg(player),false);
                                 return ActionResult.FAIL;
                             }
                         })
@@ -466,8 +465,8 @@ public class ServerMain implements DedicatedServerModInitializer {
                                 return TypedActionResult.pass(serverPlayer.getStackInHand(hand));
                             }
                             else {
-                                player.currentScreenHandler.syncState();
-                                player.sendMessage(permission.getNoPermissionMsg(player));
+                                serverPlayer.refreshScreenHandler(serverPlayer.currentScreenHandler);
+                                player.sendMessage(permission.getNoPermissionMsg(player),false);
                                 return TypedActionResult.fail(serverPlayer.getStackInHand(hand));
                             }
                         })
@@ -482,7 +481,7 @@ public class ServerMain implements DedicatedServerModInitializer {
         UseEntityCallback.EVENT.register((player, world, hand, entity, hitResult) -> {
             if (entity instanceof ArmorStandEntity) {
                 if (!checkPermission(world, entity.getBlockPos(), player, ARMOR_STAND)) {
-                    player.sendMessage(ARMOR_STAND.getNoPermissionMsg(player));
+                    player.sendMessage(ARMOR_STAND.getNoPermissionMsg(player),false);
                     return ActionResult.FAIL;
                 }
             }
@@ -501,8 +500,8 @@ public class ServerMain implements DedicatedServerModInitializer {
                                 return ActionResult.PASS;
                             }
                             else {
-                                player.currentScreenHandler.syncState();
-                                player.sendMessage(permission.getNoPermissionMsg(player));
+                                serverPlayer.refreshScreenHandler(serverPlayer.currentScreenHandler);
+                                player.sendMessage(permission.getNoPermissionMsg(player),false);
                                 return ActionResult.FAIL;
                             }
                         })

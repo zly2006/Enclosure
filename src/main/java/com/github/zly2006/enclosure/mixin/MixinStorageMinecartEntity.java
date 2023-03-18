@@ -26,9 +26,9 @@ public abstract class MixinStorageMinecartEntity extends AbstractMinecartEntity 
     @Inject(method = "canPlayerUse", at = @At("HEAD"), cancellable = true)
     private void canPlayerUse(PlayerEntity player, CallbackInfoReturnable<Boolean> cir) {
         if (player instanceof ServerPlayerEntity serverPlayer) {
-            EnclosureArea area = Instance.getAllEnclosures((ServerWorld) this.getWorld()).getArea(getBlockPos());
+            EnclosureArea area = Instance.getAllEnclosures((ServerWorld) this.getEntityWorld()).getArea(getBlockPos());
             if (area != null && !area.areaOf(getBlockPos()).hasPerm(serverPlayer, Permission.CONTAINER)) {
-                serverPlayer.sendMessage(CONTAINER.getNoPermissionMsg(serverPlayer));
+                serverPlayer.sendMessage(CONTAINER.getNoPermissionMsg(serverPlayer),false);
                 cir.setReturnValue(false);
             }
         }

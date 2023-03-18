@@ -126,10 +126,6 @@ public class Permission implements Serializable2Text {
 
     public static final Permission ARMOR_STAND = new Permission("armor_stand", Target.Both, false, Items.ARMOR_STAND);
 
-    public static final Permission ALLAY = new Permission("allay", Target.Both, false, Items.ALLAY_SPAWN_EGG);
-
-    public static final Permission CONSUMPTIVELY_EXTINGUISH = new Permission("consumptively_extinguish", Target.Enclosure, false, Items.POWDER_SNOW_BUCKET);
-
     public static final Permission CAULDRON = new Permission("cauldron", Target.Both, false, Items.CAULDRON);
 
     public static final Permission BREAK_TURTLE_EGG = new Permission("break_turtle_egg", Target.Enclosure, true, Items.TURTLE_EGG);
@@ -187,15 +183,12 @@ public class Permission implements Serializable2Text {
         register(DRAGON_DESTROY);
         register(WITHER_DESTROY);
         register(WITHER_ENTER);
-        register(SCULK_SPREAD);
         register(FEED_ANIMAL);
         register(DROP_ITEM);
         register(PICKUP_ITEM);
         register(FISH);
         register(FARMLAND_DESTROY);
         register(ARMOR_STAND);
-        register(ALLAY);
-        register(CONSUMPTIVELY_EXTINGUISH);
         register(CAULDRON);
     }
 
@@ -305,8 +298,8 @@ public class Permission implements Serializable2Text {
     @Override
     public MutableText serialize(SerializationSettings settings, ServerPlayerEntity player) {
         return switch (settings) {
-            case Name -> Text.literal(this.name);
-            case Full -> Text.literal(this.name).styled(style -> style.withColor(Formatting.YELLOW)
+            case Name -> new LiteralText(this.name);
+            case Full -> new LiteralText(this.name).styled(style -> style.withColor(Formatting.YELLOW)
                             .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, TrT.of("enclosure.widget.default_value_is")
                                     .append(" ").append(String.valueOf(defaultValue)))))
                     .append(" - ")

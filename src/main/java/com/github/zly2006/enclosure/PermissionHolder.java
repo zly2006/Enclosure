@@ -62,7 +62,7 @@ public interface PermissionHolder extends Serializable2Text {
 
     default boolean hasPubPerm(@NotNull Permission perm) throws PermissionTargetException {
         if (!perm.getTarget().fitEnclosure()) {
-            throw new PermissionTargetException(TrT.of("enclosure.message.permission_target_error").append(Text.literal(perm.getTarget().name())));
+            throw new PermissionTargetException(TrT.of("enclosure.message.permission_target_error").append(new LiteralText(perm.getTarget().name())));
         }
         return hasPerm(CONSOLE, perm);
     }
@@ -90,12 +90,12 @@ public interface PermissionHolder extends Serializable2Text {
     }
 
     default Text serializePermission(Map<String, Boolean> map) {
-        MutableText text = Text.literal("");
+        MutableText text = new LiteralText("");
         map.forEach((key, value) -> {
             if (value) {
-                text.append(Text.literal(key).setStyle(Style.EMPTY.withColor(Formatting.GREEN)));
+                text.append(new LiteralText(key).setStyle(Style.EMPTY.withColor(Formatting.GREEN)));
             } else {
-                text.append(Text.literal(key).setStyle(Style.EMPTY.withColor(Formatting.RED)));
+                text.append(new LiteralText(key).setStyle(Style.EMPTY.withColor(Formatting.RED)));
             }
             text.append(" ");
         });
@@ -118,7 +118,7 @@ public interface PermissionHolder extends Serializable2Text {
                             .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT,
                                     key.equals(CONSOLE) ? serializePermission(value) :
                                             // 不是默认的，就显示uuid
-                                            Text.literal("UUID=" + key + ": ").setStyle(Style.EMPTY.withColor(Formatting.GOLD))
+                                            new LiteralText("UUID=" + key + ": ").setStyle(Style.EMPTY.withColor(Formatting.GOLD))
                                                     .append(serializePermission(value))));
                     String name = null;
                     if (key.equals(CONSOLE)) {
@@ -139,7 +139,7 @@ public interface PermissionHolder extends Serializable2Text {
                         style = style.withColor(Formatting.RED);
                         ordinal = 3;
                     }
-                    MutableText item = Text.literal(name).setStyle(style).append(" ");
+                    MutableText item = new LiteralText(name).setStyle(style).append(" ");
                     return Pair.of(item, ordinal);
                 })
                 .sorted(Comparator.comparingInt(Pair::getSecond))

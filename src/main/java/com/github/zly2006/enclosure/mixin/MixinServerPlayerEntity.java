@@ -63,13 +63,11 @@ public abstract class MixinServerPlayerEntity extends PlayerEntity implements Pl
         this.permissionDeniedMsgTime = permissionDeniedMsgTime;
     }
 
-    @Shadow public abstract void sendMessage(Text message);
-
-    @Shadow public abstract ServerWorld getWorld();
-
     @Shadow public abstract void sendMessage(Text message, boolean overlay);
 
     @Shadow @Final public MinecraftServer server;
+
+    @Shadow public abstract ServerWorld getServerWorld();
 
     public MixinServerPlayerEntity(World world, BlockPos pos, float yaw, GameProfile gameProfile) {
         super(world, pos, yaw, gameProfile);
@@ -79,14 +77,14 @@ public abstract class MixinServerPlayerEntity extends PlayerEntity implements Pl
     private void protectPVP(DamageSource source, float amount, CallbackInfoReturnable<Boolean> cir) {
         if (source.getAttacker() instanceof ServerPlayerEntity attacker) {
             //pvp
-            EnclosureArea area = Instance.getAllEnclosures(this.getWorld()).getArea(getBlockPos());
-            EnclosureArea attackerArea = Instance.getAllEnclosures(attacker.getWorld()).getArea(attacker.getBlockPos());
+            EnclosureArea area = Instance.getAllEnclosures(getServerWorld()).getArea(getBlockPos());
+            EnclosureArea attackerArea = Instance.getAllEnclosures(attacker.getServerWorld()).getArea(attacker.getBlockPos());
             if (area != null && !area.areaOf(getBlockPos()).hasPubPerm(Permission.PVP)) {
                 cir.setReturnValue(false);
             }
             if (attackerArea != null && !attackerArea.areaOf(attacker.getBlockPos()).hasPubPerm(Permission.PVP)
                     && !attacker.getCommandSource().hasPermissionLevel(4)) {
-                attacker.sendMessage(PVP.getNoPermissionMsg(attacker));
+                attacker.sendMessage(PVP.getNoPermissionMsg(attacker),false);
                 cir.setReturnValue(false);
             }
         }
@@ -94,13 +92,13 @@ public abstract class MixinServerPlayerEntity extends PlayerEntity implements Pl
 
     @Inject(method = "dropItem", at = @At("HEAD"), cancellable = true)
     private void protectDropItem(ItemStack stack, boolean throwRandomly, boolean retainOwnership, CallbackInfoReturnable<ItemEntity> cir) {
-        EnclosureArea area = Instance.getAllEnclosures(getWorld()).getArea(getBlockPos());
+        EnclosureArea area = Instance.getAllEnclosures(getServerWorld()).getArea(getBlockPos());
         if (area == null) {
             return;
         }
         area = area.areaOf(getBlockPos());
         if (!area.hasPerm(networkHandler.player, Permission.DROP_ITEM)) {
-            if (!isDead() && getInventory().insertStack(stack)) {
+            if (!isDead() && inventory.insertStack(stack)) {
                 this.sendMessageWithCD(DROP_ITEM::getNoPermissionMsg);
                 cir.setReturnValue(null);
             }
@@ -155,16 +153,16 @@ public abstract class MixinServerPlayerEntity extends PlayerEntity implements Pl
                 text.append(formatMessage(area.getLeaveMessage(), area, player));
             }
         }
-        player.sendMessage(text);
+        player.sendMessage(text,false);
     }
     @Inject(method = "tick", at = @At("HEAD"))
     private void onTick(CallbackInfo ci) {
         if (!isDead() && !drops.isEmpty()) {
-            drops.removeIf(itemStack -> getInventory().insertStack(itemStack));
+            drops.removeIf(inventory::insertStack);
         }
         if (server.getTicks() % 10 == 0) {
             ServerPlayerEntity player = (ServerPlayerEntity) (Object) this;
-            EnclosureArea area = Instance.getAllEnclosures(getWorld()).getArea(getBlockPos());
+            EnclosureArea area = Instance.getAllEnclosures(getServerWorld()).getArea(getBlockPos());
             if (area != null) {
                 area = area.areaOf(getBlockPos());
             }
@@ -175,7 +173,7 @@ public abstract class MixinServerPlayerEntity extends PlayerEntity implements Pl
             }
             if (area != null) {
                 if (!area.hasPerm(player, MOVE)) {
-                    player.sendMessage(MOVE.getNoPermissionMsg(player));
+                    player.sendMessage(MOVE.getNoPermissionMsg(player),false);
                     if (area != lastArea) {
                         // teleport back
                         player.teleport(lastWorld, lastPos.x, lastPos.y, lastPos.z, 0, 0);
@@ -194,7 +192,7 @@ public abstract class MixinServerPlayerEntity extends PlayerEntity implements Pl
             }
             lastArea = area;
             lastPos = player.getPos();
-            lastWorld = player.getWorld();
+            lastWorld = player.getServerWorld();
         }
     }
 

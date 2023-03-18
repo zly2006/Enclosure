@@ -33,8 +33,8 @@ public class MixinBucketItem {
             Permission permission = this.fluid == Fluids.EMPTY ? Permission.BREAK_BLOCK : Permission.PLACE_BLOCK;
             if (!Instance.checkPermission(world, blockPos, player, permission) ||
                     !Instance.checkPermission(world, blockPos2, player, permission)) {
-                player.currentScreenHandler.syncState();
-                player.sendMessage(permission.getNoPermissionMsg(player));
+                player.refreshScreenHandler(player.currentScreenHandler);
+                player.sendMessage(permission.getNoPermissionMsg(player),false);
                 cir.setReturnValue(TypedActionResult.fail(itemStack));
             }
         }

@@ -24,7 +24,7 @@ public class MixinChorusFruitItem {
         if (user instanceof ServerPlayerEntity player) {
             BlockPos pos = Utils.toBlockPos(g, h, j);
             if (!ServerMain.Instance.checkPermission(player, CHORUS_TP, pos)) {
-                player.sendMessage(CHORUS_TP.getNoPermissionMsg(player));
+                player.sendMessage(CHORUS_TP.getNoPermissionMsg(player),false);
                 cir.setReturnValue(stack);
             }
         }

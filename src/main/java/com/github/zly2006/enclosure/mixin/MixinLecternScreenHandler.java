@@ -33,7 +33,7 @@ public abstract class MixinLecternScreenHandler extends ScreenHandler {
                 if (id == 3) {
                     cir.setReturnValue(false);
                     serverPlayer.closeHandledScreen();
-                    serverPlayer.sendMessage(Permission.TAKE_BOOK.getNoPermissionMsg(serverPlayer));
+                    serverPlayer.sendMessage(Permission.TAKE_BOOK.getNoPermissionMsg(serverPlayer),false);
                 }
             }
         }

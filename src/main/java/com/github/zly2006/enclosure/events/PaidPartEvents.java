@@ -23,7 +23,7 @@ public class PaidPartEvents {
         player.sendMessage(TrT.of("enclosure.message.not_paid")
                 .styled(style -> style
                         .withColor(Formatting.RED)
-                        .withClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, ""))));
+                        .withClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, ""))),false);
     }
     public void syncSession(ServerPlayerEntity player) {
 

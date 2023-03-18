@@ -1,10 +1,10 @@
 package com.github.zly2006.enclosure.mixin;
 
 import com.github.zly2006.enclosure.utils.Permission;
-import net.minecraft.entity.Bucketable;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.mob.MobEntity;
+import net.minecraft.entity.passive.FishEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Items;
 import net.minecraft.network.packet.s2c.play.EntityAttachS2CPacket;
@@ -25,26 +25,26 @@ public abstract class MixinMobEntity extends LivingEntity {
         super(entityType, world);
     }
 
-    @Inject(method = "interact", at = @At("HEAD"), cancellable = true)
-    private void interact(PlayerEntity player, Hand hand, CallbackInfoReturnable<ActionResult> cir) {
-        if (this instanceof Bucketable && player.getStackInHand(hand).isOf(Items.WATER_BUCKET)) {
-            if (!Instance.checkPermission(getWorld(), getBlockPos(), player, Permission.FISH)) {
-                ServerPlayerEntity serverPlayer = (ServerPlayerEntity) player;
-                serverPlayer.networkHandler.sendPacket(createSpawnPacket());
-                serverPlayer.sendMessage(Permission.FISH.getNoPermissionMsg(player));
-                serverPlayer.currentScreenHandler.syncState();
-                cir.setReturnValue(ActionResult.FAIL);
-            }
-        }
-    }
+//    @Inject(method = "interact", at = @At("HEAD"), cancellable = true)
+//    private void interact(PlayerEntity player, Hand hand, CallbackInfoReturnable<ActionResult> cir) {
+//        if (this instanceof FishEntity && player.getStackInHand(hand).getItem()==Items.WATER_BUCKET) {
+//            if (!Instance.checkPermission(getEntityWorld(), getBlockPos(), player, Permission.FISH)) {
+//                ServerPlayerEntity serverPlayer = (ServerPlayerEntity) player;
+//                serverPlayer.networkHandler.sendPacket(createSpawnPacket());
+//                serverPlayer.sendMessage(Permission.FISH.getNoPermissionMsg(player),false);
+//                serverPlayer.refreshScreenHandler(serverPlayer.currentScreenHandler);
+//                cir.setReturnValue(ActionResult.FAIL);
+//            }
+//        }
+//    }
 
     @Inject(method = "canBeLeashedBy", at = @At("HEAD"), cancellable = true)
     private void canBeLeashedBy(PlayerEntity player, CallbackInfoReturnable<Boolean> cir) {
-        if (!Instance.checkPermission(getWorld(), getBlockPos(), player, Permission.LEASH)) {
+        if (!Instance.checkPermission(getEntityWorld(), getBlockPos(), player, Permission.LEASH)) {
             ServerPlayerEntity serverPlayer = (ServerPlayerEntity) player;
             serverPlayer.networkHandler.sendPacket(new EntityAttachS2CPacket(this, null));
-            serverPlayer.sendMessage(Permission.LEASH.getNoPermissionMsg(player));
-            serverPlayer.currentScreenHandler.syncState();
+            serverPlayer.sendMessage(Permission.LEASH.getNoPermissionMsg(player),false);
+            serverPlayer.refreshScreenHandler(serverPlayer.currentScreenHandler);
             cir.setReturnValue(false);
         }
     }

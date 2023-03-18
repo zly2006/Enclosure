@@ -6,10 +6,11 @@ import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.*;
 import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.util.math.Matrix3f;
+import net.minecraft.util.math.Matrix4f;
 import net.minecraft.util.math.Vec3d;
 import org.jetbrains.annotations.NotNull;
-import org.joml.Matrix3f;
-import org.joml.Matrix4f;
+import org.lwjgl.opengl.GL11;
 
 public abstract class EnclosureWorldRenderer {
     private static final float DELTA = 0.01f;
@@ -52,8 +53,8 @@ public abstract class EnclosureWorldRenderer {
         float green = 1;
         float blue = 1;
         float alpha = 1;
-        Matrix4f matrix4f = matrices.peek().getPositionMatrix();
-        Matrix3f matrix3f = matrices.peek().getNormalMatrix();
+        Matrix4f matrix4f = matrices.peek().getModel();
+        Matrix3f matrix3f = matrices.peek().getNormal();
         // Render two points
         WorldRenderer.drawBox(matrices, linesBuffer,
                 session.getPos1().getX() - cameraPos.getX(),
@@ -96,49 +97,49 @@ public abstract class EnclosureWorldRenderer {
         float green = 1;
         float blue = 1;
         float alpha = 0.15f;
-        Matrix4f matrix4f = matrices.peek().getPositionMatrix();
+        Matrix4f matrix4f = matrices.peek().getModel();
 
         matrices.push();
         RenderSystem.disableCull();
         BufferBuilder bufferBuilder = Tessellator.getInstance().getBuffer();
         RenderSystem.setShader(GameRenderer::getPositionColorProgram);
 
-        bufferBuilder.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_COLOR);
+        bufferBuilder.begin(GL11.GL_QUADS, VertexFormats.POSITION_COLOR);
         bufferBuilder.vertex(matrix4f, minX, minY, minZ).color(red, green, blue, alpha).next();
         bufferBuilder.vertex(matrix4f, minX, minY, maxZ).color(red, green, blue, alpha).next();
         bufferBuilder.vertex(matrix4f, minX, maxY, maxZ).color(red, green, blue, alpha).next();
         bufferBuilder.vertex(matrix4f, minX, maxY, minZ).color(red, green, blue, alpha).next();
         Tessellator.getInstance().draw();
 
-        bufferBuilder.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_COLOR);
+        bufferBuilder.begin(GL11.GL_QUADS, VertexFormats.POSITION_COLOR);
         bufferBuilder.vertex(matrix4f, maxX, minY, minZ).color(red, green, blue, alpha).next();
         bufferBuilder.vertex(matrix4f, maxX, minY, maxZ).color(red, green, blue, alpha).next();
         bufferBuilder.vertex(matrix4f, maxX, maxY, maxZ).color(red, green, blue, alpha).next();
         bufferBuilder.vertex(matrix4f, maxX, maxY, minZ).color(red, green, blue, alpha).next();
         Tessellator.getInstance().draw();
 
-        bufferBuilder.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_COLOR);
+        bufferBuilder.begin(GL11.GL_QUADS, VertexFormats.POSITION_COLOR);
         bufferBuilder.vertex(matrix4f, minX, minY, minZ).color(red, green, blue, alpha).next();
         bufferBuilder.vertex(matrix4f, minX, minY, maxZ).color(red, green, blue, alpha).next();
         bufferBuilder.vertex(matrix4f, maxX, minY, maxZ).color(red, green, blue, alpha).next();
         bufferBuilder.vertex(matrix4f, maxX, minY, minZ).color(red, green, blue, alpha).next();
         Tessellator.getInstance().draw();
 
-        bufferBuilder.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_COLOR);
+        bufferBuilder.begin(GL11.GL_QUADS, VertexFormats.POSITION_COLOR);
         bufferBuilder.vertex(matrix4f, minX, maxY, minZ).color(red, green, blue, alpha).next();
         bufferBuilder.vertex(matrix4f, minX, maxY, maxZ).color(red, green, blue, alpha).next();
         bufferBuilder.vertex(matrix4f, maxX, maxY, maxZ).color(red, green, blue, alpha).next();
         bufferBuilder.vertex(matrix4f, maxX, maxY, minZ).color(red, green, blue, alpha).next();
         Tessellator.getInstance().draw();
 
-        bufferBuilder.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_COLOR);
+        bufferBuilder.begin(GL11.GL_QUADS, VertexFormats.POSITION_COLOR);
         bufferBuilder.vertex(matrix4f, minX, minY, minZ).color(red, green, blue, alpha).next();
         bufferBuilder.vertex(matrix4f, minX, maxY, minZ).color(red, green, blue, alpha).next();
         bufferBuilder.vertex(matrix4f, maxX, maxY, minZ).color(red, green, blue, alpha).next();
         bufferBuilder.vertex(matrix4f, maxX, minY, minZ).color(red, green, blue, alpha).next();
         Tessellator.getInstance().draw();
 
-        bufferBuilder.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_COLOR);
+        bufferBuilder.begin(GL11.GL_QUADS, VertexFormats.POSITION_COLOR);
         bufferBuilder.vertex(matrix4f, minX, minY, maxZ).color(red, green, blue, alpha).next();
         bufferBuilder.vertex(matrix4f, minX, maxY, maxZ).color(red, green, blue, alpha).next();
         bufferBuilder.vertex(matrix4f, maxX, maxY, maxZ).color(red, green, blue, alpha).next();

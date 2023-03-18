@@ -9,6 +9,7 @@ import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.block.entity.Hopper;
 import net.minecraft.block.entity.HopperBlockEntity;
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.ItemEntity;
 import net.minecraft.inventory.Inventory;
 import net.minecraft.server.world.ServerWorld;
@@ -24,17 +25,15 @@ import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 import static com.github.zly2006.enclosure.ServerMain.Instance;
 
 @Mixin(HopperBlockEntity.class)
-public class MixinHopperBlockEntity extends BlockEntity {
-    public MixinHopperBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
-        super(type, pos, state);
-    }
+public class MixinHopperBlockEntity {
 
-    @Inject(method = "extract(Lnet/minecraft/world/World;Lnet/minecraft/block/entity/Hopper;)Z", at = @At(value = "INVOKE", target = "Lnet/minecraft/block/entity/HopperBlockEntity;getAvailableSlots(Lnet/minecraft/inventory/Inventory;Lnet/minecraft/util/math/Direction;)Ljava/util/stream/IntStream;"), locals = LocalCapture.CAPTURE_FAILSOFT, cancellable = true)
-    private static void onExtract(World world, Hopper hopper, CallbackInfoReturnable<Boolean> cir, Inventory inventory, Direction direction) {
-        if (world.isClient) return;
+
+    @Inject(method = "extract(Lnet/minecraft/block/entity/Hopper;)Z", at = @At(value = "INVOKE", target = "Lnet/minecraft/block/entity/HopperBlockEntity;getAvailableSlots(Lnet/minecraft/inventory/Inventory;Lnet/minecraft/util/math/Direction;)Ljava/util/stream/IntStream;"), locals = LocalCapture.CAPTURE_FAILSOFT, cancellable = true)
+    private static void onExtract(Hopper hopper, CallbackInfoReturnable<Boolean> cir, Inventory inventory, Direction direction) {
+        if (hopper.getWorld().isClient) return;
         BlockPos pos = Utils.toBlockPos(hopper.getHopperX(), hopper.getHopperY(), hopper.getHopperZ());
         BlockPos inventoryPos = pos.offset(Direction.UP);
-        if (!ServerMain.checkPermissionInDifferentEnclosure((ServerWorld) world, pos, inventoryPos, Permission.CONTAINER)) {
+        if (!ServerMain.checkPermissionInDifferentEnclosure((ServerWorld) hopper.getWorld(), pos, inventoryPos, Permission.CONTAINER)) {
             cir.setReturnValue(false);
         }
     }

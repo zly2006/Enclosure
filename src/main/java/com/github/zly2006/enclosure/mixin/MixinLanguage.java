@@ -14,7 +14,7 @@ import java.util.function.BiConsumer;
 @Mixin(Language.class)
 public class MixinLanguage {
     @Inject(method = "create", locals = LocalCapture.CAPTURE_FAILHARD, at = @At(value = "INVOKE", target = "Ljava/lang/Class;getResourceAsStream(Ljava/lang/String;)Ljava/io/InputStream;"))
-    private static void create(CallbackInfoReturnable<Language> cir, ImmutableMap.Builder<String, String> builder, BiConsumer<String, String> biConsumer, String string) {
+    private static void create(CallbackInfoReturnable<Language> cir, ImmutableMap.Builder builder, BiConsumer biConsumer) {
         ServerMain.load();
         if (ServerMain.commonConfig.injectServerLanguage) {
             if (ServerMain.translation != null) {

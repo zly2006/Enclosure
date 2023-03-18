@@ -7,7 +7,7 @@ import com.mojang.authlib.GameProfile;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtInt;
 import net.minecraft.nbt.NbtList;
-import net.minecraft.registry.RegistryKey;
+import net.minecraft.util.registry.RegistryKey;
 import net.minecraft.world.World;
 import org.yaml.snakeyaml.Yaml;
 

@@ -21,11 +21,11 @@ import static com.github.zly2006.enclosure.ServerMain.Instance;
 import static com.github.zly2006.enclosure.utils.Permission.CONTAINER;
 
 @Mixin(LockableContainerBlockEntity.class)
-public class MixinLockableContainerBlockEntity extends BlockEntity {
+public abstract class MixinLockableContainerBlockEntity extends BlockEntity {
     @Shadow private ContainerLock lock;
 
-    public MixinLockableContainerBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
-        super(type, pos, state);
+    public MixinLockableContainerBlockEntity(BlockEntityType<?> type) {
+        super(type);
     }
 
     @Inject(at = @At("HEAD"), method = "checkUnlocked(Lnet/minecraft/entity/player/PlayerEntity;)Z", cancellable = true)
@@ -37,7 +37,7 @@ public class MixinLockableContainerBlockEntity extends BlockEntity {
             EnclosureArea area = Instance.getAllEnclosures((ServerWorld) getWorld()).getArea(getPos());
 
             if (area != null && !area.areaOf(getPos()).hasPerm(player, CONTAINER)) {
-                player.sendMessage(CONTAINER.getNoPermissionMsg(player));
+                player.sendMessage(CONTAINER.getNoPermissionMsg(player),false);
                 cir.setReturnValue(false);
             }
         }

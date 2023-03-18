@@ -17,8 +17,8 @@ public class ReiMain implements REIClientPlugin {
             }
 
             @Override
-            public <R extends Screen> ActionResult shouldScreenBeOverlaid(R screen) {
-                if (screen instanceof EnclosureScreen) {
+            public ActionResult shouldScreenBeOverlaid(Class<?> screen) {
+                if (screen == EnclosureScreen.class) {
                     return ActionResult.FAIL;
                 }
                 return ActionResult.PASS;

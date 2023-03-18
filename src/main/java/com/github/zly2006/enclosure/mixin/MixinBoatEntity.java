@@ -25,15 +25,15 @@ public abstract class MixinBoatEntity extends Entity {
 
     @Inject(method = "damage", at = @At("HEAD"), cancellable = true)
     private void onDamage(DamageSource source, float amount, CallbackInfoReturnable<Boolean> cir) {
-        if (!Utils.commonOnDamage(source, getBlockPos(), getWorld(), VEHICLE)) {
+        if (!Utils.commonOnDamage(source, getBlockPos(), getEntityWorld(), VEHICLE)) {
             cir.setReturnValue(false);
         }
     }
 
     @Inject(method = "interact", at = @At("HEAD"), cancellable = true)
     private void onInteract(PlayerEntity player, Hand hand, CallbackInfoReturnable<ActionResult> cir) {
-        if (!Instance.checkPermission(getWorld(), getBlockPos(), player, VEHICLE)) {
-            player.sendMessage(VEHICLE.getNoPermissionMsg(player));
+        if (!Instance.checkPermission(getEntityWorld(), getBlockPos(), player, VEHICLE)) {
+            player.sendMessage(VEHICLE.getNoPermissionMsg(player),false);
             cir.setReturnValue(ActionResult.FAIL);
         }
     }

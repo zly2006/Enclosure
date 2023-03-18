@@ -72,7 +72,7 @@ public class SessionListener implements
                 session.sync((ServerPlayerEntity) player);
                 session.setPos1(pos);
                 session.trySync();
-                player.sendMessage(TrT.of("enclosure.message.set_pos_1").append(blockPos2string(pos)));
+                player.sendMessage(TrT.of("enclosure.message.set_pos_1").append(blockPos2string(pos)),false);
                 return ActionResult.FAIL;
             }
         }
@@ -87,7 +87,7 @@ public class SessionListener implements
                 session.sync((ServerPlayerEntity) player);
                 session.setPos1(pos);
                 session.trySync();
-                player.sendMessage(TrT.of("enclosure.message.set_pos_1").append(blockPos2string(pos)));
+                player.sendMessage(TrT.of("enclosure.message.set_pos_1").append(blockPos2string(pos)),false);
                 return false;
             }
         }
@@ -103,7 +103,7 @@ public class SessionListener implements
                 session.sync((ServerPlayerEntity) player);
                 session.setPos2(hitResult.getBlockPos());
                 session.trySync();
-                player.sendMessage(TrT.of("enclosure.message.set_pos_2").append(blockPos2string(hitResult.getBlockPos())));
+                player.sendMessage(TrT.of("enclosure.message.set_pos_2").append(blockPos2string(hitResult.getBlockPos())),false);
                 return ActionResult.FAIL;
             }
         }

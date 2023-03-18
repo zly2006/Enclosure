@@ -12,6 +12,7 @@ import net.minecraft.entity.projectile.thrown.ThrownItemEntity;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Direction;
 import net.minecraft.world.World;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -29,7 +30,7 @@ public abstract class MixinPotionEntity extends ThrownItemEntity {
     }
 
     @Inject(at = @At("HEAD"), method = "extinguishFire", cancellable = true)
-    private void onExtinguishFire(BlockPos pos, CallbackInfo ci) {
+    private void onExtinguishFire(BlockPos pos, Direction direction, CallbackInfo ci) {
         if (world.isClient) {
             return;
         }
@@ -39,7 +40,7 @@ public abstract class MixinPotionEntity extends ThrownItemEntity {
             EnclosureArea area = list.getArea(pos);
             if (area != null && !area.areaOf(pos).hasPubPerm(Permission.USE_CAMPFIRE)) {
                 if (getOwner() instanceof ServerPlayerEntity player) {
-                    player.sendMessage(USE_CAMPFIRE.getNoPermissionMsg(player));
+                    player.sendMessage(USE_CAMPFIRE.getNoPermissionMsg(player),false);
                 }
                 world.setBlockState(pos, world.getBlockState(pos).with(WATERLOGGED, false).with(LIT, true), 252);
                 ci.cancel();

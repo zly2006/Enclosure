@@ -19,8 +19,8 @@ public class MixinBowItem {
     public void checkBowPermission(ItemStack stack, World world, LivingEntity user, int remainingUseTicks, CallbackInfo ci) {
         if (user instanceof ServerPlayerEntity player) {
             if (!ServerMain.Instance.checkPermission(player, SHOOT, player.getBlockPos())) {
-                player.sendMessage(SHOOT.getNoPermissionMsg(player));
-                player.currentScreenHandler.syncState();  // update player's inventory
+                player.sendMessage(SHOOT.getNoPermissionMsg(player),false);
+                player.refreshScreenHandler(player.currentScreenHandler);
                 ci.cancel();
             }
         }

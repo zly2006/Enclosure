@@ -9,6 +9,7 @@ import com.github.zly2006.enclosure.utils.TrT;
 import com.github.zly2006.enclosure.utils.Utils;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
+import net.minecraft.text.LiteralText;
 import net.minecraft.text.Text;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
@@ -80,8 +81,8 @@ public class Session {
     }
 
     public void sync(@NotNull ServerPlayerEntity player) {
-        if (world != player.getWorld()) {
-            reset(player.getWorld());
+        if (world != player.getServerWorld()) {
+            reset(player.getServerWorld());
         }
     }
 
@@ -122,13 +123,13 @@ public class Session {
                     .append(TrT.of("enclosure.message.limit_exceeded.0"))
                     .append(String.valueOf(limit))
                     .append(TrT.of("enclosure.message.limit_exceeded.1"))
-                    .append(Text.literal(String.valueOf(value)));
+                    .append(new LiteralText(String.valueOf(value)));
         } else {
             return TrT.of("enclosure.limit." + Utils.camelCaseToSnakeCase(name))
                     .append(TrT.of("enclosure.message.limit_exceeded.2"))
                     .append(String.valueOf(limit))
                     .append(TrT.of("enclosure.message.limit_exceeded.1"))
-                    .append(Text.literal(String.valueOf(value)));
+                    .append(new LiteralText(String.valueOf(value)));
         }
     }
 

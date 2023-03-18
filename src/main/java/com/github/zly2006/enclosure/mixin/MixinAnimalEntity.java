@@ -7,7 +7,6 @@ import net.minecraft.entity.passive.AnimalEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.Hand;
 import net.minecraft.world.World;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -24,13 +23,13 @@ public abstract class MixinAnimalEntity extends Entity {
     }
 
     @Inject(at = @At("HEAD"), method = "eat", cancellable = true)
-    private void onEating(PlayerEntity player, Hand hand, ItemStack stack, CallbackInfo ci) {
-        if (getWorld().isClient) {
+    private void onEating(PlayerEntity player, ItemStack stack, CallbackInfo ci) {
+        if (getEntityWorld().isClient) {
             return;
         }
-        EnclosureArea area = Instance.getAllEnclosures((ServerWorld) this.getWorld()).getArea(getBlockPos());
+        EnclosureArea area = Instance.getAllEnclosures((ServerWorld) getEntityWorld()).getArea(getBlockPos());
         if (area != null && !area.areaOf(getBlockPos()).hasPubPerm(FEED_ANIMAL)) {
-            player.sendMessage(FEED_ANIMAL.getNoPermissionMsg(player));
+            player.sendMessage(FEED_ANIMAL.getNoPermissionMsg(player),false);
             ci.cancel();
         }
     }

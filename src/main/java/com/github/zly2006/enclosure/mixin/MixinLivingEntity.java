@@ -1,5 +1,6 @@
 package com.github.zly2006.enclosure.mixin;
 
+import com.github.zly2006.enclosure.utils.Permission;
 import com.github.zly2006.enclosure.utils.Utils;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
@@ -21,28 +22,20 @@ public abstract class MixinLivingEntity extends Entity {
 
     @Inject(at = @At("HEAD"), method = "damage", cancellable = true)
     private void damage(DamageSource source, float amount, CallbackInfoReturnable<Boolean> cir) {
-        if (getWorld().isClient) {
+        if (getEntityWorld().isClient) {
             return;
         }
+        Permission permission = ATTACK_ENTITY;
         if (Utils.isAnimal(this)) {
-            if (!Utils.commonOnPlayerDamage(source, getBlockPos(), getWorld(), ATTACK_ANIMAL)) {
-                cir.setReturnValue(false);
-            }
+            permission = ATTACK_ANIMAL;
+        } else if (Utils.isMonster(this)) {
+            permission = ATTACK_MONSTER;
+        } else if (getType() == EntityType.VILLAGER) {
+            permission = ATTACK_VILLAGER;
         }
-        else if (Utils.isMonster(this)) {
-            if (!Utils.commonOnPlayerDamage(source, getBlockPos(), getWorld(), ATTACK_MONSTER)) {
-                cir.setReturnValue(false);
-            }
-        }
-        else if (getType() == EntityType.VILLAGER) {
-            if (!Utils.commonOnPlayerDamage(source, getBlockPos(), getWorld(), ATTACK_VILLAGER)) {
-                cir.setReturnValue(false);
-            }
-        }
-        else {
-            if (!Utils.commonOnPlayerDamage(source, getBlockPos(), getWorld(), ATTACK_ENTITY)) {
-                cir.setReturnValue(false);
-            }
+
+        if (!Utils.commonOnPlayerDamage(source, getBlockPos(), getEntityWorld(), permission)) {
+            cir.setReturnValue(false);
         }
     }
 }

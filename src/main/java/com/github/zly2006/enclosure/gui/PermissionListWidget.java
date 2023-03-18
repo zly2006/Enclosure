@@ -6,7 +6,6 @@ import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.Element;
-import net.minecraft.client.gui.Selectable;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.gui.widget.ElementListWidget;
@@ -16,7 +15,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.text.Style;
 import net.minecraft.text.Text;
-import net.minecraft.text.TranslatableTextContent;
+import net.minecraft.text.TranslatableText;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Language;
 import org.jetbrains.annotations.Nullable;
@@ -77,9 +76,9 @@ public class PermissionListWidget extends ElementListWidget<PermissionListWidget
         //@Nullable Boolean value = null;
 
         private Text value(Boolean value) {
-            return value == null ? Text.translatable("enclosure.widget.none").setStyle(Style.EMPTY.withColor(Formatting.DARK_AQUA))
-                    : value ? Text.translatable("enclosure.widget.true").setStyle(Style.EMPTY.withColor(Formatting.GREEN))
-                            : Text.translatable("enclosure.widget.false").setStyle(Style.EMPTY.withColor(Formatting.RED));
+            return value == null ? new TranslatableText("enclosure.widget.none").setStyle(Style.EMPTY.withColor(Formatting.DARK_AQUA))
+                    : value ? new TranslatableText("enclosure.widget.true").setStyle(Style.EMPTY.withColor(Formatting.GREEN))
+                            : new TranslatableText("enclosure.widget.false").setStyle(Style.EMPTY.withColor(Formatting.RED));
         }
         private Text value() {
             return value(getValue().orElse(null));
@@ -102,27 +101,27 @@ public class PermissionListWidget extends ElementListWidget<PermissionListWidget
 
         @Override
         public void render(MatrixStack matrices, int index, int y, int x, int entryWidth, int entryHeight, int mouseX, int mouseY, boolean hovered, float tickDelta) {
-            buttonWidget.setY(y);
-            buttonWidget.setX(x + entryWidth - 40);
+            buttonWidget.y = y;
+            buttonWidget.x = x + entryWidth - 40;
             buttonWidget.render(matrices, mouseX, mouseY, tickDelta);
             client.textRenderer.draw(matrices, permission.getName(), x + 20, y + 3, 0xFFFFFF);
             client.textRenderer.draw(matrices, permission.getDescription(), x + 140, y + 3, 0x999999);
             if (permission.getIcon() != null) {
-                client.getItemRenderer().renderInGui(matrices, new ItemStack(permission.getIcon()), x, y);
+                client.getItemRenderer().renderInGui(new ItemStack(permission.getIcon()), x, y);
             }
             else {
-                client.getItemRenderer().renderInGui(matrices, new ItemStack(Items.STRUCTURE_VOID), x, y);
+                client.getItemRenderer().renderInGui( new ItemStack(Items.STRUCTURE_VOID), x, y);
             }
             if (buttonWidget.isHovered()) {
                 parent.renderTooltip(matrices, List.of(
-                    Text.translatable("enclosure.widget.click.left").styled(style -> style.withColor(Formatting.GREEN)),
-                    Text.translatable("enclosure.widget.click.right").styled(style -> style.withColor(Formatting.RED))
+                    new TranslatableText("enclosure.widget.click.left").styled(style -> style.withColor(Formatting.GREEN)),
+                    new TranslatableText("enclosure.widget.click.right").styled(style -> style.withColor(Formatting.RED))
                 ), mouseX, mouseY);
             }
             else if (hovered) {
                 parent.renderTooltip(matrices,
                     List.of(permission.getDescription(),
-                        Text.translatable("enclosure.widget.default_value_is").setStyle(Style.EMPTY.withColor(Formatting.GOLD))
+                        new TranslatableText("enclosure.widget.default_value_is").setStyle(Style.EMPTY.withColor(Formatting.GOLD))
                             .append(" ").append(value(permission.getDefaultValue()))),
                     mouseX, mouseY);
             }
@@ -153,7 +152,7 @@ public class PermissionListWidget extends ElementListWidget<PermissionListWidget
                     if (value == null) setValue(true);
                     else setValue(null);
 
-                    client.player.networkHandler.sendChatCommand("enclosure set " + fullName + " uuid " +
+                    client.player.sendChatMessage("/enclosure set " + fullName + " uuid " +
                         uuid.toString() + " " +
                         permission.getName() + " " +
                         getValue().map(String::valueOf).orElse("none"));
@@ -164,7 +163,7 @@ public class PermissionListWidget extends ElementListWidget<PermissionListWidget
                     Boolean value = getValue().orElse(null);
                     if (value == null) setValue(false);
                     else setValue(null);
-                    client.player.networkHandler.sendChatCommand("enclosure set " + fullName + " uuid " +
+                    client.player.sendChatMessage("/enclosure set " + fullName + " uuid " +
                         uuid.toString() + " " +
                         permission.getName() + " " +
                         getValue().map(String::valueOf).orElse("none"));
@@ -204,11 +203,11 @@ public class PermissionListWidget extends ElementListWidget<PermissionListWidget
 
         @Override
         public void render(MatrixStack matrices, int index, int y, int x, int entryWidth, int entryHeight, int mouseX, int mouseY, boolean hovered, float tickDelta) {
-            searchWidget.setY(y);
+            searchWidget.y = (y);
             searchWidget.setX(x + 70);
             searchWidget.setWidth(entryWidth - 70 - 2);
             searchWidget.render(matrices, mouseX, mouseY, tickDelta);
-            client.textRenderer.draw(matrices, Text.translatable("enclosure.widget.search"), x, y + 3, 0xFFFFFF);
+            client.textRenderer.draw(matrices, new TranslatableText("enclosure.widget.search"), x, y + 3, 0xFFFFFF);
         }
 
         @Override

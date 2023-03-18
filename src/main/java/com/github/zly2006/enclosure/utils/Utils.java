@@ -8,7 +8,6 @@ import net.minecraft.block.Blocks;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.mob.HostileEntity;
-import net.minecraft.entity.passive.AllayEntity;
 import net.minecraft.entity.passive.IronGolemEntity;
 import net.minecraft.entity.passive.PassiveEntity;
 import net.minecraft.entity.passive.SnowGolemEntity;
@@ -32,8 +31,7 @@ public class Utils {
     public static boolean isAnimal(Entity entity) {
         return entity instanceof PassiveEntity
                 || entity instanceof IronGolemEntity
-                || entity instanceof SnowGolemEntity
-                || entity instanceof AllayEntity;
+                || entity instanceof SnowGolemEntity;
     }
 
     public static boolean isMonster(Entity entity) {
@@ -82,7 +80,7 @@ public class Utils {
     public static int topYOf(ServerWorld world, int x, int z, int startY) {
         int secondary = Integer.MAX_VALUE;
         int airCount = 0;
-        for (int y = startY; y >= world.getBottomY(); y--) {
+        for (int y = startY; y >= 0; y--) {
             BlockState state = world.getBlockState(new BlockPos(x, y, z));
             if (state.getMaterial().blocksMovement()) {
                 if (state.isOf(Blocks.BEDROCK)) {
@@ -100,11 +98,11 @@ public class Utils {
     }
 
     public static @Nullable String getNameByUUID(@NotNull UUID uuid) {
-        return minecraftServer.getUserCache().getByUuid(uuid).map(GameProfile::getName).orElse(null);
+        return minecraftServer.getUserCache().getByUuid(uuid).getName();
     }
 
     public static @Nullable UUID getUUIDByName(@NotNull String name) {
-        return minecraftServer.getUserCache().findByName(name).map(GameProfile::getId).orElse(null);
+        return minecraftServer.getUserCache().findByName(name).getId();
     }
 
     public static String camelCaseToSnakeCase(String camelCase) {
@@ -133,7 +131,7 @@ public class Utils {
         }
         if (source.getAttacker() instanceof ServerPlayerEntity attacker) {
             if (area != null && !area.hasPerm(attacker, permission)) {
-                attacker.sendMessage(permission.getNoPermissionMsg(attacker));
+                attacker.sendMessage(permission.getNoPermissionMsg(attacker),false);
                 return false;
             }
         }
@@ -150,7 +148,7 @@ public class Utils {
         }
         if (source.getAttacker() instanceof ServerPlayerEntity attacker) {
             if (area != null && !area.hasPerm(attacker, permission)) {
-                attacker.sendMessage(permission.getNoPermissionMsg(attacker));
+                attacker.sendMessage(permission.getNoPermissionMsg(attacker),false);
                 return false;
             }
         } else {
@@ -169,13 +167,13 @@ public class Utils {
             return player.getDisplayName().copy();
         }
         if (uuid.equals(EnclosureCommand.CONSOLE)) {
-            return Text.literal(serverName);
+            return new LiteralText(serverName);
         }
         String name = getNameByUUID(uuid);
         if (name != null) {
-            return Text.literal(name);
+            return new LiteralText(name);
         }
-        return Text.literal(uuid.toString());
+        return new LiteralText(uuid.toString());
     }
 
     public static BlockPos toBlockPos(Vec3d vec3d) {
@@ -187,7 +185,7 @@ public class Utils {
     }
 
     public static boolean mark4updateChecked(ServerWorld world, BlockPos pos) {
-        if (world.getWorldBorder().contains(pos) && pos.getY() >= world.getBottomY() && pos.getY() < world.getTopY()) {
+        if (world.getWorldBorder().contains(pos) && pos.getY() >= 0 && pos.getY() < world.getTopY()) {
             world.getChunkManager().markForUpdate(pos);
             return true;
         }

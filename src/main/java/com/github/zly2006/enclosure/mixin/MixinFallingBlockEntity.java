@@ -44,7 +44,8 @@ public abstract class MixinFallingBlockEntity extends Entity {
             return;
         }
         if (!checkPermissionInDifferentEnclosure((ServerWorld) world, getFallingBlockPos(), getBlockPos(), Permission.FALLING_BLOCK)) {
-            discard();
+            //todo 有待测试
+            this.remove();
             ci.cancel();
         }
     }

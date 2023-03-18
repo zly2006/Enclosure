@@ -5,6 +5,7 @@ import com.github.zly2006.enclosure.exceptions.PermissionTargetException;
 import com.github.zly2006.enclosure.utils.Permission;
 import com.github.zly2006.enclosure.utils.TrT;
 import com.github.zly2006.enclosure.utils.Utils;
+import dev.architectury.registry.registries.Registries;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
@@ -13,7 +14,6 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.nbt.*;
-import net.minecraft.registry.Registries;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
@@ -24,6 +24,7 @@ import net.minecraft.util.math.Box;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.math.Vec3i;
 import net.minecraft.util.profiler.Profiler;
+import net.minecraft.util.registry.Registry;
 import net.minecraft.world.Heightmap;
 import net.minecraft.world.PersistentState;
 import org.jetbrains.annotations.Contract;
@@ -131,7 +132,7 @@ public class EnclosureArea extends PersistentState implements PermissionHolder {
         int x = minX - 1;
         int z = minZ - 1;
         int y = world.getTopY(Heightmap.Type.MOTION_BLOCKING_NO_LEAVES, x, z);
-        if (y == world.getBottomY()) {
+        if (y == 0) {
             // this player is alive, but in a void
             minecraftServer.getPlayerManager().respawnPlayer(player, true);
             minecraftServer.getOverworld().getChunkManager().updatePosition(player);
@@ -242,8 +243,8 @@ public class EnclosureArea extends PersistentState implements PermissionHolder {
         if (father != null && father.isOwner(source)) {
             return true;
         }
-        if (source.getPlayer() != null) {
-            return source.getPlayer().getUuid().equals(owner);
+        if (source.getEntity() instanceof ServerPlayerEntity) {
+            return source.getEntity() .getUuid().equals(owner);
         } else {
             return false;
         }
@@ -257,8 +258,8 @@ public class EnclosureArea extends PersistentState implements PermissionHolder {
         if (father != null && father.isOwnerOrFatherAdmin(source)) {
             return true;
         }
-        if (source.getPlayer() != null) {
-            return source.getPlayer().getUuid().equals(owner) || hasPerm(source.getPlayer().getUuid(), Permission.ADMIN);
+        if (source.getEntity() instanceof ServerPlayerEntity) {
+            return source.getEntity().getUuid().equals(owner) || hasPerm(source.getEntity().getUuid(), Permission.ADMIN);
         } else {
             return false;
         }
@@ -266,7 +267,7 @@ public class EnclosureArea extends PersistentState implements PermissionHolder {
 
     @Override
     public void setPermission(@Nullable ServerCommandSource source, @NotNull UUID uuid, @NotNull Permission perm, @Nullable Boolean value) throws PermissionTargetException {
-        if (source != null && source.getPlayer() != null && !hasPerm(source.getPlayer(), Permission.ADMIN)) {
+        if (source != null && source.getEntity() instanceof ServerPlayerEntity && !hasPerm((ServerPlayerEntity) source.getEntity(), Permission.ADMIN)) {
             ServerMain.LOGGER.warn("Player " + source.getName() + " try to set permission of " + uuid + " in " + name + " without admin permission");
             ServerMain.LOGGER.warn("allowing, if you have any problem please report to the author");
         }
@@ -316,29 +317,29 @@ public class EnclosureArea extends PersistentState implements PermissionHolder {
     public MutableText serialize(@NotNull SerializationSettings settings, @Nullable ServerPlayerEntity player) {
         switch (settings) {
             case Name:
-                return Text.literal(getFullName());
+                return new LiteralText(getFullName());
             case Hover: {
                 return TrT.of("enclosure.message.select.from")
-                    .append(Text.literal("[").formatted(Formatting.DARK_GREEN))
-                    .append(Text.literal(String.valueOf(minX)).formatted(Formatting.GREEN))
-                    .append(Text.literal(", ").formatted(Formatting.DARK_GREEN))
-                    .append(Text.literal(String.valueOf(minY)).formatted(Formatting.GREEN))
-                    .append(Text.literal(", ").formatted(Formatting.DARK_GREEN))
-                    .append(Text.literal(String.valueOf(minZ)).formatted(Formatting.GREEN))
-                    .append(Text.literal("]").formatted(Formatting.DARK_GREEN))
+                    .append(new LiteralText("[").formatted(Formatting.DARK_GREEN))
+                    .append(new LiteralText(String.valueOf(minX)).formatted(Formatting.GREEN))
+                    .append(new LiteralText(", ").formatted(Formatting.DARK_GREEN))
+                    .append(new LiteralText(String.valueOf(minY)).formatted(Formatting.GREEN))
+                    .append(new LiteralText(", ").formatted(Formatting.DARK_GREEN))
+                    .append(new LiteralText(String.valueOf(minZ)).formatted(Formatting.GREEN))
+                    .append(new LiteralText("]").formatted(Formatting.DARK_GREEN))
                     .append(TrT.of("enclosure.message.select.to"))
-                    .append(Text.literal("[").formatted(Formatting.DARK_GREEN))
-                    .append(Text.literal(String.valueOf(maxX)).formatted(Formatting.GREEN))
-                    .append(Text.literal(", ").formatted(Formatting.DARK_GREEN))
-                    .append(Text.literal(String.valueOf(maxY)).formatted(Formatting.GREEN))
-                    .append(Text.literal(", ").formatted(Formatting.DARK_GREEN))
-                    .append(Text.literal(String.valueOf(maxZ)).formatted(Formatting.GREEN))
-                    .append(Text.literal("]").formatted(Formatting.DARK_GREEN))
+                    .append(new LiteralText("[").formatted(Formatting.DARK_GREEN))
+                    .append(new LiteralText(String.valueOf(maxX)).formatted(Formatting.GREEN))
+                    .append(new LiteralText(", ").formatted(Formatting.DARK_GREEN))
+                    .append(new LiteralText(String.valueOf(maxY)).formatted(Formatting.GREEN))
+                    .append(new LiteralText(", ").formatted(Formatting.DARK_GREEN))
+                    .append(new LiteralText(String.valueOf(maxZ)).formatted(Formatting.GREEN))
+                    .append(new LiteralText("]").formatted(Formatting.DARK_GREEN))
                     .append(TrT.of("enclosure.message.select.world"))
-                    .append(Text.literal(world.getRegistryKey().getValue().toString()).formatted(Formatting.GREEN))
+                    .append(new LiteralText(world.getRegistryKey().getValue().toString()).formatted(Formatting.GREEN))
                     .append("\n")
                     .append(TrT.of("enclosure.info.created_on"))
-                    .append(Text.literal(new SimpleDateFormat().format(new Date(createdOn))).formatted(Formatting.GOLD));
+                    .append(new LiteralText(new SimpleDateFormat().format(new Date(createdOn))).formatted(Formatting.GOLD));
             }
             case Summarize: {
                 MutableText text = serialize(SerializationSettings.Name, player);
@@ -350,15 +351,15 @@ public class EnclosureArea extends PersistentState implements PermissionHolder {
                 String ownerName = Utils.getNameByUUID(owner);
                 text.append((ownerName == null
                     ? TrT.of("enclosure.message.unknown_user").styled(style -> style.withColor(Formatting.RED))
-                    : Text.literal(ownerName).formatted(Formatting.GOLD))
+                    : new LiteralText(ownerName).formatted(Formatting.GOLD))
                     .styled(style -> style.withHoverEvent(
                         new HoverEvent(HoverEvent.Action.SHOW_TEXT,
-                            Text.literal("UUID: " + owner))
+                            new LiteralText("UUID: " + owner))
                     )));
                 return text;
             }
             case Full: {
-                MutableText text = Text.empty();
+                MutableText text = (MutableText) MutableText.EMPTY;
 
                 if (father != null) {
                     text.append(TrT.of("enclosure.info.father_land").styled(style -> style.withColor(Formatting.WHITE)));
@@ -375,7 +376,7 @@ public class EnclosureArea extends PersistentState implements PermissionHolder {
                 return text;
             }
             case BarredFull: {
-                final MutableText bar = Text.literal("------------------------------")
+                final MutableText bar = new LiteralText("------------------------------")
                     .styled(style -> style.withColor(Formatting.YELLOW).withBold(true));
                 return Text.empty()
                     .append(bar)
@@ -582,7 +583,7 @@ public class EnclosureArea extends PersistentState implements PermissionHolder {
                         if (world.getWorldChunk(pos).getBlockEntities().containsKey(pos)) {
                             BlockEntity blockEntity = world.getBlockEntity(pos);
                             if (blockEntity != null) {
-                                block.put("blockEntity", blockEntity.createNbt());
+                                block.put("blockEntity", blockEntity.toInitialChunkDataNbt());
                             }
                         }
                     }
@@ -636,11 +637,11 @@ public class EnclosureArea extends PersistentState implements PermissionHolder {
         Box box = new Box(minX, minY, minZ, maxX + 1, maxY + 1, maxZ + 1);
         world.getEntitiesByClass(ServerPlayerEntity.class, box, player -> true)
             .forEach(player -> {
-                player.sendMessage(TrT.of("enclosure.message.kick.rollback"));
+                player.sendMessage(TrT.of("enclosure.message.kick.rollback"),false);
                 this.kickPlayer(player);
             });
         profiler.push("block");
-        NbtList blocks = nbt.getList("blocks", NbtElement.LIST_TYPE);
+        NbtList blocks = nbt.getList("blocks", NbtTypes.LIST_TYPE);
         for (int i = 0; i <= maxX - minX; i++) {
             NbtList yzList = blocks.getList(i);
             for (int j = 0; j <= maxY - minY; j++) {
@@ -648,11 +649,11 @@ public class EnclosureArea extends PersistentState implements PermissionHolder {
                 for (int k = 0; k <= maxZ - minZ; k++) {
                     NbtCompound block = zList.getCompound(k);
                     BlockPos pos = new BlockPos(minX + i, minY + j, minZ + k);
-                    if (world.getWorldBorder().contains(pos) && pos.getY() >= world.getBottomY() && pos.getY() < world.getTopY()) {
+                    if (world.getWorldBorder().contains(pos) && pos.getY() >= 0 && pos.getY() < world.getTopY()) {
                         if (block.isEmpty()) {
                             world.setBlockState(pos, Blocks.AIR.getDefaultState());
                         } else {
-                            world.setBlockState(pos, NbtHelper.toBlockState(Registries.BLOCK.getReadOnlyWrapper(), block.getCompound("state")),
+                            world.setBlockState(pos, NbtHelper.toBlockState(Registry..BLOCK.getReadOnlyWrapper(), block.getCompound("state")),
                                 // don't update neighbors & light
                                 Block.NOTIFY_LISTENERS & Block.SKIP_LIGHTING_UPDATES);
                             if (block.contains("blockEntity")) {
@@ -678,7 +679,7 @@ public class EnclosureArea extends PersistentState implements PermissionHolder {
         }
         profiler.swap("rollbackEntities");
         world.getEntitiesByClass(Entity.class, box, entity -> !(entity instanceof PlayerEntity))
-            .forEach(Entity::discard);
+            .forEach(Entity::remove);
         NbtList entities = nbt.getList("entities", NbtElement.COMPOUND_TYPE);
         for (NbtElement entityNbt : entities) {
             EntityType.loadEntityWithPassengers((NbtCompound) entityNbt, world, entity -> {

@@ -5,6 +5,7 @@ import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.nbt.NbtString;
 import net.minecraft.server.world.ServerWorld;
+import net.minecraft.text.LiteralText;
 import net.minecraft.text.Text;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.PersistentState;
@@ -91,13 +92,13 @@ public class EnclosureList extends PersistentState {
     public String getAreaStatus(EnclosureArea area) {
         for (EnclosureArea item : areas.values()) {
             if (item.equals(area)) {
-                return Text.literal(ServerMain.translation.get("enclosure.message.existed").getAsString()).getString();
+                return new LiteralText(ServerMain.translation.get("enclosure.message.existed").getAsString()).getString();
             }
             else if (item.intersect(area)) {
-                return Text.literal(ServerMain.translation.get("enclosure.message.intersected").getAsString()).getString() + item.name;
+                return new LiteralText(ServerMain.translation.get("enclosure.message.intersected").getAsString()).getString() + item.name;
             }
             else if (item.name.equals(area.name)) {
-                return Text.literal(ServerMain.translation.get("enclosure.message.name_in_use").getAsString()).getString();
+                return new LiteralText(ServerMain.translation.get("enclosure.message.name_in_use").getAsString()).getString();
             }
         }
 

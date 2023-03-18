@@ -17,10 +17,10 @@ import static com.github.zly2006.enclosure.ServerMain.*;
 @Mixin(FarmlandBlock.class)
 public class MixinFarmlandBlock {
     @Inject(method = "onLandedUpon", at = @At("HEAD"), cancellable = true)
-    private void onLandedUpon(World world, BlockState state, BlockPos pos, Entity entity, float fallDistance, CallbackInfo ci) {
+    private void onLandedUpon(World world, BlockPos pos, Entity entity, float distance, CallbackInfo ci) {
         if (entity instanceof PlayerEntity player) {
             if (!Instance.checkPermission(world, pos, player, Permission.FARMLAND_DESTROY)) {
-                entity.sendMessage(Permission.FARMLAND_DESTROY.getNoPermissionMsg(player));
+                ((PlayerEntity) entity).sendMessage(Permission.FARMLAND_DESTROY.getNoPermissionMsg(player),false);
                 ci.cancel();
             }
         }

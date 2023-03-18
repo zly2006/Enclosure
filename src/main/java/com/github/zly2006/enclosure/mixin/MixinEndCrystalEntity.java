@@ -20,7 +20,7 @@ public abstract class MixinEndCrystalEntity extends Entity {
 
     @Inject(method = "damage", at = @At("HEAD"), cancellable = true)
     private void onDamage(DamageSource source, float amount, CallbackInfoReturnable<Boolean> cir) {
-        if (!Utils.commonOnDamage(source, getBlockPos(), getWorld(), Permission.BREAK_BLOCK)) {
+        if (!Utils.commonOnDamage(source, getBlockPos(), getEntityWorld(), Permission.BREAK_BLOCK)) {
             cir.setReturnValue(false);
         }
     }

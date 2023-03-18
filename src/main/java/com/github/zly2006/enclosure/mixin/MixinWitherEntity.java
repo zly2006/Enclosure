@@ -38,7 +38,7 @@ public abstract class MixinWitherEntity extends Entity {
         a = list.getArea(getBlockPos());
         if (a != null && !a.areaOf(getBlockPos()).hasPubPerm(Permission.WITHER_ENTER)) {
             // prevent entering enclosure
-            discard();
+            this.remove();
             ci.cancel();
         }
     }

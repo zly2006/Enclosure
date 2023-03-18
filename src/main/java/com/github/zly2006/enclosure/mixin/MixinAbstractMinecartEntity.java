@@ -20,7 +20,7 @@ public abstract class MixinAbstractMinecartEntity extends Entity {
 
     @Inject(method = "damage", at = @At("HEAD"), cancellable = true)
     private void onDamage(DamageSource source, float amount, CallbackInfoReturnable<Boolean> cir) {
-        if (!Utils.commonOnDamage(source, getBlockPos(), getWorld(), Permission.VEHICLE)) {
+        if (!Utils.commonOnDamage(source, getBlockPos(),getEntityWorld(), Permission.VEHICLE)) {
             cir.setReturnValue(false);
         }
     }
