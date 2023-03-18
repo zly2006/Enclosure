@@ -69,7 +69,7 @@ public class SessionListener implements
         if (player.getMainHandStack().getItem() == Instance.getOperationItem()) {
             if (getSession(player).getPos1() != pos) {
                 Session session = getSession(player);
-                session.sync((ServerPlayerEntity) player);
+                session.syncDimension((ServerPlayerEntity) player);
                 session.setPos1(pos);
                 session.trySync();
                 player.sendMessage(TrT.of("enclosure.message.set_pos_1").append(blockPos2string(pos)));
@@ -84,7 +84,7 @@ public class SessionListener implements
         if (player.getMainHandStack().getItem() == Instance.getOperationItem()) {
             if (getSession(player).getPos1() != pos) {
                 Session session = getSession(player);
-                session.sync((ServerPlayerEntity) player);
+                session.syncDimension((ServerPlayerEntity) player);
                 session.setPos1(pos);
                 session.trySync();
                 player.sendMessage(TrT.of("enclosure.message.set_pos_1").append(blockPos2string(pos)));
@@ -100,7 +100,7 @@ public class SessionListener implements
         if ((player.getMainHandStack().getItem() == Instance.getOperationItem() && hand.equals(Hand.MAIN_HAND)) || (player.getOffHandStack().getItem() == Instance.getOperationItem() && hand.equals(Hand.OFF_HAND))) {
             if (getSession(player).getPos2() != hitResult.getBlockPos()) {
                 Session session = getSession(player);
-                session.sync((ServerPlayerEntity) player);
+                session.syncDimension((ServerPlayerEntity) player);
                 session.setPos2(hitResult.getBlockPos());
                 session.trySync();
                 player.sendMessage(TrT.of("enclosure.message.set_pos_2").append(blockPos2string(hitResult.getBlockPos())));

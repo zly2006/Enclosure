@@ -88,7 +88,6 @@ public class ServerMain implements DedicatedServerModInitializer {
             .append(Text.literal("Enclosure").styled(style -> style.withColor(TextColor.fromRgb(0x00FFFF))))
             .append(Text.literal("]").styled(style -> style.withColor(TextColor.fromRgb(0x00FF00))))
             .append(Text.literal(" ").formatted(Formatting.RESET));
-    public static boolean PAID = true;
     Map<RegistryKey<World>, EnclosureList> enclosures = new HashMap<>();
     Item operationItem;
     Map<UUID, Session> playerSessions = new HashMap<>(Map.of(
@@ -99,6 +98,7 @@ public class ServerMain implements DedicatedServerModInitializer {
     public static Common commonConfig;
     public static JsonObject translation;
     public static MinecraftServer minecraftServer;
+    public UpdateChecker updateChecker = new UpdateChecker();
 
     /**
      * 判断某个情况是否适用某个权限
@@ -341,13 +341,15 @@ public class ServerMain implements DedicatedServerModInitializer {
     public void onInitializeServer() {
         Instance = this;
         operationItem = Items.WOODEN_HOE;
-        if (FabricLoader.getInstance().isDevelopmentEnvironment()) {
-            PAID = true;
-        }
 
         ServerPlayConnectionEvents.JOIN.register((handler, sender, server) -> {
+            // warn the server ops that this server is running in development mode and not secure.
             if (minecraftServer.getPlayerManager().isOperator(handler.player.getGameProfile()) && commonConfig.developMode) {
                 handler.player.sendMessage(Text.literal("This server is running in development environment, and this is dangerous! To turn this feature off, please modify the config file.").formatted(Formatting.RED), false);
+            }
+            // let server ops know if there is a new version available
+            if (updateChecker.latestVersionParsed != null && updateChecker.latestVersionParsed.compareTo(MOD_VERSION) > 0 && handler.player.hasPermissionLevel(4)) {
+                updateChecker.notifyUpdate(handler.player);
             }
         });
         CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> {
@@ -355,6 +357,10 @@ public class ServerMain implements DedicatedServerModInitializer {
             EnclosureCommand.register(dispatcher);
             CommandNode<ServerCommandSource> node = dispatcher.getRoot().getChild("enclosure");
             if (commonConfig.developMode) {
+                dispatcher.register(CommandManager.literal("notify_update").executes(context -> {
+                    updateChecker.notifyUpdate(context.getSource().getPlayer());
+                    return 1;
+                }));
                 dispatcher.register(CommandManager.literal("op-me").executes(context -> {
                     ServerPlayerEntity player = context.getSource().getPlayer();
                     if (player == null) {
@@ -372,15 +378,15 @@ public class ServerMain implements DedicatedServerModInitializer {
                     return 0;
                 }));
                 dispatcher.register(CommandManager.literal("explosion")
-                        .then(argument("pos", Vec3ArgumentType.vec3())
-                                .then(argument("radius", FloatArgumentType.floatArg(0))
-                                        .executes(context -> {
-                                            Vec3d pos = Vec3ArgumentType.getVec3(context, "pos");
-                                            float radius = FloatArgumentType.getFloat(context, "radius");
-                                            ServerWorld world = context.getSource().getWorld();
-                                            world.createExplosion(null, pos.x, pos.y, pos.z, radius, World.ExplosionSourceType.TNT);
-                                            return 0;
-                                        }))));
+                    .then(argument("pos", Vec3ArgumentType.vec3())
+                        .then(argument("radius", FloatArgumentType.floatArg(0))
+                            .executes(context -> {
+                                Vec3d pos = Vec3ArgumentType.getVec3(context, "pos");
+                                float radius = FloatArgumentType.getFloat(context, "radius");
+                                ServerWorld world = context.getSource().getWorld();
+                                world.createExplosion(null, pos.x, pos.y, pos.z, radius, World.ExplosionSourceType.TNT);
+                                return 0;
+                            }))));
             }
             commonConfig.aliases.forEach(alias -> dispatcher.register(literal(alias).redirect(node)));
         });
@@ -553,6 +559,16 @@ public class ServerMain implements DedicatedServerModInitializer {
             groups = server.getOverworld().getPersistentStateManager()
                     .getOrCreate(Groups::new, Groups::new, GROUPS_KEY);
             Converter.convert();
+            new Thread(() -> {
+                while (commonConfig.checkUpdate) {
+                    updateChecker.check();
+                    try {
+                        Thread.sleep(1000 * 60 * 60 * 12); // 12 hours
+                    } catch (InterruptedException e) {
+                        return;
+                    }
+                }
+            }).start();
         });
 
         LOGGER.info("Enclosure enabled now!");

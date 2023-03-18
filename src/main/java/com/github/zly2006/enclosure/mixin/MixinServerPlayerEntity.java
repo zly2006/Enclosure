@@ -46,11 +46,11 @@ import static net.fabricmc.api.EnvType.SERVER;
 @Mixin(ServerPlayerEntity.class)
 public abstract class MixinServerPlayerEntity extends PlayerEntity implements PlayerAccess {
     private long lastTeleportTime = 0;
-    private Vec3d lastPos = null;
-    private EnclosureArea lastArea = null;
-    private final List<ItemStack> drops = new ArrayList<>();
+    @Nullable private Vec3d lastPos = null;
+    @Nullable private EnclosureArea lastArea = null;
+    @NotNull private final List<ItemStack> drops = new ArrayList<>();
     @Shadow public ServerPlayNetworkHandler networkHandler;
-    private ServerWorld lastWorld;
+    @Nullable private ServerWorld lastWorld;
     private long permissionDeniedMsgTime = 0;
 
     @Override
@@ -176,7 +176,7 @@ public abstract class MixinServerPlayerEntity extends PlayerEntity implements Pl
             if (area != null) {
                 if (!area.hasPerm(player, MOVE)) {
                     player.sendMessage(MOVE.getNoPermissionMsg(player));
-                    if (area != lastArea) {
+                    if (area != lastArea && lastWorld != null && lastPos != null) {
                         // teleport back
                         player.teleport(lastWorld, lastPos.x, lastPos.y, lastPos.z, 0, 0);
                     } else {
@@ -188,7 +188,7 @@ public abstract class MixinServerPlayerEntity extends PlayerEntity implements Pl
                     sendFormattedMessage(player, area, true);
                 }
                 // glowing effect
-                if (Boolean.TRUE.equals(area.hasPerm(player, GLOWING))) {
+                if (area.hasPerm(player, GLOWING)) {
                     player.addStatusEffect(new StatusEffectInstance(StatusEffects.GLOWING, 15, 1, false, false, false));
                 }
             }

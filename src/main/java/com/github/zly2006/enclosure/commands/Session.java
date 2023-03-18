@@ -79,7 +79,7 @@ public class Session {
         pos2 = world.getSpawnPos();
     }
 
-    public void sync(@NotNull ServerPlayerEntity player) {
+    public void syncDimension(@NotNull ServerPlayerEntity player) {
         if (world != player.getWorld()) {
             reset(player.getWorld());
         }

@@ -80,8 +80,8 @@ public class EnclosureCommand {
                     source.sendMessage(TrT.of("enclosure.about.translator"));
                     source.sendMessage(TrT.of("enclosure.about.team_page"));
                     source.sendMessage(TrT.of("enclosure.about.version.server").append(MOD_VERSION.getFriendlyString()));
-                    if (source.getPlayer() != null && EnclosureInstalledC2SPacket.isInstalled(source.getPlayer())) {
-                        Version version = EnclosureInstalledC2SPacket.clientVersion(source.getPlayer());
+                    if (player != null && EnclosureInstalledC2SPacket.isInstalled(player)) {
+                        Version version = EnclosureInstalledC2SPacket.clientVersion(player);
                         source.sendMessage(TrT.of("enclosure.about.version.client").append(version.getFriendlyString()));
                     }
                     source.sendMessage(TrT.of("enclosure.about.copyright"));
@@ -329,7 +329,6 @@ public class EnclosureCommand {
                     }))))
                 .then(literal("view")
                     .executes(handleException(context -> {
-                        ServerPlayerEntity executor = context.getSource().getPlayer();
                         Session session = sessionOf(context.getSource());
                         checkSession(context);
                         session.trySync();
@@ -352,17 +351,6 @@ public class EnclosureCommand {
                         }
                         return 0;
                     })))
-                .then(optionalEnclosure(literal("resize"), (area, context) -> {
-                    Session session = sessionOf(context.getSource());
-                    checkSession(context);
-                    session.pos1 = new BlockPos(area.getMinX(), area.getMinY(), area.getMinZ());
-                    session.pos2 = new BlockPos(area.getMaxX(), area.getMaxY(), area.getMaxZ());
-                    area.setWorld(area.getWorld());
-                    if (context.getSource().getPlayer() != null) {
-                        session.sync(context.getSource().getPlayer());
-                    }
-                    context.getSource().sendMessage(TrT.of("enclosure.message.selection_updated"));
-                }))
                 .then(literal("shrink")
                     .requires(ServerCommandSource::isExecutedByPlayer)
                     .then(argument("amount", IntegerArgumentType.integer(1))
@@ -377,8 +365,7 @@ public class EnclosureCommand {
                             session.trySync();
                             context.getSource().sendFeedback(TrT.of("enclosure.message.shrunk")
                                     .append(String.valueOf(amount))
-                                    .append(TrT.of("enclosure.message.resized." + direction.getName()))
-                                , false);
+                                    .append(TrT.of("enclosure.message.resized." + direction.getName())), false);
                             return 0;
                         }))))
                 .then(literal("shift")
@@ -396,8 +383,7 @@ public class EnclosureCommand {
                             session.trySync();
                             context.getSource().sendFeedback(TrT.of("enclosure.message.shifted")
                                     .append(String.valueOf(amount))
-                                    .append(TrT.of("enclosure.message.resized." + direction.getName()))
-                                , false);
+                                    .append(TrT.of("enclosure.message.resized." + direction.getName())), false);
                             return 0;
                         }))))
                 .then(literal("expand")
@@ -415,8 +401,7 @@ public class EnclosureCommand {
                             session.trySync();
                             context.getSource().sendFeedback(TrT.of("enclosure.message.expanded")
                                     .append(String.valueOf(amount))
-                                    .append(TrT.of("enclosure.message.resized." + direction.getName().toLowerCase()))
-                                , false);
+                                    .append(TrT.of("enclosure.message.resized." + direction.getName().toLowerCase())), false);
                             return 0;
                         }))))
                 .then(literal("max_height")
@@ -453,10 +438,23 @@ public class EnclosureCommand {
                         session.trySync();
                         return 0;
                     })))
-                .then(optionalEnclosure(literal("resize").requires(source -> source.hasPermissionLevel(2)),
+                .then(optionalEnclosure(literal("resize"),
                     (area, context) -> {
                         Session session = sessionOf(context.getSource());
                         checkSession(context);
+                        checkSessionSize(session, context);
+                        if (!area.isOwner(context.getSource())) {
+                            error(TrT.of("enclosure.message.not_owner"));
+                        }
+                        EnclosureArea after = new EnclosureArea(session, "");
+                        if (area instanceof Enclosure enclosure) {
+                            Optional<EnclosureArea> first = enclosure.getSubEnclosures().getAreas()
+                                .stream().filter(sub -> !after.includesArea(sub)).findFirst();
+                            // because sub-enclosures are not included in the area
+                            if (first.isPresent()) {
+                                error(TrT.of("enclosure.message.sub_enclosure_outside", first.get().getFullName()));
+                            }
+                        }
                         int minX = Math.min(session.pos1.getX(), session.pos2.getX());
                         int minY = Math.min(session.pos1.getY(), session.pos2.getY());
                         int minZ = Math.min(session.pos1.getZ(), session.pos2.getZ());
@@ -477,7 +475,7 @@ public class EnclosureCommand {
                     .executes(handleException(context -> {
                         EnclosureArea res = getEnclosure(context);
                         if (!res.isOwner(context.getSource())) {
-                            error(ADMIN.getNoPermissionMsg(context.getSource().getPlayer()));
+                            error(TrT.of("enclosure.message.not_owner"), context);
                         }
                         ConfirmManager.confirm(context.getSource().getPlayer(), () -> {
                             EnclosureList list = Instance.getAllEnclosures(res.getWorld());
@@ -509,7 +507,7 @@ public class EnclosureCommand {
                             if (!context.getSource().hasPermissionLevel(4) &&
                                 context.getSource().getPlayer() != null &&
                                 !res.isOwner(context.getSource())) {
-                                error(ADMIN.getNoPermissionMsg(context.getSource().getPlayer()));
+                                error(TrT.of("enclosure.message.not_owner"), context);
                             }
                             if (Instance.getEnclosure(name) != null) {
                                 error(TrT.of("enclosure.message.name_in_use"), context);
@@ -521,8 +519,7 @@ public class EnclosureCommand {
                             list.remove(res.getName());
                             res.setName(name);
                             list.addArea(res);
-                            Instance.getAllEnclosures(res.getWorld())
-                                .markDirty();
+                            res.markDirty();
                             return 0;
                         })))))
             .then(literal("tp")
@@ -546,7 +543,6 @@ public class EnclosureCommand {
                             if (!down.getMaterial().blocksMovement() ||
                                 (state.getMaterial().blocksMovement() && up.getMaterial().blocksMovement())) {
                                 context.getSource().sendMessage(TrT.of("enclosure.message.teleport_warning")
-
                                     .formatted(Formatting.YELLOW));
                                 ConfirmManager.confirm(context.getSource().getPlayer(), () -> area.teleport(player));
                             } else {
@@ -609,7 +605,7 @@ public class EnclosureCommand {
             .then(optionalEnclosure(literal("set"),
                 string -> (area, context, extra) -> {
                     ServerPlayerEntity playerExecutor = context.getSource().getPlayer();
-                    if (playerExecutor != null && !Boolean.TRUE.equals(area.hasPerm(playerExecutor, ADMIN))) {
+                    if (playerExecutor != null && !area.hasPerm(playerExecutor, ADMIN)) {
                         error(ADMIN.getNoPermissionMsg(playerExecutor));
                     }
                     Boolean value = getOptionalBoolean(context).orElse(null);
@@ -729,7 +725,7 @@ public class EnclosureCommand {
                             if (!context.getSource().hasPermissionLevel(4) &&
                                 context.getSource().getPlayer() != null &&
                                 !res.isOwner(context.getSource())) {
-                                error(ADMIN.getNoPermissionMsg(context.getSource().getPlayer()));
+                                error(TrT.of("enclosure.message.not_owner"), context);
                             }
                             ConfirmManager.confirm(context.getSource().getPlayer(), () -> {
                                 LandLimits limitsOfReceiver = limits;
@@ -865,7 +861,7 @@ public class EnclosureCommand {
                             error(TrT.of("enclosure.message.name_in_use"), context);
                         }
                         if (executor != null && !enclosure.get().isOwner(context.getSource())) {
-                            error(ADMIN.getNoPermissionMsg(executor));
+                            error(TrT.of("enclosure.message.not_owner"), context);
                         }
                         EnclosureArea intersectArea = sessionOf(context.getSource()).intersect(enclosure.get().getSubEnclosures());
                         if (intersectArea != null) {
@@ -1315,7 +1311,7 @@ public class EnclosureCommand {
 
     private static void checkSessionSize(Session session, CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
         Text text = session.isValid(ServerMain.limits);
-        if (text != null) {
+        if (text != null && !context.getSource().hasPermissionLevel(4)) {
             throw new SimpleCommandExceptionType(text).createWithContext(new StringReader(context.getInput()));
         }
     }

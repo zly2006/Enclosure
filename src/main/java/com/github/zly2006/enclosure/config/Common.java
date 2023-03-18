@@ -36,4 +36,6 @@ public class Common {
     public String enterMessageHeader = "";
     @SerializedName("leave_message_header")
     public String leaveMessageHeader = "";
+    @SerializedName("check_update")
+    public boolean checkUpdate = true;
 }
