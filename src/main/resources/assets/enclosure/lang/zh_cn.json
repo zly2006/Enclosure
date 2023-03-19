@@ -51,6 +51,7 @@
   "enclosure.menu.page.1": " / ",
   "enclosure.menu.previous": "<上一页 ",
   "enclosure.message.added_user": "添加了玩家: %s",
+  "enclosure.message.backup.another_in_progress": "已有一个备份正在进行中",
   "enclosure.message.backup_file_not_found": "备份文件未找到",
   "enclosure.message.change_teleport_position.0": "更改领地: ",
   "enclosure.message.change_teleport_position.1": " 的传送点至 ",

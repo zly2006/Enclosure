@@ -1,5 +1,6 @@
 package com.github.zly2006.enclosure;
 
+import com.github.zly2006.enclosure.backup.BackupTask;
 import com.github.zly2006.enclosure.commands.ConfirmManager;
 import com.github.zly2006.enclosure.commands.EnclosureCommand;
 import com.github.zly2006.enclosure.commands.Session;
@@ -24,6 +25,7 @@ import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerWorldEvents;
 import net.fabricmc.fabric.api.event.player.*;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
@@ -98,6 +100,7 @@ public class ServerMain implements DedicatedServerModInitializer {
     public static Common commonConfig;
     public static JsonObject translation;
     public static MinecraftServer minecraftServer;
+    public static BackupTask backupTask = null;
     public UpdateChecker updateChecker = new UpdateChecker();
 
     /**
@@ -391,6 +394,15 @@ public class ServerMain implements DedicatedServerModInitializer {
             commonConfig.aliases.forEach(alias -> dispatcher.register(literal(alias).redirect(node)));
         });
         ServerLifecycleEvents.SERVER_STARTING.register(server -> minecraftServer = server);
+        ServerTickEvents.START_SERVER_TICK.register(server -> {
+            if (backupTask != null) {
+                backupTask.tick();
+                server.getPlayerManager().broadcast(
+                    Text.of("Backup task is running, please wait... (%d/%d)".formatted(backupTask.totalExecuted, backupTask.executor.totalSteps())),
+                    true
+                );
+            }
+        });
 
         // add listeners
         PlayerBlockBreakEvents.BEFORE.register((world, player, pos, state, blockEntity) -> {

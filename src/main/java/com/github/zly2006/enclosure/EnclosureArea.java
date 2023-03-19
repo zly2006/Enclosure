@@ -1,42 +1,43 @@
 package com.github.zly2006.enclosure;
 
+import com.github.zly2006.enclosure.backup.BackupTask;
+import com.github.zly2006.enclosure.backup.StreamDataInput;
+import com.github.zly2006.enclosure.backup.StreamDataOutput;
+import com.github.zly2006.enclosure.backup.executors.BEv1;
 import com.github.zly2006.enclosure.commands.Session;
 import com.github.zly2006.enclosure.exceptions.PermissionTargetException;
 import com.github.zly2006.enclosure.utils.Permission;
 import com.github.zly2006.enclosure.utils.TrT;
 import com.github.zly2006.enclosure.utils.Utils;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.Blocks;
-import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.nbt.*;
-import net.minecraft.registry.Registries;
+import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.NbtDouble;
+import net.minecraft.nbt.NbtList;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.*;
+import net.minecraft.util.FixedBufferInputStream;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Box;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.math.Vec3i;
-import net.minecraft.util.profiler.Profiler;
 import net.minecraft.world.Heightmap;
 import net.minecraft.world.PersistentState;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.io.*;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.zip.GZIPInputStream;
+import java.util.zip.GZIPOutputStream;
 
 import static com.github.zly2006.enclosure.ServerMain.Instance;
 import static com.github.zly2006.enclosure.ServerMain.minecraftServer;
 
 public class EnclosureArea extends PersistentState implements PermissionHolder {
+    boolean locked = false;
     int minX;
     int minY;
     int minZ;
@@ -190,7 +191,7 @@ public class EnclosureArea extends PersistentState implements PermissionHolder {
             maxZ >= area.maxZ;
     }
 
-    public boolean inArea(EnclosureArea area) {
+public boolean  inArea(EnclosureArea area) {
         return minX >= area.minX &&
             minY >= area.minY &&
             minZ >= area.minZ &&
@@ -264,8 +265,15 @@ public class EnclosureArea extends PersistentState implements PermissionHolder {
         }
     }
 
+    void checkLock() {
+        if (locked) {
+            throw new RuntimeException("This area is locked");
+        }
+    }
+
     @Override
     public void setPermission(@Nullable ServerCommandSource source, @NotNull UUID uuid, @NotNull Permission perm, @Nullable Boolean value) throws PermissionTargetException {
+        checkLock();
         if (source != null && source.getPlayer() != null && !hasPerm(source.getPlayer(), Permission.ADMIN)) {
             ServerMain.LOGGER.warn("Player " + source.getName() + " try to set permission of " + uuid + " in " + name + " without admin permission");
             ServerMain.LOGGER.warn("allowing, if you have any problem please report to the author");
@@ -394,6 +402,7 @@ public class EnclosureArea extends PersistentState implements PermissionHolder {
     }
 
     public void setWorld(ServerWorld world) {
+        checkLock();
         if (world == this.world) {
             return;
         }
@@ -409,6 +418,7 @@ public class EnclosureArea extends PersistentState implements PermissionHolder {
     }
 
     public void setName(String name) {
+        checkLock();
         this.name = name;
         markDirty();
     }
@@ -418,6 +428,7 @@ public class EnclosureArea extends PersistentState implements PermissionHolder {
     }
 
     public void setMinX(int minX) {
+        checkLock();
         this.minX = minX;
         markDirty();
     }
@@ -427,6 +438,7 @@ public class EnclosureArea extends PersistentState implements PermissionHolder {
     }
 
     public void setMinY(int minY) {
+        checkLock();
         this.minY = minY;
         markDirty();
     }
@@ -441,6 +453,7 @@ public class EnclosureArea extends PersistentState implements PermissionHolder {
     }
 
     public void setMinZ(int minZ) {
+        checkLock();
         this.minZ = minZ;
         markDirty();
     }
@@ -450,6 +463,7 @@ public class EnclosureArea extends PersistentState implements PermissionHolder {
     }
 
     public void setMaxX(int maxX) {
+        checkLock();
         this.maxX = maxX;
         markDirty();
     }
@@ -459,6 +473,7 @@ public class EnclosureArea extends PersistentState implements PermissionHolder {
     }
 
     public void setMaxY(int maxY) {
+        checkLock();
         this.maxY = maxY;
         markDirty();
     }
@@ -477,6 +492,7 @@ public class EnclosureArea extends PersistentState implements PermissionHolder {
     }
 
     public void setOwner(UUID owner) {
+        checkLock();
         permissionsMap.remove(this.owner);
         this.owner = owner;
         markDirty();
@@ -487,6 +503,7 @@ public class EnclosureArea extends PersistentState implements PermissionHolder {
     }
 
     public void setTeleportPos(Vec3d teleportPos, float yaw, float pitch) {
+        checkLock();
         this.teleportPos = teleportPos;
         this.yaw = yaw;
         this.pitch = pitch;
@@ -498,6 +515,7 @@ public class EnclosureArea extends PersistentState implements PermissionHolder {
     }
 
     public void setEnterMessage(@NotNull String enterMessage) {
+        checkLock();
         this.enterMessage = enterMessage;
         markDirty();
     }
@@ -507,6 +525,7 @@ public class EnclosureArea extends PersistentState implements PermissionHolder {
     }
 
     public void setLeaveMessage(@NotNull String leaveMessage) {
+        checkLock();
         this.leaveMessage = leaveMessage;
         markDirty();
     }
@@ -526,6 +545,7 @@ public class EnclosureArea extends PersistentState implements PermissionHolder {
      * @param father 权限继承父节点
      */
     public void setFather(@Nullable PermissionHolder father) {
+        checkLock();
         if (father instanceof Enclosure enclosure && this.world != enclosure.world) {
             throw new IllegalArgumentException("father must be in the same world");
         }
@@ -541,6 +561,10 @@ public class EnclosureArea extends PersistentState implements PermissionHolder {
 
     public long getCreatedOn() {
         return this.createdOn;
+    }
+
+    public void setCreatedOn(long createdOn) {
+        this.createdOn = createdOn;
     }
 
     public void teleport(ServerPlayerEntity player) {
@@ -562,60 +586,37 @@ public class EnclosureArea extends PersistentState implements PermissionHolder {
         return false;
     }
 
-    public NbtCompound saveTerrain() {
-        NbtCompound nbt = new NbtCompound();
-        nbt.putString("name", getFullName());
-        nbt.putInt("version", 1);
-        nbt.put("enclosure", this.writeNbt(new NbtCompound()));
-        NbtList blocks = new NbtList();
-        for (int i = 0; i <= maxX - minX; i++) {
-            NbtList yzList = new NbtList();
-            for (int j = 0; j <= maxY - minY; j++) {
-                NbtList zList = new NbtList();
-                for (int k = 0; k <= maxZ - minZ; k++) {
-                    NbtCompound block = new NbtCompound();
-                    BlockPos pos = new BlockPos(minX + i, minY + j, minZ + k);
-                    BlockState state = world.getBlockState(pos);
-                    // air is represented by empty compound
-                    if (!state.isAir()) {
-                        block.put("state", NbtHelper.fromBlockState(state));
-                        if (world.getWorldChunk(pos).getBlockEntities().containsKey(pos)) {
-                            BlockEntity blockEntity = world.getBlockEntity(pos);
-                            if (blockEntity != null) {
-                                block.put("blockEntity", blockEntity.createNbt());
-                            }
-                        }
-                    }
-                    zList.add(block);
-                }
-                yzList.add(zList);
-            }
-            blocks.add(yzList);
-        }
-        nbt.put("blocks", blocks);
-        NbtList entities = new NbtList();
-        world.getEntitiesByClass(
-            Entity.class,
-            new Box(minX, minY, minZ, maxX + 1, maxY + 1, maxZ + 1),
-            entity -> !(entity instanceof PlayerEntity)
-        ).forEach(entity -> {
-            NbtCompound entityNbt = new NbtCompound();
-            if (entity.saveSelfNbt(entityNbt)) {
-                entities.add(entityNbt);
-            }
-        });
-        nbt.put("entities", entities);
-        return nbt;
+    public BackupTask saveTerrain(@NotNull File file) throws IOException {
+        StreamDataOutput output = new StreamDataOutput(new BufferedOutputStream(new GZIPOutputStream(new FileOutputStream(file))));
+        return new BackupTask(this, new BEv1(output, this), null, output, false, 100000);
     }
 
-    public void rollback(@NotNull NbtCompound nbt) {
-        if (!nbt.contains("enclosure") || !nbt.contains("blocks") || !nbt.contains("entities")) {
-            throw new IllegalArgumentException("nbt id not enclosure backup");
-        }
-        Enclosure enclosure = new Enclosure(nbt.getCompound("enclosure"));
-        if (!enclosure.name.equals(name)) {
-            throw new IllegalArgumentException("nbt is not for this enclosure");
-        }
+    public BackupTask rollback(@NotNull File file) throws IOException {
+        StreamDataInput input = new StreamDataInput(new FixedBufferInputStream(new GZIPInputStream(new FileInputStream(file))));
+        return new BackupTask(this, new BEv1(input, this), input, null, true, 10000);
+    }
+
+    public void setPermissionsMap(Map<UUID, Map<String, Boolean>> permissionsMap) {
+        this.permissionsMap = permissionsMap;
+    }
+
+    public float getYaw() {
+        return yaw;
+    }
+
+    public float getPitch() {
+        return pitch;
+    }
+
+    public void lock() {
+        this.locked = true;
+    }
+
+    public void unlock() {
+        this.locked = false;
+    }
+
+    public void mirrorFrom(EnclosureArea enclosure) {
         this.minX = enclosure.minX;
         this.minY = enclosure.minY;
         this.minZ = enclosure.minZ;
@@ -630,64 +631,7 @@ public class EnclosureArea extends PersistentState implements PermissionHolder {
         this.leaveMessage = enclosure.leaveMessage;
         this.permissionsMap = enclosure.permissionsMap;
         this.createdOn = enclosure.createdOn;
-
-        Profiler profiler = world.getProfiler();
-        profiler.push("enclosureRollbackProcess");
-        Box box = new Box(minX, minY, minZ, maxX + 1, maxY + 1, maxZ + 1);
-        world.getEntitiesByClass(ServerPlayerEntity.class, box, player -> true)
-            .forEach(player -> {
-                player.sendMessage(TrT.of("enclosure.message.kick.rollback"));
-                this.kickPlayer(player);
-            });
-        profiler.push("block");
-        NbtList blocks = nbt.getList("blocks", NbtElement.LIST_TYPE);
-        for (int i = 0; i <= maxX - minX; i++) {
-            NbtList yzList = blocks.getList(i);
-            for (int j = 0; j <= maxY - minY; j++) {
-                NbtList zList = yzList.getList(j);
-                for (int k = 0; k <= maxZ - minZ; k++) {
-                    NbtCompound block = zList.getCompound(k);
-                    BlockPos pos = new BlockPos(minX + i, minY + j, minZ + k);
-                    if (world.getWorldBorder().contains(pos) && pos.getY() >= world.getBottomY() && pos.getY() < world.getTopY()) {
-                        if (block.isEmpty()) {
-                            world.setBlockState(pos, Blocks.AIR.getDefaultState());
-                        } else {
-                            world.setBlockState(pos, NbtHelper.toBlockState(Registries.BLOCK.getReadOnlyWrapper(), block.getCompound("state")),
-                                // don't update neighbors & light
-                                Block.NOTIFY_LISTENERS & Block.SKIP_LIGHTING_UPDATES);
-                            if (block.contains("blockEntity")) {
-                                BlockEntity blockEntity = world.getBlockEntity(pos);
-                                if (blockEntity != null) {
-                                    profiler.push("rollbackBlockEntity");
-                                    blockEntity.readNbt(block.getCompound("blockEntity"));
-                                    profiler.pop();
-                                }
-                            }
-                        }
-                        world.getChunkManager().markForUpdate(pos);
-                    }
-                }
-            }
-        }
-        profiler.swap("updateLighting");
-        for (int i = 0; i <= maxX - minX; i++) {
-            for (int k = 0; k <= maxZ - minZ; k++) {
-                BlockPos pos = new BlockPos(minX + i, maxY, minZ + k);
-                world.getChunkManager().getLightingProvider().checkBlock(pos);
-            }
-        }
-        profiler.swap("rollbackEntities");
-        world.getEntitiesByClass(Entity.class, box, entity -> !(entity instanceof PlayerEntity))
-            .forEach(Entity::discard);
-        NbtList entities = nbt.getList("entities", NbtElement.COMPOUND_TYPE);
-        for (NbtElement entityNbt : entities) {
-            EntityType.loadEntityWithPassengers((NbtCompound) entityNbt, world, entity -> {
-                world.spawnEntity(entity);
-                return entity;
-            });
-        }
-        profiler.pop();
+        this.locked = false;
         markDirty();
-        profiler.pop();
     }
 }

@@ -36,8 +36,6 @@ import net.minecraft.command.argument.DimensionArgumentType;
 import net.minecraft.command.argument.TextArgumentType;
 import net.minecraft.command.argument.UuidArgumentType;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtIo;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -53,7 +51,8 @@ import net.minecraft.world.TeleportTarget;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.text.SimpleDateFormat;
@@ -901,8 +900,13 @@ public class EnclosureCommand {
                                 try {
                                     Files.createDirectories(enclosuresBackup);
                                     Path path = enclosuresBackup.resolve(new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss").format(new Date()) + ".dat");
-                                    NbtIo.writeCompressed(area.saveTerrain(), path.toFile());
-                                    context.getSource().sendMessage(TrT.of("enclosure.message.saved_backup", path.getFileName()));
+                                    if (backupTask == null) {
+                                        backupTask = area.saveTerrain(path.toFile());
+                                        context.getSource().sendMessage(TrT.of("enclosure.message.saved_backup", path.getFileName()));
+                                    }
+                                    else {
+                                        error(TrT.of("enclosure.message.backup.another_in_progress"));
+                                    }
                                 } catch (IOException e) {
                                     throw new RuntimeException(e);
                                 }
@@ -938,10 +942,14 @@ public class EnclosureCommand {
                                         .resolve(filename).toFile();
                                     if (enclosuresBackup.exists()) {
                                         try {
-                                            NbtCompound nbt = NbtIo.readCompressed(enclosuresBackup);
-                                            area.rollback(nbt);
+                                            if (backupTask == null) {
+                                                backupTask = area.rollback(enclosuresBackup);
+                                            }
+                                            else {
+                                                error(TrT.of("enclosure.message.backup.another_in_progress"));
+                                            }
                                         } catch (IOException e) {
-                                            e.printStackTrace();
+                                            throw new RuntimeException(e);
                                         }
                                     } else {
                                         context.getSource().sendError(TrT.of("enclosure.message.backup_file_not_found"));

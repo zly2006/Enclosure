@@ -51,6 +51,7 @@
   "enclosure.menu.page.1": " of ",
   "enclosure.menu.previous": "<Prev ",
   "enclosure.message.added_user": "Added user: %s",
+  "enclosure.message.backup.another_in_progress": "Another backup is in progress, please wait",
   "enclosure.message.backup_file_not_found": "Backup file not found",
   "enclosure.message.change_teleport_position.0": "Changed tp pos of ",
   "enclosure.message.change_teleport_position.1": " to ",
