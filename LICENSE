@@ -1,5 +1,13 @@
                Enclosure Open Source License
+                  Version 1, 10 March 2023
 
+敬告：本协议原文由简体中文（中国大陆）书写，其他不同语言版本的协议版本均为第三方贡献，在翻译上可能存在偏差，因此仅供读者与开发者者参考。如果其他版本的协议表述与“简体中文（中国大陆）版本”冲突，请以“简体中文（中国大陆）版本”中的内容为准。
+
+Warning: The original text of this license is written in simplified Chinese (Chinese Mainland), and other versions of the license in different languages are contributed by 3rd parties. There may be deviations in translation, so they are only for the reference of readers and developers. If the expression of other versions of this license conflicts with the "Simplified Chinese (Chinese Mainland) version", the "Simplified Chinese (Chinese Mainland) version" shall prevail.
+
+
+
+- 简体中文（中国大陆）版本：
 我们授予您以下的权利，并且您同意遵守以下的义务：
 
 权利：
@@ -25,3 +33,30 @@
 [1]：商业行为是指：将本软件或者本软件的衍生作品中来自于本软件的部分用于商业目的。
      衍生作品包括基于本软件上的补丁、修改、增强、翻译、基于本软件提供的网络服务(如Minecraft服务器)等。
      对本项目衍生作品作者的无偿捐助(不存在任何因捐助产生的虚拟或现实的回馈)不属于商业行为。
+
+
+- English version：
+We grant you the following rights, and you agree to comply with the following obligations:
+
+Rights:
+
+1. Freedom to distribute the source code or binary copies or derivative works of this software within the limits of this license.
+2. Modify the code of this software.
+3. Use this software in a reasonable manner.
+
+Obligations:
+
+1. Any code from this project must be open source under this license or its updated versions.
+2. Users who receive this software or its derivative works must be aware of the existence of this license and must be able to obtain the source code of the part of this project contained in this software or its derivative works.
+3. You may not change the parts of this project that are marked as unchangeable, nor can you prevent these codes from being executed by users and players through any means.
+4. You cannot change this license when modifying the code of this project.
+5. This software and its derivative works may not be used for commercial purposes [1].
+6. You must reserve the copyright statement and copyright information in this license.
+
+Disclaimer:
+
+1. This software is provided "as is" without any express or implied warranties, including but not limited to warranties of merchantability and fitness for a particular purpose.
+2. The author shall not be liable for any direct, indirect, incidental, special, punitive, or consequential damages arising from the use of this software by any user, including but not limited to loss of profits, data loss, or business interruption.
+
+
+[1]: Commercial use refers to: using parts of this software or its derivative works contained in this software for commercial purposes. Derivative works refer to patches, modifications, enhancements, translations, network services based on this software (such as Minecraft servers), etc. Free donations to the authors of derivative works of this project (without any virtual or real feedback resulting from the donation) do not constitute commercial use.
