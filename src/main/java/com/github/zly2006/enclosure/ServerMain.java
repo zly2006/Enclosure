@@ -1,9 +1,7 @@
 package com.github.zly2006.enclosure;
 
-import com.github.zly2006.enclosure.backup.BackupTask;
-import com.github.zly2006.enclosure.commands.ConfirmManager;
-import com.github.zly2006.enclosure.commands.EnclosureCommand;
-import com.github.zly2006.enclosure.commands.Session;
+import com.github.zly2006.enclosure.command.EnclosureCommandKt;
+import com.github.zly2006.enclosure.command.Session;
 import com.github.zly2006.enclosure.config.Common;
 import com.github.zly2006.enclosure.config.Converter;
 import com.github.zly2006.enclosure.config.LandLimits;
@@ -25,7 +23,6 @@ import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
-import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerWorldEvents;
 import net.fabricmc.fabric.api.event.player.*;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
@@ -92,15 +89,12 @@ public class ServerMain implements DedicatedServerModInitializer {
             .append(Text.literal(" ").formatted(Formatting.RESET));
     Map<RegistryKey<World>, EnclosureList> enclosures = new HashMap<>();
     Item operationItem;
-    Map<UUID, Session> playerSessions = new HashMap<>(Map.of(
-            new UUID(0, 0), new Session()
-    ));
+    Map<UUID, Session> playerSessions = new HashMap<>();
     Groups groups;
     public static LandLimits limits;
     public static Common commonConfig;
     public static JsonObject translation;
     public static MinecraftServer minecraftServer;
-    public static BackupTask backupTask = null;
     public UpdateChecker updateChecker = new UpdateChecker();
 
     /**
@@ -196,15 +190,14 @@ public class ServerMain implements DedicatedServerModInitializer {
     public EnclosureList getAllEnclosures(ServerWorld world) {
         return Optional.ofNullable(enclosures.get(world.getRegistryKey()))
                 .orElseGet(() -> {
-                    EnclosureList list = new EnclosureList();
-                    list.bind2world(world);
+                    EnclosureList list = new EnclosureList(world);
                     return list;
                 });
     }
 
     public List<Enclosure> getAllEnclosures(UUID uuid) {
         return getAllEnclosures().stream()
-                .filter(res -> (uuid == null) || (uuid.equals(res.owner)))
+                .filter(res -> (uuid == null) || (uuid.equals(res.getOwner())))
                 .toList();
     }
 
@@ -226,7 +219,7 @@ public class ServerMain implements DedicatedServerModInitializer {
                 .toList();
         while (name.contains(".")) {
             String father = name.substring(0, name.indexOf('.'));
-            Optional<EnclosureArea> oa = list.stream().filter(r -> r.name.equalsIgnoreCase(father)).findAny();
+            Optional<EnclosureArea> oa = list.stream().filter(r -> r.getName().equalsIgnoreCase(father)).findAny();
             if (oa.isEmpty() || !(oa.get() instanceof Enclosure))
                 return null;
             list = ((Enclosure) oa.get()).subEnclosures.areas.values().stream().toList();
@@ -234,7 +227,7 @@ public class ServerMain implements DedicatedServerModInitializer {
         }
         String finalName = name;
         return list.stream()
-                .filter(a -> a.name.equalsIgnoreCase(finalName))
+                .filter(a -> a.getName().equalsIgnoreCase(finalName))
                 .findFirst()
                 .orElse(null);
     }
@@ -351,13 +344,12 @@ public class ServerMain implements DedicatedServerModInitializer {
                 handler.player.sendMessage(Text.literal("This server is running in development environment, and this is dangerous! To turn this feature off, please modify the config file.").formatted(Formatting.RED), false);
             }
             // let server ops know if there is a new version available
-            if (updateChecker.latestVersionParsed != null && updateChecker.latestVersionParsed.compareTo(MOD_VERSION) > 0 && handler.player.hasPermissionLevel(4)) {
+            if (updateChecker.getLatestVersion() != null && updateChecker.getLatestVersion().getVersionNumber().compareTo(MOD_VERSION) > 0 && handler.player.hasPermissionLevel(4)) {
                 updateChecker.notifyUpdate(handler.player);
             }
         });
         CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> {
-            ConfirmManager.register(dispatcher, registryAccess, environment);
-            EnclosureCommand.register(dispatcher);
+            EnclosureCommandKt.register(dispatcher);
             CommandNode<ServerCommandSource> node = dispatcher.getRoot().getChild("enclosure");
             if (commonConfig.developMode) {
                 dispatcher.register(CommandManager.literal("notify_update").executes(context -> {
@@ -394,15 +386,6 @@ public class ServerMain implements DedicatedServerModInitializer {
             commonConfig.aliases.forEach(alias -> dispatcher.register(literal(alias).redirect(node)));
         });
         ServerLifecycleEvents.SERVER_STARTING.register(server -> minecraftServer = server);
-        ServerTickEvents.START_SERVER_TICK.register(server -> {
-            if (backupTask != null) {
-                backupTask.tick();
-                server.getPlayerManager().broadcast(
-                    Text.of("Backup task is running, please wait... (%d/%d)".formatted(backupTask.totalExecuted, backupTask.executor.totalSteps())),
-                    true
-                );
-            }
-        });
 
         // add listeners
         PlayerBlockBreakEvents.BEFORE.register((world, player, pos, state, blockEntity) -> {
@@ -554,20 +537,19 @@ public class ServerMain implements DedicatedServerModInitializer {
                             }
                             update.set(true);
                         }
-                        EnclosureList enclosureList = new EnclosureList(nbtCompound);
+                        EnclosureList enclosureList = new EnclosureList(nbtCompound, world);
                         enclosures.put(world.getRegistryKey(), enclosureList);
-                        enclosureList.bind2world(world);
                         enclosureList.markDirty();
                         return enclosureList;
                     }, () -> {
-                        EnclosureList enclosureList = new EnclosureList();
+                        EnclosureList enclosureList = new EnclosureList(world);
                         enclosures.put(world.getRegistryKey(), enclosureList);
-                        enclosureList.bind2world(world);
                         enclosureList.markDirty();
                         return enclosureList;
                     }, ENCLOSURE_LIST_KEY);
         });
         ServerLifecycleEvents.SERVER_STARTED.register(server -> {
+            playerSessions.put(EnclosureCommandKt.CONSOLE, new Session(null));
             groups = server.getOverworld().getPersistentStateManager()
                     .getOrCreate(Groups::new, Groups::new, GROUPS_KEY);
             Converter.convert();

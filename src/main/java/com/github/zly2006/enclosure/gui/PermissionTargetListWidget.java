@@ -23,7 +23,7 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Stream;
 
-import static com.github.zly2006.enclosure.commands.EnclosureCommand.CONSOLE;
+import static com.github.zly2006.enclosure.command.EnclosureCommandKt.CONSOLE;
 
 public class PermissionTargetListWidget extends ElementListWidget<PermissionTargetListWidget.Entry> {
     final EnclosureArea area;

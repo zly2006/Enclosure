@@ -1,86 +1,131 @@
-package com.github.zly2006.enclosure;
+package com.github.zly2006.enclosure
 
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonPrimitive;
-import net.fabricmc.loader.api.Version;
-import net.fabricmc.loader.api.VersionParsingException;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.ClickEvent;
-import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
+import com.google.gson.JsonArray
+import com.google.gson.JsonElement
+import net.fabricmc.loader.api.Version
+import net.fabricmc.loader.api.VersionParsingException
+import net.minecraft.server.network.ServerPlayerEntity
+import net.minecraft.text.ClickEvent
+import net.minecraft.text.Text
+import net.minecraft.util.Formatting
+import java.io.IOException
+import java.net.URI
+import java.net.URISyntaxException
+import java.net.http.HttpClient
+import java.net.http.HttpRequest
+import java.net.http.HttpResponse
+import java.text.SimpleDateFormat
 
-import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
-import java.util.Optional;
-
-import static com.github.zly2006.enclosure.ServerMain.*;
-
-public class UpdateChecker {
-    long lastCheckTime = 0;
-    String latestVersion = null;
-    Version latestVersionParsed = null;
-    String latestVersionUrl = null;
-
-    void notifyUpdate(ServerPlayerEntity serverPlayer) {
-        if (latestVersion == null) {
-            return;
+class VersionEntry(
+    var versionId: String,
+    var url: String = "https://modrinth.com/mod/enclosure/version/$versionId",
+    var releasedTime: Long = 0,
+    var versionNumber: Version,
+    var versionType: VersionType,
+    var releaseMessage: String = "",
+    var gameVersions: List<String> = emptyList(),
+    var modLoaders: List<String> = emptyList()
+) {
+    enum class VersionType {
+        RELEASE, ALPHA, BETA;
+        fun toColor(): Formatting {
+            return when (this) {
+                RELEASE -> Formatting.GREEN
+                ALPHA -> Formatting.RED
+                BETA -> Formatting.YELLOW
+            }
         }
-        serverPlayer.sendMessage(Text.literal("A new version of enclosure is available: " + latestVersion)
-            .styled(style -> style
-                .withColor(Formatting.YELLOW)
-                .withClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, latestVersionUrl)))
-            .append(Text.literal("\nClick here to download.").formatted(Formatting.AQUA)), false);
+        companion object {
+            fun fromString(str: String): VersionType {
+                return when (str) {
+                    "release" -> RELEASE
+                    "alpha" -> ALPHA
+                    "beta" -> BETA
+                    else -> throw IllegalArgumentException("Unknown version type: $str")
+                }
+            }
+        }
     }
-    void check() {
-        if (Thread.currentThread() == minecraftServer.getThread()) {
-            throw new RuntimeException("UpdateChecker.check() can not be called on the main thread");
+}
+
+class UpdateChecker {
+    private var lastCheckTime: Long = 0
+    var latestVersion: VersionEntry? = null
+    fun notifyUpdate(serverPlayer: ServerPlayerEntity) {
+        if (latestVersion == null) {
+            return
+        }
+        serverPlayer.sendMessage(Text.literal("A new version of enclosure is available: ")
+            .styled {
+                it
+                    .withColor(Formatting.YELLOW)
+                    .withClickEvent(ClickEvent(ClickEvent.Action.OPEN_URL, latestVersion!!.url))
+            }
+            .append(Text.literal(latestVersion!!.versionNumber.toString()).formatted(latestVersion!!.versionType.toColor()))
+            .append(Text.literal("\nClick here to download.").formatted(Formatting.AQUA)), false)
+    }
+
+    fun check() {
+        if (Thread.currentThread() === ServerMain.minecraftServer.thread) {
+            throw RuntimeException("UpdateChecker.check() can not be called on the main thread")
         }
         if (System.currentTimeMillis() - lastCheckTime < 1000 * 60 * 60) {
-            return;
+            return
         }
         try {
-            HttpClient httpClient = HttpClient.newHttpClient();
+            val httpClient = HttpClient.newHttpClient()
             // Only check release version if not in develop mode
             // fit for this minecraft version
-            Optional<JsonObject> latest = GSON.fromJson(httpClient.send(
-                    HttpRequest.newBuilder(new URI("https://api.modrinth.com/v2/project/enclosure/version")).build(),
+            val versions = ServerMain.GSON.fromJson(
+                httpClient.send(
+                    HttpRequest.newBuilder(URI("https://api.modrinth.com/v2/project/enclosure/version")).build(),
                     HttpResponse.BodyHandlers.ofString()
-                ).body(), JsonArray.class).asList().stream()
-                .map(JsonElement::getAsJsonObject)
-                .filter(je -> {
-                    if (!commonConfig.developMode) {
+                ).body(), JsonArray::class.java
+            ).asList().stream().map { obj: JsonElement -> obj.asJsonObject }
+                .toList()
+                .map { v ->
+                    VersionEntry(
+                        versionId = v["id"].asString,
+                        releasedTime = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX").parse(v["date_published"].asString).time,
+                        versionNumber = Version.parse(v["version_number"].asString),
+                        versionType = VersionEntry.VersionType.fromString(v["version_type"].asString),
+                        gameVersions = v["game_versions"].asJsonArray.map { it.asString },
+                        modLoaders = v["loaders"].asJsonArray.map { it.asString }
+                    )
+                }
+            val filteredVersions = versions.filter {
+                if (!ServerMain.commonConfig.developMode) {
+                    // Only check release version if not in develop mode
+                    if (it.versionType != VersionEntry.VersionType.RELEASE) {
+                        return@filter false
+                    }
+                }
+                return@filter it.gameVersions.contains(ServerMain.minecraftServer.version) && it.versionNumber > ServerMain.MOD_VERSION
+            }.sortedWith{v1, v2 ->
+                if (v1.versionNumber != v2.versionNumber) {
+                    return@sortedWith v1.versionNumber.compareTo(v2.versionNumber)
+                }
+                return@sortedWith v1.releasedTime.compareTo(v2.releasedTime)
+            }
+            val latest = versions
+                .filter {
+                    if (!ServerMain.commonConfig.developMode) {
                         // Only check release version if not in develop mode
-                        if (!je.get("version_type").getAsString().equals("release")) {
-                            return false;
+                        if (it.versionType != VersionEntry.VersionType.RELEASE) {
+                            return@filter false
                         }
                     }
-                    // fit for this minecraft version
-                    return je.get("game_versions").getAsJsonArray().contains(new JsonPrimitive(minecraftServer.getVersion()));
-                }).max((je1, je2) -> {
-                    try {
-                        return Version.parse(je1.get("version_number").getAsString()).compareTo(Version.parse(je2.get("version_number").getAsString()));
-                    } catch (VersionParsingException e) {
-                        return 0;
-                    }
-                });
-            if (latest.isPresent()) {
-                latestVersion = latest.get().get("version_number").getAsString();
-                String versionType = latest.get().get("version_type").getAsString();
-                if (!"release".equals(versionType)) {
-                    latestVersion += " (" + versionType + ")";
-                }
-                latestVersionParsed = Version.parse(latest.get().get("version_number").getAsString());
-                latestVersionUrl = "https://modrinth.com/mod/enclosure/version/" + latest.get().get("id").getAsString();
-                LOGGER.info("Found latest version: " + latestVersion + ", url: " + latestVersionUrl);
+                    return@filter it.gameVersions.contains(ServerMain.minecraftServer.version)
+                }.maxByOrNull { it.versionNumber }
+            if (latest != null) {
+                latestVersion = latest
+                ServerMain.LOGGER.info("Found latest version: ${latestVersion?.versionNumber}, url: ${latestVersion?.url}")
             }
-            lastCheckTime = System.currentTimeMillis();
-        } catch (IOException | URISyntaxException | InterruptedException | VersionParsingException ignored) {
+            lastCheckTime = System.currentTimeMillis()
+        } catch (ignored: IOException) {
+        } catch (ignored: URISyntaxException) {
+        } catch (ignored: InterruptedException) {
+        } catch (ignored: VersionParsingException) {
         }
     }
 }

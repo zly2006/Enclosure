@@ -1,124 +1,118 @@
-package com.github.zly2006.enclosure.listeners;
+package com.github.zly2006.enclosure.listeners
 
-import com.github.zly2006.enclosure.commands.Session;
-import com.github.zly2006.enclosure.utils.TrT;
-import net.fabricmc.fabric.api.entity.event.v1.ServerEntityWorldChangeEvents;
-import net.fabricmc.fabric.api.event.player.AttackBlockCallback;
-import net.fabricmc.fabric.api.event.player.PlayerBlockBreakEvents;
-import net.fabricmc.fabric.api.event.player.UseBlockCallback;
-import net.fabricmc.fabric.api.networking.v1.PacketSender;
-import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.network.ServerPlayNetworkHandler;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.ActionResult;
-import net.minecraft.util.Hand;
-import net.minecraft.util.hit.BlockHitResult;
-import net.minecraft.util.hit.HitResult;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Direction;
-import net.minecraft.world.World;
+import com.github.zly2006.enclosure.ServerMain
+import com.github.zly2006.enclosure.command.Session
+import com.github.zly2006.enclosure.utils.TrT
+import net.fabricmc.fabric.api.entity.event.v1.ServerEntityWorldChangeEvents
+import net.fabricmc.fabric.api.entity.event.v1.ServerEntityWorldChangeEvents.AfterPlayerChange
+import net.fabricmc.fabric.api.event.player.AttackBlockCallback
+import net.fabricmc.fabric.api.event.player.PlayerBlockBreakEvents
+import net.fabricmc.fabric.api.event.player.UseBlockCallback
+import net.fabricmc.fabric.api.networking.v1.PacketSender
+import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents
+import net.minecraft.block.BlockState
+import net.minecraft.block.entity.BlockEntity
+import net.minecraft.entity.player.PlayerEntity
+import net.minecraft.server.MinecraftServer
+import net.minecraft.server.network.ServerPlayNetworkHandler
+import net.minecraft.server.network.ServerPlayerEntity
+import net.minecraft.server.world.ServerWorld
+import net.minecraft.util.ActionResult
+import net.minecraft.util.Hand
+import net.minecraft.util.hit.BlockHitResult
+import net.minecraft.util.math.BlockPos
+import net.minecraft.util.math.Direction
+import net.minecraft.world.World
+import java.util.*
 
-import java.util.UUID;
-
-import static com.github.zly2006.enclosure.ServerMain.Instance;
-import static com.github.zly2006.enclosure.ServerMain.blockPos2string;
-
-public class SessionListener implements
-        PlayerBlockBreakEvents.Before,
-        ServerPlayConnectionEvents.Join,
-        ServerPlayConnectionEvents.Disconnect,
-        AttackBlockCallback,
-        UseBlockCallback,
-        ServerEntityWorldChangeEvents.AfterPlayerChange {
-
-    HitResult result;
-
-    private SessionListener() {
+class SessionListener private constructor() : PlayerBlockBreakEvents.Before, ServerPlayConnectionEvents.Join,
+    ServerPlayConnectionEvents.Disconnect, AttackBlockCallback, UseBlockCallback, AfterPlayerChange {
+    override fun afterChangeWorld(player: ServerPlayerEntity, origin: ServerWorld, destination: ServerWorld) {
+        getSession(player)!!.reset(destination)
     }
 
-    public static void register() {
-        SessionListener listener = new SessionListener();
-        PlayerBlockBreakEvents.BEFORE.register(listener);
-        ServerPlayConnectionEvents.JOIN.register(listener);
-        ServerPlayConnectionEvents.DISCONNECT.register(listener);
-        AttackBlockCallback.EVENT.register(listener);
-        UseBlockCallback.EVENT.register(listener);
-        ServerEntityWorldChangeEvents.AFTER_PLAYER_CHANGE_WORLD.register(listener);
-    }
-
-    @Override
-    public void afterChangeWorld(ServerPlayerEntity player, ServerWorld origin, ServerWorld destination) {
-        getSession(player).reset(destination);
-    }
-
-    private static Session getSession(UUID player) {
-        return Instance.getPlayerSessions().get(player);
-    }
-
-    private static Session getSession(PlayerEntity player) {
-        return getSession(player.getUuid());
-    }
-
-    @Override
-    public ActionResult interact(PlayerEntity player, World world, Hand hand, BlockPos pos, Direction direction) {
-        if (player.getMainHandStack().getItem() == Instance.getOperationItem()) {
-            if (getSession(player).getPos1() != pos) {
-                Session session = getSession(player);
-                session.syncDimension((ServerPlayerEntity) player);
-                session.setPos1(pos);
-                session.trySync();
-                player.sendMessage(TrT.of("enclosure.message.set_pos_1").append(blockPos2string(pos)));
-                return ActionResult.FAIL;
+    override fun interact(
+        player: PlayerEntity,
+        world: World,
+        hand: Hand,
+        pos: BlockPos,
+        direction: Direction
+    ): ActionResult {
+        if (player.mainHandStack.item === ServerMain.Instance.operationItem) {
+            if (getSession(player)!!.pos1 !== pos) {
+                val session = getSession(player)
+                session!!.syncDimension((player as ServerPlayerEntity))
+                session.pos1 = pos
+                session.trySync()
+                player.sendMessage(TrT.of("enclosure.message.set_pos_1").append(ServerMain.blockPos2string(pos)))
+                return ActionResult.FAIL
             }
         }
-        return ActionResult.PASS;
+        return ActionResult.PASS
     }
 
-    @Override
-    public boolean beforeBlockBreak(World world, PlayerEntity player, BlockPos pos, BlockState state, BlockEntity blockEntity) {
-        if (player.getMainHandStack().getItem() == Instance.getOperationItem()) {
-            if (getSession(player).getPos1() != pos) {
-                Session session = getSession(player);
-                session.syncDimension((ServerPlayerEntity) player);
-                session.setPos1(pos);
-                session.trySync();
-                player.sendMessage(TrT.of("enclosure.message.set_pos_1").append(blockPos2string(pos)));
-                return false;
+    override fun beforeBlockBreak(
+        world: World,
+        player: PlayerEntity,
+        pos: BlockPos,
+        state: BlockState,
+        blockEntity: BlockEntity?
+    ): Boolean {
+        if (player.mainHandStack.item === ServerMain.Instance.operationItem) {
+            if (getSession(player)!!.pos1 !== pos) {
+                val session = getSession(player)
+                session!!.syncDimension((player as ServerPlayerEntity))
+                session.pos1 = pos
+                session.trySync()
+                player.sendMessage(TrT.of("enclosure.message.set_pos_1").append(ServerMain.blockPos2string(pos)))
+                return false
             }
         }
-        return true;
+        return true
     }
 
-    @Override
-    public ActionResult interact(PlayerEntity player, World world, Hand hand, BlockHitResult hitResult) {
-        this.result = hitResult;
-        if ((player.getMainHandStack().getItem() == Instance.getOperationItem() && hand.equals(Hand.MAIN_HAND)) || (player.getOffHandStack().getItem() == Instance.getOperationItem() && hand.equals(Hand.OFF_HAND))) {
-            if (getSession(player).getPos2() != hitResult.getBlockPos()) {
-                Session session = getSession(player);
-                session.syncDimension((ServerPlayerEntity) player);
-                session.setPos2(hitResult.getBlockPos());
-                session.trySync();
-                player.sendMessage(TrT.of("enclosure.message.set_pos_2").append(blockPos2string(hitResult.getBlockPos())));
-                return ActionResult.FAIL;
+    override fun interact(player: PlayerEntity, world: World, hand: Hand, hitResult: BlockHitResult): ActionResult {
+        if (player.mainHandStack.item === ServerMain.Instance.operationItem && hand == Hand.MAIN_HAND || player.offHandStack.item === ServerMain.Instance.operationItem && hand == Hand.OFF_HAND) {
+            if (getSession(player)!!.pos2 !== hitResult.blockPos) {
+                val session = getSession(player)
+                session!!.syncDimension((player as ServerPlayerEntity))
+                session.pos2 = hitResult.blockPos
+                session.trySync()
+                player.sendMessage(
+                    TrT.of("enclosure.message.set_pos_2").append(ServerMain.blockPos2string(hitResult.blockPos))
+                )
+                return ActionResult.FAIL
             }
         }
-        return ActionResult.PASS;
+        return ActionResult.PASS
     }
 
-    @Override
-    public void onPlayDisconnect(ServerPlayNetworkHandler handler, MinecraftServer server) {
-        Instance.getPlayerSessions().remove(handler.player.getUuid());
+    override fun onPlayDisconnect(handler: ServerPlayNetworkHandler, server: MinecraftServer) {
+        ServerMain.Instance.playerSessions.remove(handler.player.uuid)
     }
 
-    @Override
-    public void onPlayReady(ServerPlayNetworkHandler handler, PacketSender sender, MinecraftServer server) {
-        Session session = new Session();
-        session.setOwner(handler.player.getUuid());
-        Instance.getPlayerSessions().put(handler.player.getGameProfile().getId(), session);
+    override fun onPlayReady(handler: ServerPlayNetworkHandler, sender: PacketSender, server: MinecraftServer) {
+        ServerMain.Instance.playerSessions[handler.player.gameProfile.id] = Session(handler.player)
+    }
+
+    companion object {
+        @JvmStatic
+        fun register() {
+            val listener = SessionListener()
+            PlayerBlockBreakEvents.BEFORE.register(listener)
+            ServerPlayConnectionEvents.JOIN.register(listener)
+            ServerPlayConnectionEvents.DISCONNECT.register(listener)
+            AttackBlockCallback.EVENT.register(listener)
+            UseBlockCallback.EVENT.register(listener)
+            ServerEntityWorldChangeEvents.AFTER_PLAYER_CHANGE_WORLD.register(listener)
+        }
+
+        private fun getSession(player: UUID): Session? {
+            return ServerMain.Instance.playerSessions[player]
+        }
+
+        private fun getSession(player: PlayerEntity): Session? {
+            return getSession(player.uuid)
+        }
     }
 }

@@ -1,194 +1,172 @@
-package com.github.zly2006.enclosure.commands;
+package com.github.zly2006.enclosure.command
 
-import com.github.zly2006.enclosure.EnclosureArea;
-import com.github.zly2006.enclosure.EnclosureList;
-import com.github.zly2006.enclosure.config.LandLimits;
-import com.github.zly2006.enclosure.events.PaidPartEvents;
-import com.github.zly2006.enclosure.network.EnclosureInstalledC2SPacket;
-import com.github.zly2006.enclosure.utils.TrT;
-import com.github.zly2006.enclosure.utils.Utils;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.text.Text;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Direction;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import com.github.zly2006.enclosure.EnclosureArea
+import com.github.zly2006.enclosure.EnclosureList
+import com.github.zly2006.enclosure.ServerMain
+import com.github.zly2006.enclosure.config.LandLimits
+import com.github.zly2006.enclosure.network.EnclosureInstalledC2SPacket
+import com.github.zly2006.enclosure.network.NetworkChannels
+import com.github.zly2006.enclosure.utils.TrT
+import com.github.zly2006.enclosure.utils.Utils
+import net.fabricmc.fabric.api.networking.v1.PacketByteBufs
+import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking
+import net.minecraft.server.network.ServerPlayerEntity
+import net.minecraft.server.world.ServerWorld
+import net.minecraft.text.Text
+import net.minecraft.util.math.BlockPos
+import net.minecraft.util.math.Direction
+import net.minecraft.util.math.Direction.*
+import kotlin.math.abs
+import kotlin.math.max
+import kotlin.math.min
 
-import java.util.UUID;
-
-import static com.github.zly2006.enclosure.commands.EnclosureCommand.CONSOLE;
-
-public class Session {
-    UUID owner = new UUID(0, 0);
-    ServerWorld world;
-    BlockPos pos1;
-    BlockPos pos2;
-
-    public void trySync() {
-        if (owner.equals(CONSOLE) || world == null || pos1 == null || pos2 == null) {
-            return;
+class Session(
+    player: ServerPlayerEntity?
+) {
+    var owner = player?.uuid ?: CONSOLE
+    var world: ServerWorld = player?.getWorld() ?: ServerMain.minecraftServer.overworld
+    var pos1: BlockPos = world.spawnPos
+    var pos2: BlockPos = world.spawnPos
+    var enabled = false
+    fun trySync() {
+        if (owner == CONSOLE || !enabled) {
+            return
         }
-        ServerPlayerEntity player = world.getServer().getPlayerManager().getPlayer(owner);
-        if (player == null) {
-            return;
-        }
+        val player = world.server.playerManager.getPlayer(owner) ?: return
         if (EnclosureInstalledC2SPacket.isInstalled(player)) {
-            PaidPartEvents.INSTANCE.syncSession(player);
-        }
-    }
-
-    public ServerWorld getWorld() {
-        return this.world;
-    }
-
-    public Session setWorld(ServerWorld world) {
-        this.world = world;
-        return this;
-    }
-
-    public BlockPos getPos1() {
-        return this.pos1;
-    }
-
-    public Session setPos1(BlockPos pos1) {
-        this.pos1 = pos1;
-        return this;
-    }
-
-    public BlockPos getPos2() {
-        return this.pos2;
-    }
-
-    public Session setPos2(BlockPos pos2) {
-        this.pos2 = pos2;
-        return this;
-    }
-
-    public UUID getOwner() {
-        return this.owner;
-    }
-
-    public void setOwner(UUID owner) {
-        this.owner = owner;
-    }
-
-    public void reset(ServerWorld serverWorld) {
-        world = serverWorld;
-        pos1 = world.getSpawnPos();
-        pos2 = world.getSpawnPos();
-    }
-
-    public void syncDimension(@NotNull ServerPlayerEntity player) {
-        if (world != player.getWorld()) {
-            reset(player.getWorld());
-        }
-    }
-
-    public int size() {
-        return (Math.abs(pos1.getX() - pos2.getX()) + 1) *
-                (Math.abs(pos1.getY() - pos2.getY()) + 1) *
-                (Math.abs(pos1.getZ() - pos2.getZ()) + 1);
-    }
-
-    public EnclosureArea intersect(@NotNull EnclosureList list2check) {
-        int minX = Math.min(pos1.getX(), pos2.getX());
-        int minY = Math.min(pos1.getY(), pos2.getY());
-        int minZ = Math.min(pos1.getZ(), pos2.getZ());
-        int maxX = Math.max(pos1.getX(), pos2.getX());
-        int maxY = Math.max(pos1.getY(), pos2.getY());
-        int maxZ = Math.max(pos1.getZ(), pos2.getZ());
-        for (EnclosureArea area : list2check.getAreas()) {
-            if (area.intersect(minX, minY, minZ, maxX, maxY, maxZ)) {
-                return area;
+            val session = ServerMain.Instance.playerSessions[player.uuid]
+            if (session != null) {
+                val buf = PacketByteBufs.create()
+                buf.writeBlockPos(session.pos1)
+                buf.writeBlockPos(session.pos2)
+                ServerPlayNetworking.send(player, NetworkChannels.SYNC_SELECTION, buf)
             }
         }
-        return null;
     }
 
-    private <T extends Comparable<T>> @Nullable Text singleCheck(T value, T limit, boolean lessThan, String name) {
-        int r = value.compareTo(limit);
+    fun reset(serverWorld: ServerWorld) {
+        world = serverWorld
+        pos1 = world.spawnPos
+        pos2 = world.spawnPos
+    }
+
+    fun syncDimension(player: ServerPlayerEntity) {
+        if (world !== player.getWorld()) {
+            reset(player.getWorld())
+        }
+    }
+
+    fun size(): Int {
+        return (abs(pos1.x - pos2.x) + 1) *
+                (abs(pos1.y - pos2.y) + 1) *
+                (abs(pos1.z - pos2.z) + 1)
+    }
+
+    fun intersect(list2check: EnclosureList): EnclosureArea? {
+        val minX = min(pos1.x, pos2.x)
+        val minY = min(pos1.y, pos2.y)
+        val minZ = min(pos1.z, pos2.z)
+        val maxX = max(pos1.x, pos2.x)
+        val maxY = max(pos1.y, pos2.y)
+        val maxZ = max(pos1.z, pos2.z)
+        for (area in list2check.areas) {
+            if (area.intersect(minX, minY, minZ, maxX, maxY, maxZ)) {
+                return area
+            }
+        }
+        return null
+    }
+
+    private fun <T : Comparable<T>> singleCheck(value: T, limit: T, lessThan: Boolean, name: String): Text? {
+        val r = value.compareTo(limit)
         if (r < 0 && lessThan) {
-            return null;
+            return null
         }
         if (r == 0) {
-            return null;
+            return null
         }
         if (r > 0 && !lessThan) {
-            return null;
+            return null
         }
-        if (lessThan) {
-            return TrT.of("enclosure.limit." + Utils.camelCaseToSnakeCase(name))
-                    .append(TrT.of("enclosure.message.limit_exceeded.0"))
-                    .append(String.valueOf(limit))
-                    .append(TrT.of("enclosure.message.limit_exceeded.1"))
-                    .append(Text.literal(String.valueOf(value)));
+        return if (lessThan) {
+            TrT.of("enclosure.limit." + Utils.camelCaseToSnakeCase(name))
+                .append(TrT.of("enclosure.message.limit_exceeded.0"))
+                .append(limit.toString())
+                .append(TrT.of("enclosure.message.limit_exceeded.1"))
+                .append(Text.literal(value.toString()))
         } else {
-            return TrT.of("enclosure.limit." + Utils.camelCaseToSnakeCase(name))
-                    .append(TrT.of("enclosure.message.limit_exceeded.2"))
-                    .append(String.valueOf(limit))
-                    .append(TrT.of("enclosure.message.limit_exceeded.1"))
-                    .append(Text.literal(String.valueOf(value)));
+            TrT.of("enclosure.limit." + Utils.camelCaseToSnakeCase(name))
+                .append(TrT.of("enclosure.message.limit_exceeded.2"))
+                .append(limit.toString())
+                .append(TrT.of("enclosure.message.limit_exceeded.1"))
+                .append(Text.literal(value.toString()))
         }
     }
 
-    public @Nullable Text isValid(LandLimits limits) {
-        int minX = Math.min(pos1.getX(), pos2.getX());
-        int minY = Math.min(pos1.getY(), pos2.getY());
-        int minZ = Math.min(pos1.getZ(), pos2.getZ());
-        int maxX = Math.max(pos1.getX(), pos2.getX());
-        int maxY = Math.max(pos1.getY(), pos2.getY());
-        int maxZ = Math.max(pos1.getZ(), pos2.getZ());
-
-        Text text = singleCheck(maxX - minX + 1, limits.maxXRange, true, "maxXRange");
+    fun isValid(limits: LandLimits): Text? {
+        val minX = min(pos1.x, pos2.x)
+        val minY = min(pos1.y, pos2.y)
+        val minZ = min(pos1.z, pos2.z)
+        val maxX = max(pos1.x, pos2.x)
+        val maxY = max(pos1.y, pos2.y)
+        val maxZ = max(pos1.z, pos2.z)
+        var text = singleCheck(maxX - minX + 1, limits.maxXRange, true, "maxXRange")
         if (text != null) {
-            return text;
+            return text
         }
-        text = singleCheck(maxZ - minZ + 1, limits.maxZRange, true, "maxZRange");
+        text = singleCheck(maxZ - minZ + 1, limits.maxZRange, true, "maxZRange")
         if (text != null) {
-            return text;
+            return text
         }
-        text = singleCheck(maxY - minY + 1, limits.maxHeight, true, "maxHeight");
+        text = singleCheck(maxY - minY + 1, limits.maxHeight, true, "maxHeight")
         if (text != null) {
-            return text;
+            return text
         }
-        text = singleCheck(maxX - minX + 1, limits.minXRange, false, "minXRange");
+        text = singleCheck(maxX - minX + 1, limits.minXRange, false, "minXRange")
         if (text != null) {
-            return text;
+            return text
         }
-        text = singleCheck(maxZ - minZ + 1, limits.minZRange, false, "minZRange");
+        text = singleCheck(maxZ - minZ + 1, limits.minZRange, false, "minZRange")
         if (text != null) {
-            return text;
+            return text
         }
-        text = singleCheck(minY, limits.minY, false, "minY");
+        text = singleCheck(minY, limits.minY, false, "minY")
         if (text != null) {
-            return text;
+            return text
         }
-        text = singleCheck(maxY, limits.maxY, true, "maxY");
-        return text;
+        text = singleCheck(maxY, limits.maxY, true, "maxY")
+        return text
     }
 
-    public void shrink(Direction direction, int amount) {
-        BlockPos p1 = new BlockPos(Math.min(pos1.getX(), pos2.getX()), Math.min(pos1.getY(), pos2.getY()), Math.min(pos1.getZ(), pos2.getZ()));
-        BlockPos p2 = new BlockPos(Math.max(pos1.getX(), pos2.getX()), Math.max(pos1.getY(), pos2.getY()), Math.max(pos1.getZ(), pos2.getZ()));
-        pos1 = p1;
-        pos2 = p2;
-        switch (direction) {
-            case NORTH -> pos1 = pos1.add(0, 0, amount);
-            case SOUTH -> pos2 = pos2.add(0, 0, -amount);
-            case WEST -> pos1 = pos1.add(amount, 0, 0);
-            case EAST -> pos2 = pos2.add(-amount, 0, 0);
-            case UP -> pos2 = pos2.add(0, -amount, 0);
-            case DOWN -> pos1 = pos1.add(0, amount, 0);
+    fun shrink(direction: Direction, amount: Int) {
+        val p1 = BlockPos(
+            min(pos1.x, pos2.x), min(pos1.y, pos2.y), min(
+                pos1.z, pos2.z
+            )
+        )
+        val p2 = BlockPos(
+            max(pos1.x, pos2.x), max(pos1.y, pos2.y), max(
+                pos1.z, pos2.z
+            )
+        )
+        pos1 = p1
+        pos2 = p2
+        when (direction) {
+            NORTH -> pos1 = pos1.add(0, 0, amount)
+            SOUTH -> pos2 = pos2.add(0, 0, -amount)
+            WEST -> pos1 = pos1.add(amount, 0, 0)
+            EAST -> pos2 = pos2.add(-amount, 0, 0)
+            UP -> pos2 = pos2.add(0, -amount, 0)
+            DOWN -> pos1 = pos1.add(0, amount, 0)
         }
     }
 
-    public void expand(Direction direction, int amount) {
-        shrink(direction, -amount);
+    fun expand(direction: Direction, amount: Int) {
+        shrink(direction, -amount)
     }
 
-    public void shift(Direction direction, int amount) {
-        pos1 = pos1.offset(direction, amount);
-        pos2 = pos2.offset(direction, amount);
+    fun shift(direction: Direction?, amount: Int) {
+        pos1 = pos1.offset(direction, amount)
+        pos2 = pos2.offset(direction, amount)
     }
 }

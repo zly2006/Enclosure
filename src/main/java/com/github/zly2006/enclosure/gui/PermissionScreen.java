@@ -13,7 +13,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
-import static com.github.zly2006.enclosure.commands.EnclosureCommand.CONSOLE;
+import static com.github.zly2006.enclosure.command.EnclosureCommandKt.CONSOLE;
 
 public class PermissionScreen extends Screen {
     public static final Identifier PERMISSION_SCREEN_ID = new Identifier("enclosure", "screen.permission");

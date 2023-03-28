@@ -22,7 +22,7 @@ public class EnclosureScreenHandler extends ScreenHandler {
                 Identifier worldId = buf.readIdentifier();
                 NbtCompound compound = buf.readNbt();
                 assert compound != null;
-                EnclosureArea area = new EnclosureArea(compound);
+                EnclosureArea area = new EnclosureArea(compound, null);
                 List<String> subAreaNames = new ArrayList<>();
                 int size = buf.readVarInt();
                 for (int i = 0; i < size; i++) {

@@ -1,7 +1,7 @@
 package com.github.zly2006.enclosure.network;
 
+import com.github.zly2006.enclosure.PaidMain;
 import com.github.zly2006.enclosure.ServerMain;
-import com.github.zly2006.enclosure.events.PaidPartEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
 import net.fabricmc.fabric.api.networking.v1.PacketSender;
@@ -10,12 +10,14 @@ import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.fabricmc.loader.api.SemanticVersion;
 import net.fabricmc.loader.api.Version;
 import net.fabricmc.loader.api.VersionParsingException;
+import net.minecraft.nbt.NbtCompound;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayNetworkHandler;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -30,8 +32,9 @@ public class EnclosureInstalledC2SPacket implements ServerPlayNetworking.PlayCha
                 installedClientMod.remove(handler.player));
     }
 
-    public static boolean isInstalled(ServerPlayerEntity connection) {
-        return installedClientMod.containsKey(connection);
+    public static boolean isInstalled(@Nullable ServerPlayerEntity player) {
+        if (player == null) return false;
+        return installedClientMod.containsKey(player);
     }
 
     public static Version clientVersion(ServerPlayerEntity connection) {
@@ -60,7 +63,13 @@ public class EnclosureInstalledC2SPacket implements ServerPlayNetworking.PlayCha
                 ServerMain.LOGGER.info(player.getName().getString() + " joined with a matching enclosure client.");
                 installedClientMod.put(player, version);
 
-                PaidPartEvents.INSTANCE.sendUuid(player);
+                // send uuid data
+                PacketByteBuf buf2 = PacketByteBufs.create();
+                NbtCompound compound = new NbtCompound();
+                PaidMain.byUuid.forEach((uuid, s) -> compound.putUuid(s, uuid));
+                buf2.writeNbt(compound);
+                compound.put("", new NbtCompound());
+                ServerPlayNetworking.send(player, NetworkChannels.SYNC_UUID, buf2);
             } else {
                 player.sendMessage(Text.translatable("enclosure.message.outdated", MOD_VERSION.getFriendlyString(), version.getFriendlyString()), false);
             }

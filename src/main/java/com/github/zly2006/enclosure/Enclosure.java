@@ -1,6 +1,6 @@
 package com.github.zly2006.enclosure;
 
-import com.github.zly2006.enclosure.commands.Session;
+import com.github.zly2006.enclosure.command.Session;
 import com.github.zly2006.enclosure.utils.Permission;
 import com.github.zly2006.enclosure.utils.TrT;
 import net.minecraft.nbt.NbtCompound;
@@ -22,21 +22,22 @@ public class Enclosure extends EnclosureArea {
     EnclosureList subEnclosures;
 
     /**
-     * Create an instance from nbt, note that this will not add the instance to the world. You need to call {@link EnclosureList#bind2world(ServerWorld)} to add it to the world.
-     *
+     * Create an instance from nbt for a specific world.
      * @param compound the nbt compound tag
      */
-    public Enclosure(NbtCompound compound) {
-        super(compound);
+    public Enclosure(NbtCompound compound, ServerWorld world) {
+        super(compound, world);
         // process sub enclosures
         NbtCompound sub = compound.getCompound(SUB_ENCLOSURES_KEY);
-        subEnclosures = new EnclosureList(sub);
-        subEnclosures.areas.forEach((name, land) -> land.father = this);
+        subEnclosures = new EnclosureList(sub, world);
+        subEnclosures.areas.forEach((name, land) -> {
+            addChild(land);
+        });
     }
 
     public Enclosure(Session session, String name) {
         super(session, name);
-        subEnclosures = new EnclosureList();
+        subEnclosures = new EnclosureList(session.getWorld());
     }
 
     @Override
@@ -49,9 +50,9 @@ public class Enclosure extends EnclosureArea {
     }
 
     @Override
-    public void setWorld(ServerWorld world) {
+    public void changeWorld(@NotNull ServerWorld world) {
+        if (world == this.world) return;
         super.setWorld(world);
-        subEnclosures.setBoundWorld(world);
     }
 
     @Override
@@ -97,13 +98,16 @@ public class Enclosure extends EnclosureArea {
 
     @Override
     public void onRemoveChild(PermissionHolder child) {
+        if (child instanceof EnclosureArea)
+            ((EnclosureArea) child).setFather(null);
         subEnclosures.remove(child.getName());
         markDirty();
     }
 
     @Override
-    public void onAddChild(PermissionHolder child) {
+    public void addChild(PermissionHolder child) {
         if (child instanceof EnclosureArea) {
+            ((EnclosureArea) child).setFather(this);
             subEnclosures.areas.put(child.getName(), (EnclosureArea) child);
             markDirty();
         }

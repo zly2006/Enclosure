@@ -1,7 +1,7 @@
 package com.github.zly2006.enclosure.utils;
 
 import com.github.zly2006.enclosure.EnclosureArea;
-import com.github.zly2006.enclosure.commands.EnclosureCommand;
+import com.github.zly2006.enclosure.command.EnclosureCommandKt;
 import com.mojang.authlib.GameProfile;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
@@ -168,7 +168,7 @@ public class Utils {
         if (player != null) {
             return player.getDisplayName().copy();
         }
-        if (uuid.equals(EnclosureCommand.CONSOLE)) {
+        if (uuid.equals(EnclosureCommandKt.CONSOLE)) {
             return Text.literal(serverName);
         }
         String name = getNameByUUID(uuid);

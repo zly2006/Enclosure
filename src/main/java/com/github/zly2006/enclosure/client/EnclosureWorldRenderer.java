@@ -1,6 +1,6 @@
 package com.github.zly2006.enclosure.client;
 
-import com.github.zly2006.enclosure.commands.Session;
+import com.github.zly2006.enclosure.command.Session;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents;
 import net.minecraft.client.MinecraftClient;
@@ -19,7 +19,7 @@ public abstract class EnclosureWorldRenderer {
             if (client.options.hudHidden)
                 return true;
             Session session = ClientMain.clientSession;
-            if (session == null || session.getPos1() == null || session.getPos2() == null)
+            if (session == null)
                 return true;
             Vec3d cameraPos = context.camera().getPos();
             drawSessionOutline(context.matrixStack(), session, cameraPos, context.tickDelta(), context.consumers());
@@ -30,7 +30,7 @@ public abstract class EnclosureWorldRenderer {
             if (client.options.hudHidden)
                 return;
             Session session = ClientMain.clientSession;
-            if (session == null || session.getPos1() == null || session.getPos2() == null)
+            if (session == null)
                 return;
             Vec3d cameraPos = context.camera().getPos();
             RenderSystem.enableBlend();

@@ -38,7 +38,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static com.github.zly2006.enclosure.ServerMain.*;
-import static com.github.zly2006.enclosure.commands.EnclosureCommand.CONSOLE;
+import static com.github.zly2006.enclosure.command.EnclosureCommandKt.CONSOLE;
 import static com.github.zly2006.enclosure.utils.Permission.*;
 import static net.fabricmc.api.EnvType.SERVER;
 

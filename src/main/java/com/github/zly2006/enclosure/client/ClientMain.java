@@ -1,6 +1,6 @@
 package com.github.zly2006.enclosure.client;
 
-import com.github.zly2006.enclosure.commands.Session;
+import com.github.zly2006.enclosure.command.Session;
 import com.github.zly2006.enclosure.gui.EnclosureScreen;
 import com.github.zly2006.enclosure.gui.EnclosureScreenHandler;
 import com.github.zly2006.enclosure.network.*;
@@ -41,7 +41,7 @@ public class ClientMain implements ClientModInitializer {
         EnclosureWorldRenderer.register();
         SyncPermissionS2CPacket.register();
         ClientPlayConnectionEvents.JOIN.register((handler, sender, client) -> {
-            clientSession = new Session();
+            clientSession = new Session(null);
             EnclosureInstalledC2SPacket.send();
             if (FabricLoader.getInstance().isDevelopmentEnvironment()) {
                 isEnclosureInstalled = true;

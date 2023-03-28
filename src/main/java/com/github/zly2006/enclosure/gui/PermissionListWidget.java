@@ -25,7 +25,7 @@ import org.lwjgl.glfw.GLFW;
 import java.util.*;
 import java.util.function.Supplier;
 
-import static com.github.zly2006.enclosure.commands.EnclosureCommand.CONSOLE;
+import static com.github.zly2006.enclosure.command.EnclosureCommandKt.CONSOLE;
 
 public class PermissionListWidget extends ElementListWidget<PermissionListWidget.Entry> {
     private final Screen parent;
@@ -86,12 +86,12 @@ public class PermissionListWidget extends ElementListWidget<PermissionListWidget
         }
 
         private Optional<Boolean> getValue() {
-            return permission.get(area.getPermissionsMap().getOrDefault(uuid, Collections.emptyMap()));
+            return permission.getValue(area.getPermissionsMap().getOrDefault(uuid, Collections.emptyMap()));
         }
 
         private void setValue(@Nullable Boolean value) {
             Map<String, Boolean> perm = area.getPermissionsMap().getOrDefault(uuid, new HashMap<>());
-            permission.set(perm, value);
+            permission.setValue(perm, value);
             area.getPermissionsMap().put(uuid, perm);
         }
 

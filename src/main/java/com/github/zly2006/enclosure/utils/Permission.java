@@ -225,7 +225,7 @@ public class Permission implements Serializable2Text {
         this(name, target, Set.of(name), defaultValue, icon);
     }
 
-    public static Permission get(String name) {
+    public static Permission getValue(String name) {
         return PERMISSIONS.get(name);
     }
 
@@ -265,7 +265,7 @@ public class Permission implements Serializable2Text {
         return this.ignoreOp;
     }
 
-    public Optional<Boolean> get(Map<String, Boolean> map) {
+    public Optional<Boolean> getValue(Map<String, Boolean> map) {
         for (String permission : permissions) {
             if (map.containsKey(permission)) {
                 if (!map.get(permission)) {
@@ -278,7 +278,7 @@ public class Permission implements Serializable2Text {
         return Optional.of(true);
     }
 
-    public void set(Map<String, Boolean> map, @Nullable Boolean value) {
+    public void setValue(Map<String, Boolean> map, @Nullable Boolean value) {
         for (String permission : permissions) {
             if (value != null) {
                 map.put(permission, value);

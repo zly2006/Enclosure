@@ -5,14 +5,15 @@ import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.nbt.NbtString;
 import net.minecraft.server.world.ServerWorld;
-import net.minecraft.text.Text;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.PersistentState;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
-import java.util.*;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 
 import static com.github.zly2006.enclosure.ServerMain.DATA_VERSION;
 import static com.github.zly2006.enclosure.ServerMain.Instance;
@@ -25,7 +26,8 @@ public class EnclosureList extends PersistentState {
     Map<String, EnclosureArea> areas = new HashMap<>();
     ServerWorld boundWorld;
 
-    public EnclosureList(NbtCompound nbt) {
+    public EnclosureList(NbtCompound nbt, ServerWorld world) {
+        this(world);
         NbtElement nbtElement = nbt.get(ENCLOSURE_LIST_KEY);
         if (nbtElement instanceof NbtList list) {
             for (NbtElement element : list) {
@@ -33,9 +35,9 @@ public class EnclosureList extends PersistentState {
                     String name = nbtString.asString();
                     if (nbt.get(name) instanceof NbtCompound compound) {
                         if (compound.getKeys().contains(SUB_ENCLOSURES_KEY)) {
-                            areas.put(name, new Enclosure(compound));
+                            areas.put(name, new Enclosure(compound, world));
                         } else {
-                            areas.put(name, new EnclosureArea(compound));
+                            areas.put(name, new EnclosureArea(compound, world));
                         }
                     }
                 }
@@ -45,34 +47,26 @@ public class EnclosureList extends PersistentState {
         }
     }
 
-    public EnclosureList() {
+    public EnclosureList(ServerWorld world) {
+        boundWorld = world;
+        boundWorld.getChunkManager().getPersistentStateManager().set(
+            ENCLOSURE_LIST_KEY,
+            this
+        );
     }
 
     @Override
     public NbtCompound writeNbt(NbtCompound nbt) {
         NbtList list = new NbtList();
         for (EnclosureArea area : areas.values()) {
-            list.add(NbtString.of(area.name));
+            list.add(NbtString.of(area.getName()));
             NbtCompound compound = new NbtCompound();
             area.writeNbt(compound);
-            nbt.put(area.name, compound);
+            nbt.put(area.getName(), compound);
         }
         nbt.put(ENCLOSURE_LIST_KEY, list);
         nbt.putInt(DATA_VERSION_KEY, DATA_VERSION);
         return nbt;
-    }
-
-    /**
-     * set bound world, and add to this world's PersistentStateManager
-     *
-     * @param world the world
-     */
-    public void bind2world(@NotNull ServerWorld world) {
-        world.getChunkManager().getPersistentStateManager().set(
-                ENCLOSURE_LIST_KEY,
-                this
-        );
-        setBoundWorld(world);
     }
 
     /**
@@ -85,22 +79,6 @@ public class EnclosureList extends PersistentState {
                 return enclosureArea;
             }
         }
-        return null;
-    }
-
-    public String getAreaStatus(EnclosureArea area) {
-        for (EnclosureArea item : areas.values()) {
-            if (item.equals(area)) {
-                return Text.literal(ServerMain.translation.get("enclosure.message.existed").getAsString()).getString();
-            }
-            else if (item.intersect(area)) {
-                return Text.literal(ServerMain.translation.get("enclosure.message.intersected").getAsString()).getString() + item.name;
-            }
-            else if (item.name.equals(area.name)) {
-                return Text.literal(ServerMain.translation.get("enclosure.message.name_in_use").getAsString()).getString();
-            }
-        }
-
         return null;
     }
 
@@ -125,11 +103,6 @@ public class EnclosureList extends PersistentState {
         return this.boundWorld;
     }
 
-    public void setBoundWorld(ServerWorld boundWorld) {
-        this.boundWorld = boundWorld;
-        areas.forEach((name, area) -> area.setWorld(boundWorld));
-    }
-
     public boolean remove(String name) {
         if (areas.containsKey(name)) {
             areas.remove(name);
@@ -140,7 +113,7 @@ public class EnclosureList extends PersistentState {
     }
 
     public void addArea(EnclosureArea area) {
-        areas.put(area.name, area);
+        areas.put(area.getName(), area);
         markDirty();
     }
 
