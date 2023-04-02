@@ -1,6 +1,6 @@
 package com.github.zly2006.enclosure.mixin;
 
-import com.github.zly2006.enclosure.ServerMain;
+import com.github.zly2006.enclosure.ServerMainKt;
 import com.github.zly2006.enclosure.events.PlayerUseEntityEvent;
 import net.minecraft.command.argument.NumberRangeArgumentType;
 import net.minecraft.entity.Entity;
@@ -58,7 +58,7 @@ public abstract class MixinPlayerEntity extends LivingEntity {
     @Inject(method = "canPlaceOn", at = @At("HEAD"), cancellable = true)
     private void protectPlacing(BlockPos pos, Direction facing, ItemStack stack, CallbackInfoReturnable<Boolean> cir) {
         if (((LivingEntity) this) instanceof ServerPlayerEntity serverPlayer) {
-            if (!ServerMain.Instance.checkPermission(serverPlayer, PLACE_BLOCK, pos)) {
+            if (!ServerMainKt.Instance.checkPermission(serverPlayer, PLACE_BLOCK, pos)) {
                 serverPlayer.sendMessage(PLACE_BLOCK.getNoPermissionMsg(serverPlayer));
                 cir.setReturnValue(false);
             }

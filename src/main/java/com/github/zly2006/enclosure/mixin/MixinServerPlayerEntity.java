@@ -1,7 +1,6 @@
 package com.github.zly2006.enclosure.mixin;
 
 import com.github.zly2006.enclosure.EnclosureArea;
-import com.github.zly2006.enclosure.ServerMain;
 import com.github.zly2006.enclosure.access.PlayerAccess;
 import com.github.zly2006.enclosure.utils.Permission;
 import com.github.zly2006.enclosure.utils.TrT;
@@ -37,7 +36,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import static com.github.zly2006.enclosure.ServerMain.*;
+import static com.github.zly2006.enclosure.ServerMainKt.Instance;
 import static com.github.zly2006.enclosure.command.EnclosureCommandKt.CONSOLE;
 import static com.github.zly2006.enclosure.utils.Permission.*;
 import static net.fabricmc.api.EnvType.SERVER;
@@ -117,7 +116,7 @@ public abstract class MixinServerPlayerEntity extends PlayerEntity implements Pl
             return null;
         }
         if (message.startsWith("#rich:")) {
-            if (ServerMain.commonConfig.allowRichMessage) {
+            if (Instance.getCommonConfig().allowRichMessage) {
                 return Text.Serializer.fromJson(message.substring(6));
             }
             else {
@@ -137,12 +136,12 @@ public abstract class MixinServerPlayerEntity extends PlayerEntity implements Pl
     }
 
     private void sendFormattedMessage(ServerPlayerEntity player, EnclosureArea area, boolean enter) {
-        MutableText text = Text.of(enter ? commonConfig.enterMessageHeader : commonConfig.leaveMessageHeader).copy();
+        MutableText text = Text.of(enter ? Instance.getCommonConfig().enterMessageHeader : Instance.getCommonConfig().leaveMessageHeader).copy();
         if (enter) {
             if (area.getEnterMessage().equals("#none")) {
                 return;
             } else if (area.getEnterMessage().isEmpty()) {
-                text.append(formatMessage(ServerMain.commonConfig.defaultEnterMessage, area, player));
+                text.append(formatMessage(Instance.getCommonConfig().defaultEnterMessage, area, player));
             } else {
                 text.append(formatMessage(area.getEnterMessage(), area, player));
             }
@@ -150,7 +149,7 @@ public abstract class MixinServerPlayerEntity extends PlayerEntity implements Pl
             if (area.getLeaveMessage().equals("#none")) {
                 return;
             } else if (area.getLeaveMessage().isEmpty()) {
-                text.append(formatMessage(ServerMain.commonConfig.defaultLeaveMessage, area, player));
+                text.append(formatMessage(Instance.getCommonConfig().defaultLeaveMessage, area, player));
             } else {
                 text.append(formatMessage(area.getLeaveMessage(), area, player));
             }

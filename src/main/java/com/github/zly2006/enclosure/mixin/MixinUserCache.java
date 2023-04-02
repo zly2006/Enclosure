@@ -1,6 +1,6 @@
 package com.github.zly2006.enclosure.mixin;
 
-import com.github.zly2006.enclosure.PaidMain;
+import com.github.zly2006.enclosure.ServerMainKt;
 import com.google.gson.JsonArray;
 import com.mojang.authlib.GameProfile;
 import com.mojang.authlib.GameProfileRepository;
@@ -16,7 +16,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.util.UUID;
 
-import static com.github.zly2006.enclosure.ServerMain.GSON;
+import static com.github.zly2006.enclosure.ServerMainKt.GSON;
 
 @Mixin(UserCache.class)
 public class MixinUserCache {
@@ -24,7 +24,7 @@ public class MixinUserCache {
     private void onAdd(GameProfileRepository profileRepository, File cacheFile, CallbackInfo ci) {
         try {
             GSON.fromJson(Files.newBufferedReader(cacheFile.toPath()), JsonArray.class)
-                    .forEach(jsonElement -> PaidMain.byUuid.put(
+                    .forEach(jsonElement -> ServerMainKt.byUuid.put(
                             UUID.fromString(jsonElement.getAsJsonObject().get("uuid").getAsString()),
                             jsonElement.getAsJsonObject().get("name").getAsString()
                     ));
@@ -34,6 +34,6 @@ public class MixinUserCache {
     }
     @Inject(at = @At("HEAD"), method = "add(Lcom/mojang/authlib/GameProfile;)V")
     private void onAdd(GameProfile profile, CallbackInfo ci) {
-        PaidMain.byUuid.put(profile.getId(), profile.getName());
+        ServerMainKt.byUuid.put(profile.getId(), profile.getName());
     }
 }

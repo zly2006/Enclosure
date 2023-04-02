@@ -14,7 +14,7 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
 
-import static com.github.zly2006.enclosure.ServerMain.Instance;
+import static com.github.zly2006.enclosure.ServerMainKt.Instance;
 import static net.fabricmc.api.EnvType.SERVER;
 
 @Environment(SERVER)

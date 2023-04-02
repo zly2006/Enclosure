@@ -13,7 +13,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-import static com.github.zly2006.enclosure.ServerMain.Instance;
+import static com.github.zly2006.enclosure.ServerMainKt.Instance;
 
 @Mixin(TadpoleEntity.class)
 public abstract class MixinTadpoleEntity extends Entity {

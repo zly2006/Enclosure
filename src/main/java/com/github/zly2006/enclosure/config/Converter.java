@@ -3,7 +3,7 @@ package com.github.zly2006.enclosure.config;
 import com.github.zly2006.enclosure.Enclosure;
 import com.github.zly2006.enclosure.EnclosureArea;
 import com.github.zly2006.enclosure.EnclosureList;
-import com.github.zly2006.enclosure.ServerMain;
+import com.github.zly2006.enclosure.ServerMainKt;
 import com.mojang.authlib.GameProfile;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtInt;
@@ -19,7 +19,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.util.*;
 
-import static com.github.zly2006.enclosure.ServerMain.*;
+import static com.github.zly2006.enclosure.ServerMainKt.*;
 
 public class Converter {
 
@@ -64,7 +64,7 @@ public class Converter {
 
     public static void convert() {
         // 不存在储存旧配置文件的文件夹时创建一个
-        File oldConfDictionary = ServerMain.OLD_CONF_PATH.toFile();
+        File oldConfDictionary = ServerMainKt.OLD_CONF_PATH.toFile();
         if (!oldConfDictionary.exists() || oldConfDictionary.isFile()) {
             oldConfDictionary.mkdirs();
         }
@@ -192,13 +192,13 @@ public class Converter {
                     MutableText status = null;
                     for (EnclosureArea area : enclosureList.getAreas()) {
                         if (enclosure.equals(area)) {
-                            status = Text.literal(ServerMain.translation.get("enclosure.message.existed").getAsString());
+                            status = Text.literal(Instance.getTranslation().get("enclosure.message.existed").getAsString());
                         }
                         else if (enclosure.intersect(area)) {
-                            status = Text.literal(ServerMain.translation.get("enclosure.message.intersected").getAsString()).append(area.getFullName());
+                            status = Text.literal(Instance.getTranslation().get("enclosure.message.intersected").getAsString()).append(area.getFullName());
                         }
                         else if (enclosure.getName().equals(area.getName())) {
-                            status = Text.literal(ServerMain.translation.get("enclosure.message.name_in_use").getAsString());
+                            status = Text.literal(Instance.getTranslation().get("enclosure.message.name_in_use").getAsString());
                         }
                     }
                     if (status == null) {

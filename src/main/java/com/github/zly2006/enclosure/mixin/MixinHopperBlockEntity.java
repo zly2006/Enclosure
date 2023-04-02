@@ -1,7 +1,6 @@
 package com.github.zly2006.enclosure.mixin;
 
 import com.github.zly2006.enclosure.EnclosureArea;
-import com.github.zly2006.enclosure.ServerMain;
 import com.github.zly2006.enclosure.utils.Permission;
 import com.github.zly2006.enclosure.utils.Utils;
 import net.minecraft.block.BlockState;
@@ -21,7 +20,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 
-import static com.github.zly2006.enclosure.ServerMain.Instance;
+import static com.github.zly2006.enclosure.ServerMainKt.Instance;
 
 @Mixin(HopperBlockEntity.class)
 public class MixinHopperBlockEntity extends BlockEntity {
@@ -34,7 +33,7 @@ public class MixinHopperBlockEntity extends BlockEntity {
         if (world.isClient) return;
         BlockPos pos = Utils.toBlockPos(hopper.getHopperX(), hopper.getHopperY(), hopper.getHopperZ());
         BlockPos inventoryPos = pos.offset(Direction.UP);
-        if (!ServerMain.checkPermissionInDifferentEnclosure((ServerWorld) world, pos, inventoryPos, Permission.CONTAINER)) {
+        if (!Instance.checkPermissionInDifferentEnclosure((ServerWorld) world, pos, inventoryPos, Permission.CONTAINER)) {
             cir.setReturnValue(false);
         }
     }

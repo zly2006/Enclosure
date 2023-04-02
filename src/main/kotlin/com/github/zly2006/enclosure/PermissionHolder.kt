@@ -2,11 +2,8 @@ package com.github.zly2006.enclosure
 
 import com.github.zly2006.enclosure.command.CONSOLE
 import com.github.zly2006.enclosure.exceptions.PermissionTargetException
-import com.github.zly2006.enclosure.utils.Permission
-import com.github.zly2006.enclosure.utils.Serializable2Text
+import com.github.zly2006.enclosure.utils.*
 import com.github.zly2006.enclosure.utils.Serializable2Text.SerializationSettings
-import com.github.zly2006.enclosure.utils.TrT
-import com.github.zly2006.enclosure.utils.Utils
 import com.mojang.datafixers.util.Pair
 import net.minecraft.server.command.ServerCommandSource
 import net.minecraft.server.network.ServerPlayerEntity
@@ -57,7 +54,7 @@ interface PermissionHolder : Serializable2Text {
     fun hasPubPerm(perm: Permission): Boolean {
         if (!perm.target.fitEnclosure()) {
             throw PermissionTargetException(
-                TrT.of("enclosure.message.permission_target_error").append(Text.literal(perm.target.name))
+                TrT.of("enclosure.message.permission_target_error")+(Text.literal(perm.target.name))
             )
         }
         return hasPerm(CONSOLE, perm)
@@ -88,7 +85,7 @@ interface PermissionHolder : Serializable2Text {
     val fullName: String
         get() = name
 
-    fun serializePermission(map: MutableMap<String, Boolean>): Text? {
+    fun serializePermission(map: MutableMap<String, Boolean>): Text {
         val text = Text.literal("")
         map.forEach { (key: String?, value: Boolean) ->
             if (value) {
@@ -105,17 +102,13 @@ interface PermissionHolder : Serializable2Text {
     override fun serialize(settings: SerializationSettings, player: ServerPlayerEntity?): MutableText {
         if (settings != SerializationSettings.Full) return Text.literal(name)
         val text = TrT.of("enclosure.message.permissions_header")
-        permissionsMap.entries.stream().map { (key, value) ->
+        permissionsMap.entries.map { (key, value) ->
             var ordinal = -1
             var style = Style.EMPTY
                 .withClickEvent(ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, getSetPermissionCommand(key)))
-                .withHoverEvent(
-                    HoverEvent(
-                        HoverEvent.Action.SHOW_TEXT,
-                        if (key == CONSOLE) serializePermission(value) else  // 不是默认的，就显示uuid
-                            Text.literal("UUID=$key: ").setStyle(Style.EMPTY.withColor(Formatting.GOLD))
-                                .append(serializePermission(value))
-                    )
+                .hoverText(
+                    if (key == CONSOLE) serializePermission(value) else  // 不是默认的，就显示uuid
+                        Text.literal("UUID=$key: ").gold() + serializePermission(value)
                 )
             var name: String? = null
             if (key == CONSOLE) {
@@ -138,9 +131,7 @@ interface PermissionHolder : Serializable2Text {
             }
             val item = Text.literal(name).setStyle(style).append(" ")
             Pair.of(item, ordinal)
-        }
-            .sorted(Comparator.comparingInt { obj: Pair<MutableText, Int> -> obj.second })
-            .forEach { pair: Pair<MutableText, Int> -> text.append(pair.first) }
+        }.sortedBy { it.second }.forEach { text.append(it.first) }
         return text
     }
 

@@ -26,7 +26,10 @@
   "environment": "*",
   "entrypoints": {
     "server": [
-      "com.github.zly2006.enclosure.ServerMain"
+      {
+        "adapter": "kotlin",
+        "value": "com.github.zly2006.enclosure.ServerMain"
+      }
     ],
     "client": [
       "com.github.zly2006.enclosure.client.ClientMain"

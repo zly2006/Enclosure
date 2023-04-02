@@ -12,7 +12,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-import static com.github.zly2006.enclosure.ServerMain.*;
+import static com.github.zly2006.enclosure.ServerMainKt.*;
 
 @Mixin(FarmlandBlock.class)
 public class MixinFarmlandBlock {

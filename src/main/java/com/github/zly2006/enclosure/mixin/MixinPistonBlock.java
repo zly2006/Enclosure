@@ -20,8 +20,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-import static com.github.zly2006.enclosure.ServerMain.Instance;
-import static com.github.zly2006.enclosure.ServerMain.checkPermissionInDifferentEnclosure;
+import static com.github.zly2006.enclosure.ServerMainKt.Instance;
 import static net.fabricmc.api.EnvType.SERVER;
 
 @Environment(SERVER)
@@ -62,8 +61,8 @@ public class MixinPistonBlock extends FacingBlock {
                 // 活塞向内收
                 pistonPos = pos.offset(pistonDir.getOpposite(), 2);
             }
-            if (!checkPermissionInDifferentEnclosure(serverWorld, pistonPos, newPos, Permission.PISTON) ||
-                !checkPermissionInDifferentEnclosure(serverWorld, pos, newPos, Permission.PISTON)) {
+            if (!Instance.checkPermissionInDifferentEnclosure(serverWorld, pistonPos, newPos, Permission.PISTON) ||
+                !Instance.checkPermissionInDifferentEnclosure(serverWorld, pos, newPos, Permission.PISTON)) {
                 // this method will be called even the target pos is out of the world.
                 Utils.mark4updateChecked(serverWorld, pos);
                 Utils.mark4updateChecked(serverWorld, newPos);

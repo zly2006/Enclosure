@@ -1,7 +1,6 @@
 package com.github.zly2006.enclosure.network;
 
-import com.github.zly2006.enclosure.PaidMain;
-import com.github.zly2006.enclosure.ServerMain;
+import com.github.zly2006.enclosure.ServerMainKt;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
 import net.fabricmc.fabric.api.networking.v1.PacketSender;
@@ -22,7 +21,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.HashMap;
 import java.util.Map;
 
-import static com.github.zly2006.enclosure.ServerMain.MOD_VERSION;
+import static com.github.zly2006.enclosure.ServerMainKt.MOD_VERSION;
 
 public class EnclosureInstalledC2SPacket implements ServerPlayNetworking.PlayChannelHandler {
     public static Map<ServerPlayerEntity, Version> installedClientMod = new HashMap<>();
@@ -60,13 +59,13 @@ public class EnclosureInstalledC2SPacket implements ServerPlayNetworking.PlayCha
             if (version instanceof SemanticVersion clientVersion && MOD_VERSION instanceof SemanticVersion serverVersion &&
                     clientVersion.getVersionComponent(0) == serverVersion.getVersionComponent(0) &&
                     clientVersion.getVersionComponent(1) == serverVersion.getVersionComponent(1)) {
-                ServerMain.LOGGER.info(player.getName().getString() + " joined with a matching enclosure client.");
+                ServerMainKt.LOGGER.info(player.getName().getString() + " joined with a matching enclosure client.");
                 installedClientMod.put(player, version);
 
                 // send uuid data
                 PacketByteBuf buf2 = PacketByteBufs.create();
                 NbtCompound compound = new NbtCompound();
-                PaidMain.byUuid.forEach((uuid, s) -> compound.putUuid(s, uuid));
+                ServerMainKt.byUuid.forEach((uuid, s) -> compound.putUuid(s, uuid));
                 buf2.writeNbt(compound);
                 compound.put("", new NbtCompound());
                 ServerPlayNetworking.send(player, NetworkChannels.SYNC_UUID, buf2);

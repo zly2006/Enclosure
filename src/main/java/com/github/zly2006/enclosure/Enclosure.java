@@ -30,9 +30,7 @@ public class Enclosure extends EnclosureArea {
         // process sub enclosures
         NbtCompound sub = compound.getCompound(SUB_ENCLOSURES_KEY);
         subEnclosures = new EnclosureList(sub, world);
-        subEnclosures.areas.forEach((name, land) -> {
-            addChild(land);
-        });
+        subEnclosures.areas.forEach((name, land) -> addChild(land));
     }
 
     public Enclosure(Session session, String name) {
@@ -41,7 +39,7 @@ public class Enclosure extends EnclosureArea {
     }
 
     @Override
-    public NbtCompound writeNbt(NbtCompound nbt) {
+    public @NotNull NbtCompound writeNbt(@NotNull NbtCompound nbt) {
         NbtCompound compound = super.writeNbt(nbt);
         NbtCompound sub = new NbtCompound();
         subEnclosures.writeNbt(sub);
@@ -51,12 +49,12 @@ public class Enclosure extends EnclosureArea {
 
     @Override
     public void changeWorld(@NotNull ServerWorld world) {
-        if (world == this.world) return;
+        if (world == this.getWorld()) return;
         super.setWorld(world);
     }
 
     @Override
-    public @Nullable EnclosureArea areaOf(BlockPos pos) {
+    public @NotNull EnclosureArea areaOf(@NotNull BlockPos pos) {
         for (EnclosureArea area : subEnclosures.areas.values()) {
             if (area.isInner(pos)) {
                 return area.areaOf(pos);
@@ -70,7 +68,7 @@ public class Enclosure extends EnclosureArea {
     }
 
     @Override
-    public MutableText serialize(@NotNull SerializationSettings settings, @Nullable ServerPlayerEntity player) {
+    public @NotNull MutableText serialize(@NotNull SerializationSettings settings, @Nullable ServerPlayerEntity player) {
         if (settings == SerializationSettings.Full) {
             MutableText text = super.serialize(settings, player);
             if (subEnclosures.areas.size() > 0) {
@@ -97,7 +95,7 @@ public class Enclosure extends EnclosureArea {
     }
 
     @Override
-    public void onRemoveChild(PermissionHolder child) {
+    public void onRemoveChild(@NotNull PermissionHolder child) {
         if (child instanceof EnclosureArea)
             ((EnclosureArea) child).setFather(null);
         subEnclosures.remove(child.getName());
@@ -105,7 +103,7 @@ public class Enclosure extends EnclosureArea {
     }
 
     @Override
-    public void addChild(PermissionHolder child) {
+    public void addChild(@NotNull PermissionHolder child) {
         if (child instanceof EnclosureArea) {
             ((EnclosureArea) child).setFather(this);
             subEnclosures.areas.put(child.getName(), (EnclosureArea) child);

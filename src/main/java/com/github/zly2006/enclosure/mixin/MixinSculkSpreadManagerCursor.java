@@ -22,7 +22,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import java.util.Collection;
 import java.util.Set;
 
-import static com.github.zly2006.enclosure.ServerMain.Instance;
+import static com.github.zly2006.enclosure.ServerMainKt.Instance;
 import static net.fabricmc.api.EnvType.SERVER;
 
 @Environment(SERVER)

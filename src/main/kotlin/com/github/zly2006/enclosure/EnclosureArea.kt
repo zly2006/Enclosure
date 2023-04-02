@@ -2,24 +2,23 @@ package com.github.zly2006.enclosure
 
 import com.github.zly2006.enclosure.command.CONSOLE
 import com.github.zly2006.enclosure.command.Session
-import com.github.zly2006.enclosure.exceptions.PermissionTargetException
-import com.github.zly2006.enclosure.utils.Permission
+import com.github.zly2006.enclosure.utils.*
 import com.github.zly2006.enclosure.utils.Serializable2Text.SerializationSettings
-import com.github.zly2006.enclosure.utils.TrT
-import com.github.zly2006.enclosure.utils.Utils
 import net.minecraft.nbt.NbtCompound
 import net.minecraft.nbt.NbtDouble
 import net.minecraft.nbt.NbtList
 import net.minecraft.server.command.ServerCommandSource
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.server.world.ServerWorld
-import net.minecraft.text.*
+import net.minecraft.text.ClickEvent
+import net.minecraft.text.MutableText
+import net.minecraft.text.Style
+import net.minecraft.text.Text
 import net.minecraft.util.Formatting
 import net.minecraft.util.math.BlockPos
 import net.minecraft.util.math.Vec3d
 import net.minecraft.world.Heightmap
 import net.minecraft.world.PersistentState
-import org.jetbrains.annotations.Contract
 import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.math.max
@@ -43,16 +42,16 @@ open class EnclosureArea : PersistentState, PermissionHolder {
     var maxX by lockChecker(0)
     var maxY by lockChecker(0)
     var maxZ by lockChecker(0)
-    lateinit var world: ServerWorld
+    var world: ServerWorld
         protected set
     final override var name = ""
-    override var owner: UUID by lockChecker(CONSOLE)
+    final override var owner: UUID by lockChecker(CONSOLE)
     var teleportPos: Vec3d? = null
     var yaw by lockChecker(0f)
     var pitch by lockChecker(0f)
     var enterMessage by lockChecker("")
     var leaveMessage by lockChecker("")
-    override var permissionsMap: MutableMap<UUID, MutableMap<String, Boolean>> = HashMap()
+    final override var permissionsMap: MutableMap<UUID, MutableMap<String, Boolean>> = HashMap()
     var createdOn: Long = 0
         protected set
     override var father: PermissionHolder? = null
@@ -64,8 +63,6 @@ open class EnclosureArea : PersistentState, PermissionHolder {
         } else {
             name
         }
-
-    private constructor()
 
     /**
      * Create an instance from nbt
@@ -117,8 +114,8 @@ open class EnclosureArea : PersistentState, PermissionHolder {
         owner = session.owner
         world = session.world
         this.name = name
-        permissionsMap[owner!!] = mutableMapOf()
-        Permission.PERMISSIONS.values.stream().filter { p -> p.target.fitPlayer() }
+        permissionsMap[owner] = mutableMapOf()
+        Permission.PERMISSIONS.values.filter { p -> p.target.fitPlayer() }
             .forEach { p -> permissionsMap[owner]!![p] = true }
         minX = min(session.pos1.x, session.pos2.x)
         minY = min(session.pos1.y, session.pos2.y)
@@ -142,11 +139,11 @@ open class EnclosureArea : PersistentState, PermissionHolder {
     fun kickPlayer(player: ServerPlayerEntity) {
         val x = minX - 1
         val z = minZ - 1
-        val y = world!!.getTopY(Heightmap.Type.MOTION_BLOCKING_NO_LEAVES, x, z)
-        if (y == world!!.bottomY) {
+        val y = world.getTopY(Heightmap.Type.MOTION_BLOCKING_NO_LEAVES, x, z)
+        if (y == world.bottomY) {
             // this player is alive, but in a void
-            ServerMain.minecraftServer.playerManager.respawnPlayer(player, true)
-            ServerMain.minecraftServer.overworld.chunkManager.updatePosition(player)
+            minecraftServer.playerManager.respawnPlayer(player, true)
+            minecraftServer.overworld.chunkManager.updatePosition(player)
         } else {
             player.teleport(world, x.toDouble(), y.toDouble(), z.toDouble(), 0f, 0f)
         }
@@ -183,7 +180,7 @@ open class EnclosureArea : PersistentState, PermissionHolder {
         return nbt
     }
 
-    open fun areaOf(pos: BlockPos): EnclosureArea? {
+    open fun areaOf(pos: BlockPos): EnclosureArea {
         return if (isInner(pos)) {
             this
         } else {
@@ -250,26 +247,21 @@ open class EnclosureArea : PersistentState, PermissionHolder {
         }
     }
 
-    fun checkLock() {
+    private fun checkLock() {
         if (locked) {
             throw RuntimeException("This area is locked")
         }
     }
 
-    @Throws(PermissionTargetException::class)
     override fun setPermission(source: ServerCommandSource?, uuid: UUID, perm: Permission, value: Boolean?) {
         checkLock()
         if (source != null && source.player != null && !hasPerm(source.player!!, Permission.ADMIN)) {
-            ServerMain.LOGGER.warn("Player " + source.name + " try to set permission of " + uuid + " in " + name + " without admin permission")
-            ServerMain.LOGGER.warn("allowing, if you have any problem please report to the author")
+            LOGGER.warn("Player " + source.name + " try to set permission of " + uuid + " in " + name + " without admin permission")
+            LOGGER.warn("allowing, if you have any problem please report to the author")
         }
-        ServerMain.LOGGER.info(
-            Optional.ofNullable(source).map { obj: ServerCommandSource? -> obj!!.name }
-                .orElse("<null>") +
-                    " set perm " + perm.name + " to " + value + " for " + uuid + " in " + fullName
-        )
-        super<PermissionHolder>.setPermission(source, uuid, perm, value)
-        ServerMain.Instance.getAllEnclosures(world).markDirty()
+        LOGGER.info("${source?.name ?: "<null>"} set perm ${perm.name} to $value for $uuid in $fullName")
+        super.setPermission(source, uuid, perm, value)
+        Instance.getAllEnclosures(world).markDirty()
     }
 
     override fun getSetPermissionCommand(uuid: UUID): String {
@@ -305,87 +297,59 @@ open class EnclosureArea : PersistentState, PermissionHolder {
         return when (settings) {
             SerializationSettings.Name -> Text.literal(fullName)
             SerializationSettings.Hover -> {
-                TrT.of("enclosure.message.select.from")
-                    .append(Text.literal("[").formatted(Formatting.DARK_GREEN))
-                    .append(Text.literal(minX.toString()).formatted(Formatting.GREEN))
-                    .append(Text.literal(", ").formatted(Formatting.DARK_GREEN))
-                    .append(Text.literal(minY.toString()).formatted(Formatting.GREEN))
-                    .append(Text.literal(", ").formatted(Formatting.DARK_GREEN))
-                    .append(Text.literal(minZ.toString()).formatted(Formatting.GREEN))
-                    .append(Text.literal("]").formatted(Formatting.DARK_GREEN))
-                    .append(TrT.of("enclosure.message.select.to"))
-                    .append(Text.literal("[").formatted(Formatting.DARK_GREEN))
-                    .append(Text.literal(maxX.toString()).formatted(Formatting.GREEN))
-                    .append(Text.literal(", ").formatted(Formatting.DARK_GREEN))
-                    .append(Text.literal(maxY.toString()).formatted(Formatting.GREEN))
-                    .append(Text.literal(", ").formatted(Formatting.DARK_GREEN))
-                    .append(Text.literal(maxZ.toString()).formatted(Formatting.GREEN))
-                    .append(Text.literal("]").formatted(Formatting.DARK_GREEN))
-                    .append(TrT.of("enclosure.message.select.world"))
-                    .append(Text.literal(world!!.registryKey.value.toString()).formatted(Formatting.GREEN))
-                    .append("\n")
-                    .append(TrT.of("enclosure.info.created_on"))
-                    .append(Text.literal(SimpleDateFormat().format(Date(createdOn))).formatted(Formatting.GOLD))
+                TrT.of("enclosure.message.select.from") +
+                        literalText("[").darkGreen() +
+                        literalText(minX).green() +
+                        literalText(", ").darkGreen() +
+                        literalText(minY).green() +
+                        literalText(", ").darkGreen() +
+                        literalText(minZ).green() +
+                        literalText("]").darkGreen() +
+                        TrT.of("enclosure.message.select.to") +
+                        literalText("[").darkGreen() +
+                        literalText(maxX).green() +
+                        literalText(", ").darkGreen() +
+                        literalText(maxY).green() +
+                        literalText(", ").darkGreen() +
+                        literalText(maxZ).green() +
+                        literalText("]").darkGreen() +
+                        TrT.of("enclosure.message.select.world") +
+                        literalText(world.registryKey.value).green() +
+                        literalText("\n") +
+                        TrT.of("enclosure.info.created_on") +
+                        literalText(SimpleDateFormat().format(Date(createdOn))).gold()
             }
 
             SerializationSettings.Summarize -> {
-                val text = serialize(SerializationSettings.Name, player)
-                text.style = Style.EMPTY.withColor(Formatting.GOLD)
-                    .withClickEvent(ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, "/enclosure tp $fullName"))
-                    .withHoverEvent(
-                        HoverEvent(
-                            HoverEvent.Action.SHOW_TEXT,
-                            serialize(SerializationSettings.Hover, player)
-                        )
-                    )
-                text.append(
-                    TrT.of("enclosure.info.created_by").styled { style: Style -> style.withColor(Formatting.WHITE) })
-                val ownerName = Utils.getNameByUUID(owner!!)
-                text.append((if (ownerName == null) TrT.of("enclosure.message.unknown_user").styled { style: Style ->
-                    style.withColor(
-                        Formatting.RED
-                    )
-                } else Text.literal(ownerName).formatted(Formatting.GOLD))
-                    .styled { style: Style ->
-                        style.withHoverEvent(
-                            HoverEvent(
-                                HoverEvent.Action.SHOW_TEXT,
-                                Text.literal("UUID: $owner")
-                            )
-                        )
-                    })
+                val text = serialize(SerializationSettings.Name, player).gold().styled {
+                    it.withClickEvent(ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, "/enclosure tp $fullName"))
+                        .hoverText(serialize(SerializationSettings.Hover, player))
+                }
+                text += TrT.of("enclosure.info.created_by").white()
+                val ownerName = Utils.getNameByUUID(owner)
+                text += (ownerName?.let { Text.literal(it).gold() } ?: TrT.of("enclosure.message.unknown_user").red())
+                    .hoverText(Text.literal("UUID: $owner"))
                 text
             }
 
             SerializationSettings.Full -> {
                 val text = Text.empty()
                 if (father != null) {
-                    text.append(
-                        TrT.of("enclosure.info.father_land")
-                            .styled { style: Style -> style.withColor(Formatting.WHITE) })
-                    text.append(
-                        father!!.serialize(SerializationSettings.Name, player).styled { style: Style ->
-                            style.withColor(
-                                Formatting.GOLD
+                    text += (TrT.of("enclosure.info.father_land").white())
+                    text += father!!.serialize(SerializationSettings.Name, player).gold()
+                        .hoverText(father!!.serialize(SerializationSettings.Hover, player))
+                        .styled {
+                            it.withClickEvent(
+                                ClickEvent(
+                                    ClickEvent.Action.SUGGEST_COMMAND,
+                                    "/enclosure info ${father!!.fullName}"
+                                )
                             )
-                                .withHoverEvent(
-                                    HoverEvent(
-                                        HoverEvent.Action.SHOW_TEXT,
-                                        father!!.serialize(SerializationSettings.Hover, player)
-                                    )
-                                )
-                                .withClickEvent(
-                                    ClickEvent(
-                                        ClickEvent.Action.SUGGEST_COMMAND,
-                                        "/enclosure info " + father!!.fullName
-                                    )
-                                )
-                        })
+                        }
                     text.append("\n")
                 }
-                text.append(serialize(SerializationSettings.Summarize, player))
-                    .append("\n")
-                    .append(super<PermissionHolder>.serialize(SerializationSettings.Full, player))
+                text += serialize(SerializationSettings.Summarize, player)
+                    .append("\n") + (super.serialize(SerializationSettings.Full, player))
                 text
             }
 
@@ -412,7 +376,7 @@ open class EnclosureArea : PersistentState, PermissionHolder {
     }
 
     final override fun markDirty() {
-        ServerMain.Instance.getAllEnclosures(world).markDirty()
+        Instance.getAllEnclosures(world).markDirty()
     }
 
     fun setTeleportPos(teleportPos: Vec3d?, yaw: Float, pitch: Float) {
@@ -464,12 +428,5 @@ open class EnclosureArea : PersistentState, PermissionHolder {
         createdOn = enclosure.createdOn
         locked = false
         markDirty()
-    }
-
-    companion object {
-        @Contract(" -> new")
-        fun empty(): EnclosureArea {
-            return EnclosureArea()
-        }
     }
 }

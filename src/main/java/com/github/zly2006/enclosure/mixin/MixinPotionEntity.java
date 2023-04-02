@@ -2,7 +2,7 @@ package com.github.zly2006.enclosure.mixin;
 
 import com.github.zly2006.enclosure.EnclosureArea;
 import com.github.zly2006.enclosure.EnclosureList;
-import com.github.zly2006.enclosure.ServerMain;
+import com.github.zly2006.enclosure.ServerMainKt;
 import com.github.zly2006.enclosure.utils.Permission;
 import net.minecraft.block.Block;
 import net.minecraft.block.CampfireBlock;
@@ -35,7 +35,7 @@ public abstract class MixinPotionEntity extends ThrownItemEntity {
         }
         Block block = world.getBlockState(pos).getBlock();
         if (block instanceof CampfireBlock) {
-            EnclosureList list = ServerMain.Instance.getAllEnclosures((ServerWorld) world);
+            EnclosureList list = ServerMainKt.Instance.getAllEnclosures((ServerWorld) world);
             EnclosureArea area = list.getArea(pos);
             if (area != null && !area.areaOf(pos).hasPubPerm(Permission.USE_CAMPFIRE)) {
                 if (getOwner() instanceof ServerPlayerEntity player) {

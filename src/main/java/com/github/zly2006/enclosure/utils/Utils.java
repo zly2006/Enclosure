@@ -25,8 +25,8 @@ import org.jetbrains.annotations.Nullable;
 import java.util.List;
 import java.util.UUID;
 
-import static com.github.zly2006.enclosure.ServerMain.Instance;
-import static com.github.zly2006.enclosure.ServerMain.minecraftServer;
+import static com.github.zly2006.enclosure.ServerMainKt.Instance;
+import static com.github.zly2006.enclosure.ServerMainKt.minecraftServer;
 
 public class Utils {
     public static boolean isAnimal(Entity entity) {

@@ -2,8 +2,9 @@ package com.github.zly2006.enclosure.command
 
 import com.github.zly2006.enclosure.EnclosureArea
 import com.github.zly2006.enclosure.EnclosureList
-import com.github.zly2006.enclosure.ServerMain
+import com.github.zly2006.enclosure.Instance
 import com.github.zly2006.enclosure.config.LandLimits
+import com.github.zly2006.enclosure.minecraftServer
 import com.github.zly2006.enclosure.network.EnclosureInstalledC2SPacket
 import com.github.zly2006.enclosure.network.NetworkChannels
 import com.github.zly2006.enclosure.utils.TrT
@@ -24,7 +25,7 @@ class Session(
     player: ServerPlayerEntity?
 ) {
     var owner = player?.uuid ?: CONSOLE
-    var world: ServerWorld = player?.getWorld() ?: ServerMain.minecraftServer.overworld
+    var world: ServerWorld = player?.getWorld() ?: minecraftServer.overworld
     var pos1: BlockPos = world.spawnPos
     var pos2: BlockPos = world.spawnPos
     var enabled = false
@@ -34,7 +35,7 @@ class Session(
         }
         val player = world.server.playerManager.getPlayer(owner) ?: return
         if (EnclosureInstalledC2SPacket.isInstalled(player)) {
-            val session = ServerMain.Instance.playerSessions[player.uuid]
+            val session = Instance.playerSessions[player.uuid]
             if (session != null) {
                 val buf = PacketByteBufs.create()
                 buf.writeBlockPos(session.pos1)

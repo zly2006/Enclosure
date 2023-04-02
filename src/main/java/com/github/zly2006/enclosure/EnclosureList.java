@@ -15,8 +15,8 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
-import static com.github.zly2006.enclosure.ServerMain.DATA_VERSION;
-import static com.github.zly2006.enclosure.ServerMain.Instance;
+import static com.github.zly2006.enclosure.ServerMainKt.DATA_VERSION;
+import static com.github.zly2006.enclosure.ServerMainKt.Instance;
 
 public class EnclosureList extends PersistentState {
     public static final String DATA_VERSION_KEY = "data_version";
@@ -89,7 +89,7 @@ public class EnclosureList extends PersistentState {
             if (list == this) {
                 setDirty(true);
             }
-            else if (list != null) {
+            else {
                 list.markDirty();
             }
         }

@@ -1,6 +1,6 @@
 package com.github.zly2006.enclosure.listeners
 
-import com.github.zly2006.enclosure.ServerMain
+import com.github.zly2006.enclosure.Instance
 import com.github.zly2006.enclosure.command.Session
 import com.github.zly2006.enclosure.utils.TrT
 import net.fabricmc.fabric.api.entity.event.v1.ServerEntityWorldChangeEvents
@@ -38,13 +38,13 @@ class SessionListener private constructor() : PlayerBlockBreakEvents.Before, Ser
         pos: BlockPos,
         direction: Direction
     ): ActionResult {
-        if (player.mainHandStack.item === ServerMain.Instance.operationItem) {
+        if (player.mainHandStack.item === Instance.operationItem) {
             if (getSession(player)!!.pos1 !== pos) {
                 val session = getSession(player)
                 session!!.syncDimension((player as ServerPlayerEntity))
                 session.pos1 = pos
                 session.trySync()
-                player.sendMessage(TrT.of("enclosure.message.set_pos_1").append(ServerMain.blockPos2string(pos)))
+                player.sendMessage(TrT.of("enclosure.message.set_pos_1").append(pos.toShortString()))
                 return ActionResult.FAIL
             }
         }
@@ -58,13 +58,13 @@ class SessionListener private constructor() : PlayerBlockBreakEvents.Before, Ser
         state: BlockState,
         blockEntity: BlockEntity?
     ): Boolean {
-        if (player.mainHandStack.item === ServerMain.Instance.operationItem) {
+        if (player.mainHandStack.item === Instance.operationItem) {
             if (getSession(player)!!.pos1 !== pos) {
                 val session = getSession(player)
                 session!!.syncDimension((player as ServerPlayerEntity))
                 session.pos1 = pos
                 session.trySync()
-                player.sendMessage(TrT.of("enclosure.message.set_pos_1").append(ServerMain.blockPos2string(pos)))
+                player.sendMessage(TrT.of("enclosure.message.set_pos_1").append(pos.toShortString()))
                 return false
             }
         }
@@ -72,14 +72,14 @@ class SessionListener private constructor() : PlayerBlockBreakEvents.Before, Ser
     }
 
     override fun interact(player: PlayerEntity, world: World, hand: Hand, hitResult: BlockHitResult): ActionResult {
-        if (player.mainHandStack.item === ServerMain.Instance.operationItem && hand == Hand.MAIN_HAND || player.offHandStack.item === ServerMain.Instance.operationItem && hand == Hand.OFF_HAND) {
+        if (player.mainHandStack.item === Instance.operationItem && hand == Hand.MAIN_HAND || player.offHandStack.item === Instance.operationItem && hand == Hand.OFF_HAND) {
             if (getSession(player)!!.pos2 !== hitResult.blockPos) {
                 val session = getSession(player)
                 session!!.syncDimension((player as ServerPlayerEntity))
                 session.pos2 = hitResult.blockPos
                 session.trySync()
                 player.sendMessage(
-                    TrT.of("enclosure.message.set_pos_2").append(ServerMain.blockPos2string(hitResult.blockPos))
+                    TrT.of("enclosure.message.set_pos_2").append(hitResult.blockPos.toShortString())
                 )
                 return ActionResult.FAIL
             }
@@ -88,11 +88,11 @@ class SessionListener private constructor() : PlayerBlockBreakEvents.Before, Ser
     }
 
     override fun onPlayDisconnect(handler: ServerPlayNetworkHandler, server: MinecraftServer) {
-        ServerMain.Instance.playerSessions.remove(handler.player.uuid)
+        Instance.playerSessions.remove(handler.player.uuid)
     }
 
     override fun onPlayReady(handler: ServerPlayNetworkHandler, sender: PacketSender, server: MinecraftServer) {
-        ServerMain.Instance.playerSessions[handler.player.gameProfile.id] = Session(handler.player)
+        Instance.playerSessions[handler.player.gameProfile.id] = Session(handler.player)
     }
 
     companion object {
@@ -108,7 +108,7 @@ class SessionListener private constructor() : PlayerBlockBreakEvents.Before, Ser
         }
 
         private fun getSession(player: UUID): Session? {
-            return ServerMain.Instance.playerSessions[player]
+            return Instance.playerSessions[player]
         }
 
         private fun getSession(player: PlayerEntity): Session? {

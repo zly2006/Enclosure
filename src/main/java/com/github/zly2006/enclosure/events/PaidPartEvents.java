@@ -14,7 +14,7 @@ import net.minecraft.util.Formatting;
 
 import java.util.concurrent.CompletableFuture;
 
-import static com.github.zly2006.enclosure.ServerMain.minecraftServer;
+import static com.github.zly2006.enclosure.ServerMainKt.minecraftServer;
 
 public class PaidPartEvents {
     public static PaidPartEvents INSTANCE = new PaidPartEvents();

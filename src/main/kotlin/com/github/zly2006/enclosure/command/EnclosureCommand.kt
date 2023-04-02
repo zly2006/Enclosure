@@ -1,18 +1,13 @@
 package com.github.zly2006.enclosure.command
 
-import com.github.zly2006.enclosure.Enclosure
-import com.github.zly2006.enclosure.EnclosureArea
-import com.github.zly2006.enclosure.PaidMain
-import com.github.zly2006.enclosure.ServerMain
+import com.github.zly2006.enclosure.*
 import com.github.zly2006.enclosure.access.PlayerAccess
 import com.github.zly2006.enclosure.exceptions.PermissionTargetException
 import com.github.zly2006.enclosure.gui.EnclosureScreenHandler
 import com.github.zly2006.enclosure.network.EnclosureInstalledC2SPacket
 import com.github.zly2006.enclosure.network.NetworkChannels
-import com.github.zly2006.enclosure.utils.Permission
+import com.github.zly2006.enclosure.utils.*
 import com.github.zly2006.enclosure.utils.Serializable2Text.SerializationSettings
-import com.github.zly2006.enclosure.utils.TrT
-import com.github.zly2006.enclosure.utils.Utils
 import com.mojang.brigadier.Command
 import com.mojang.brigadier.CommandDispatcher
 import com.mojang.brigadier.StringReader
@@ -78,7 +73,7 @@ class BuilderScope<T: argT>(var parent: T) {
             } catch (e: CommandSyntaxException) {
                 throw e
             } catch (e: java.lang.Exception) {
-                ServerMain.LOGGER.error("Error while executing command: " + it.input, e)
+                LOGGER.error("Error while executing command: " + it.input, e)
                 error(TrT.of("enclosure.message.error").append(e.message), it)
             }
         }
@@ -113,7 +108,7 @@ class BuilderScope<T: argT>(var parent: T) {
                 TrT.of("enclosure.menu.previous").setStyle(
                     if (firstPage) Style.EMPTY.withColor(Formatting.GRAY)
                     else Style.EMPTY.withColor(Formatting.DARK_GREEN)
-                        .withHoverEvent(HoverEvent(HoverEvent.Action.SHOW_TEXT, Text.of("Page ${page - 1}")))
+                        .hoverText(Text.of("Page ${page - 1}"))
                         .withClickEvent(ClickEvent(ClickEvent.Action.RUN_COMMAND, "$command ${page - 1}"))
                 )
             )
@@ -153,7 +148,7 @@ class BuilderScope<T: argT>(var parent: T) {
                     action(enclosure)
                 } else {
                     val blockPos = BlockPos.ofFloored(source.position)
-                    ServerMain.Instance.getAllEnclosures(source.world).getArea(
+                    Instance.getAllEnclosures(source.world).getArea(
                         blockPos
                     )?.areaOf(blockPos)?.let { action(it) }
                         ?: error(TrT.of("enclosure.message.no_enclosure"))
@@ -179,7 +174,7 @@ class BuilderScope<T: argT>(var parent: T) {
             BuilderScope(parent).apply {
                 builder(t, Command {
                     val blockPos = BlockPos.ofFloored(it.source.position)
-                    ServerMain.Instance.getAllEnclosures(it.source.world).getArea(blockPos)
+                    Instance.getAllEnclosures(it.source.world).getArea(blockPos)
                         ?.areaOf(blockPos)?.let { area -> action(it, area, t) }
                         ?: error(TrT.of("enclosure.message.no_enclosure"))
                     1
@@ -195,12 +190,12 @@ object ConfirmManager {
     fun confirm(player: ServerPlayerEntity?, runnable: () -> Unit) {
         val text = TrT.of("enclosure.message.dangerous")
         text.style = Style.EMPTY
-            .withHoverEvent(HoverEvent(HoverEvent.Action.SHOW_TEXT, TrT.of("enclosure.message.confirm_event")))
+            .hoverText(TrT.of("enclosure.message.confirm_event"))
             .withClickEvent(ClickEvent(ClickEvent.Action.RUN_COMMAND, "/enclosure confirm"))
             .withColor(Formatting.YELLOW)
         if (player == null) {
             runnableMap[CONSOLE] = runnable
-            ServerMain.minecraftServer.commandSource.sendMessage(TrT.of("enclosure.message.operation_confirm"))
+            minecraftServer.commandSource.sendMessage(TrT.of("enclosure.message.operation_confirm"))
         } else {
             runnableMap[player.uuid] = runnable
             player.sendMessage(text)
@@ -211,7 +206,7 @@ object ConfirmManager {
 private fun getEnclosure(context: CommandContext<ServerCommandSource>): EnclosureArea {
     val source = context.source
     val blockPos = BlockPos.ofFloored(source.position)
-    return ServerMain.Instance.getAllEnclosures(source.world).getArea(blockPos)?.areaOf(blockPos)
+    return Instance.getAllEnclosures(source.world).getArea(blockPos)?.areaOf(blockPos)
         ?: error(TrT.of("enclosure.message.no_enclosure"))
 }
 
@@ -225,12 +220,12 @@ private fun permissionArgument(target: Permission.Target): RequiredArgumentBuild
 private fun offlinePlayerArgument(): RequiredArgumentBuilder<ServerCommandSource, String> {
     return CommandManager.argument("player", StringArgumentType.string())
         .suggests { _, builder ->
-            CommandSource.suggestMatching(PaidMain.byUuid.values, builder)
+            CommandSource.suggestMatching(byUuid.values, builder)
         }
 }
 
 fun sessionOf(source: ServerCommandSource): Session {
-    return ServerMain.Instance.playerSessions[source.player?.uuid ?: CONSOLE]!!
+    return Instance.playerSessions[source.player?.uuid ?: CONSOLE]!!
 }
 
 private fun landArgument(): RequiredArgumentBuilder<ServerCommandSource, String> {
@@ -238,14 +233,13 @@ private fun landArgument(): RequiredArgumentBuilder<ServerCommandSource, String>
         .suggests { _, builder: SuggestionsBuilder ->
             val res = builder.remainingLowerCase
             if (res.contains(".")) {
-                val enclosure = ServerMain.Instance.getEnclosure(
+                val enclosure = Instance.getEnclosure(
                     res.substring(
                         0,
                         res.lastIndexOf('.')
                     )
                 )
-                if (enclosure is Enclosure
-                ) {
+                if (enclosure is Enclosure) {
                     val subRes = res.substring(res.lastIndexOf('.') + 1)
                     enclosure.subEnclosures.areas
                         .filter { it.name.lowercase().startsWith(subRes) }
@@ -253,7 +247,7 @@ private fun landArgument(): RequiredArgumentBuilder<ServerCommandSource, String>
                         .forEach { text -> builder.suggest(text) }
                 }
             } else {
-                ServerMain.Instance.allEnclosures
+                Instance.getAllEnclosures()
                     .map { it.fullName }
                     .filter { it.lowercase().startsWith(res) }
                     .forEach { text -> builder.suggest(text) }
@@ -288,7 +282,7 @@ private fun checkSession(context: CommandContext<ServerCommandSource>) {
 
 private fun checkSessionSize(session: Session, context: CommandContext<ServerCommandSource>) {
     if (!context.source.hasPermissionLevel(4)) {
-        val text = session.isValid(ServerMain.limits)
+        val text = session.isValid(Instance.limits)
         if (text != null && !context.source.hasPermissionLevel(4)) {
             throw SimpleCommandExceptionType(text).createWithContext(StringReader(context.input))
         }
@@ -297,11 +291,11 @@ private fun checkSessionSize(session: Session, context: CommandContext<ServerCom
 
 private fun createEnclosure(context: CommandContext<ServerCommandSource>) {
     val name = StringArgumentType.getString(context, "name")
-    if (ServerMain.Instance.getEnclosure(name) != null) {
+    if (Instance.getEnclosure(name) != null) {
         error(TrT.of("enclosure.message.name_in_use"), context)
     }
     if (!context.source.hasPermissionLevel(4)) {
-        if (name.length > ServerMain.commonConfig.maxEnclosureNameLength) {
+        if (name.length > Instance.commonConfig.maxEnclosureNameLength) {
             error(TrT.of("enclosure.message.res_name_too_long"), context)
         }
         if (name.chars().anyMatch { c: Int -> !Character.isLetterOrDigit(c) && c != '_'.code }) {
@@ -310,7 +304,7 @@ private fun createEnclosure(context: CommandContext<ServerCommandSource>) {
     }
     val session = sessionOf(context.source)
     checkSession(context)
-    val list = ServerMain.Instance.getAllEnclosures(session.world)
+    val list = Instance.getAllEnclosures(session.world)
     val intersectArea = sessionOf(context.source).intersect(list)
     if (intersectArea != null) {
         error(
@@ -319,12 +313,11 @@ private fun createEnclosure(context: CommandContext<ServerCommandSource>) {
         )
     }
     val enclosure = Enclosure(session, name)
-    val limits = ServerMain.limits
+    val limits = Instance.limits
     if (!context.source.hasPermissionLevel(4)) {
         checkSessionSize(session, context)
         if (context.source.player != null) {
-            val player = context.source.player
-            val count = ServerMain.Instance.getAllEnclosures(player!!.uuid).size.toLong()
+            val count = Instance.getAllEnclosures(context.source.uuid).size.toLong()
             if (count >= limits.maxLands) {
                 error(
                     TrT.of("enclosure.message.rcle.self")
@@ -340,7 +333,7 @@ private fun createEnclosure(context: CommandContext<ServerCommandSource>) {
         TrT.of("enclosure.message.created")
             .append(enclosure.serialize(SerializationSettings.Name, context.source.player))
     )
-    ServerMain.LOGGER.info(context.source.name + " created enclosure " + enclosure.name)
+    LOGGER.info(context.source.name + " created enclosure " + enclosure.name)
 }
 
 private fun Session.ordered(action: Session.(Int, Int, Int, Int, Int, Int)-> Unit) {
@@ -361,9 +354,8 @@ private fun getOfflineUUID(context: CommandContext<ServerCommandSource>): UUID {
 fun BuilderScope<*>.registerConfirmCommand() {
     literal("confirm") {
         executes {
-            ConfirmManager.runnableMap.remove(source.uuid)?.let {
-                it()
-            } ?: error(TrT.of("enclosure.message.no_task_to_confirm"))
+            ConfirmManager.runnableMap.remove(source.uuid)?.run { invoke() }
+                ?: error(TrT.of("enclosure.message.no_task_to_confirm"))
         }
     }
 }
@@ -378,7 +370,7 @@ fun register(dispatcher: CommandDispatcher<ServerCommandSource>) {
                 source.sendMessage(TrT.of("enclosure.about.translator"))
                 source.sendMessage(TrT.of("enclosure.about.team_page"))
                 source.sendMessage(
-                    TrT.of("enclosure.about.version.server").append(ServerMain.MOD_VERSION.friendlyString)
+                    TrT.of("enclosure.about.version.server").append(MOD_VERSION.friendlyString)
                 )
                 if (player != null && EnclosureInstalledC2SPacket.isInstalled(player)) {
                     val version = EnclosureInstalledC2SPacket.clientVersion(player)
@@ -391,20 +383,20 @@ fun register(dispatcher: CommandDispatcher<ServerCommandSource>) {
             literal("reload") {
                 literal("all") {
                     executes {
-                        ServerMain.reloadCommon()
-                        ServerMain.reloadLimits()
+                        Instance.reloadCommon()
+                        Instance.reloadLimits()
                         source.sendMessage(Text.literal("Reloaded"))
                     }
                 }
                 literal("common") {
                     executes {
-                        ServerMain.reloadCommon()
+                        Instance.reloadCommon()
                         source.sendMessage(Text.literal("Reloaded"))
                     }
                 }
                 literal("limits") {
                     executes {
-                        ServerMain.reloadLimits()
+                        Instance.reloadLimits()
                         source.sendMessage(Text.literal("Reloaded"))
                     }
                 }
@@ -412,13 +404,13 @@ fun register(dispatcher: CommandDispatcher<ServerCommandSource>) {
             literal("limit_exceeded") {
                 literal("size") {
                     executes {
-                        ServerMain.Instance.allEnclosures.flatMap {
+                        Instance.getAllEnclosures().flatMap {
                             it.subEnclosures.areas.toList() + it
                         }.map {
                             val session = Session(null)
                             session.pos1 = BlockPos(it.minX, it.minY, it.minZ)
                             session.pos2 = BlockPos(it.maxX, it.maxY, it.maxZ)
-                            it to session.isValid(ServerMain.limits)
+                            it to session.isValid(Instance.limits)
                         }.filter { it.second != null }.forEach { (area, text) ->
                             source.sendMessage(
                                 Text.literal("Enclosure ")
@@ -431,10 +423,10 @@ fun register(dispatcher: CommandDispatcher<ServerCommandSource>) {
                 }
                 literal("count") {
                     executes {
-                        ServerMain.Instance.allEnclosures.groupBy {
+                        Instance.getAllEnclosures().groupBy {
                             it.owner
                         }.forEach { (owner, enclosures) ->
-                            if (enclosures.size > ServerMain.limits.maxLands) {
+                            if (enclosures.size > Instance.limits.maxLands) {
                                 source.sendMessage(
                                     Text.literal("Player ")
                                         .append(Utils.getDisplayNameByUUID(owner))
@@ -447,7 +439,7 @@ fun register(dispatcher: CommandDispatcher<ServerCommandSource>) {
                 }
                 literal("closest") {
                     executes {
-                        val enclosure = ServerMain.Instance.getAllEnclosures(source.world).areas
+                        val enclosure = Instance.getAllEnclosures(source.world).areas
                             .minByOrNull {
                                 it.distanceTo(source.position).horizontalLength()
                             }
@@ -483,10 +475,7 @@ fun register(dispatcher: CommandDispatcher<ServerCommandSource>) {
                                     .append(Text.literal("\nDefault: "))
                                     .append(permission.defaultValue.toString())
                                     .append(Text.literal("\nComponents: "))
-                                    .append(
-                                        permission.permissions.stream().reduce(
-                                            ""
-                                        ) { s: String, p: String -> if (s.isEmpty()) p else "$s, $p" })
+                                    .append(permission.permissions.joinToString())
                             )
                         }
                     }
@@ -511,24 +500,24 @@ fun register(dispatcher: CommandDispatcher<ServerCommandSource>) {
         }
         literal("limits") {
             executes {
-                val limits = ServerMain.limits
+                val limits = Instance.limits
                 val translatable = TrT.of("enclosure.message.limit.header")
-                limits.javaClass.fields.map { field ->
+                limits.javaClass.fields.mapNotNull { field ->
                     try {
-                        return@map Text.literal("\n")
-                            .append(TrT.limit(field).append(": ").setStyle(Style.EMPTY.withColor(Formatting.GOLD)))
+                        Text.literal("\n")
+                            .append(TrT.limit(field).append(": ").gold())
                             .append(field[limits].toString())
                     } catch (ignored: IllegalAccessException) {
-                        return@map null
+                        null
                     }
-                }.filterNotNull().forEach { text -> translatable.append(text) }
+                }.forEach { text -> translatable.append(text) }
                 source.sendMessage(translatable)
             }
         }
         literal("list") {
             executes {
                 paged(source, "/enclosure list") {
-                    ServerMain.Instance.allEnclosures.map {
+                    Instance.getAllEnclosures().map {
                         it.serialize(SerializationSettings.Summarize, null)
                     }
                 }
@@ -538,7 +527,7 @@ fun register(dispatcher: CommandDispatcher<ServerCommandSource>) {
                     executes {
                         val world = DimensionArgumentType.getDimensionArgument(this, "world")
                         paged(source, "/enclosure list world ${world.registryKey.value}") {
-                            ServerMain.Instance.getAllEnclosures(world).areas.map {
+                            Instance.getAllEnclosures(world).areas.map {
                                 it.serialize(SerializationSettings.Summarize, null)
                             }
                         }
@@ -552,7 +541,7 @@ fun register(dispatcher: CommandDispatcher<ServerCommandSource>) {
                         if (uuid == null) {
                             error(TrT.of("enclosure.message.user_not_found"), this)
                         } else {
-                            val list = ServerMain.Instance.getAllEnclosures(uuid)
+                            val list = Instance.getAllEnclosures(uuid)
                             val ret = TrT.of("enclosure.message.list.user", Utils.getDisplayNameByUUID(uuid), list.size)
                             list.forEach(Consumer { e: Enclosure ->
                                 ret.append("\n").append(
@@ -572,11 +561,9 @@ fun register(dispatcher: CommandDispatcher<ServerCommandSource>) {
             executes {
                 source.sendMessage(TrT.of("enclosure.help.header"))
                 dispatcher.getSmartUsage(dispatcher.root.getChild("enclosure"), source).forEach { (name, s) ->
-                    source.sendMessage(Text.literal("/enclosure $s")
-                        .styled { style -> style.withColor(Formatting.GOLD) }
+                    source.sendMessage(Text.literal("/enclosure $s").gold()
                         .append(": ")
-                        .append(TrT.of("enclosure.help." + name.name)
-                            .styled { style: Style -> style.withColor(Formatting.WHITE) })
+                        .append(TrT.of("enclosure.help." + name.name).white())
                     )
                 }
             }
@@ -587,11 +574,10 @@ fun register(dispatcher: CommandDispatcher<ServerCommandSource>) {
                     if (node == null) {
                         source.sendMessage(TrT.of("enclosure.help.no_child", name))
                     } else {
-                        source.sendMessage(Text.literal("/enclosure $name")
-                            .styled { style -> style.withColor(Formatting.GOLD) }
-                            .append(": ")
-                            .append(TrT.of("enclosure.help.$name")
-                                .styled { style: Style -> style.withColor(Formatting.WHITE) })
+                        source.sendMessage(
+                            Text.literal("/enclosure $name").gold()
+                                .append(": ")
+                                .append(TrT.of("enclosure.help.$name").white())
                         )
                     }
                 }
@@ -601,14 +587,15 @@ fun register(dispatcher: CommandDispatcher<ServerCommandSource>) {
             argument("name", StringArgumentType.word()) {
                 executes {
                     val pos = BlockPos.ofFloored(source.position)
+                    val limits = Instance.limits
                     val session = sessionOf(source)
-                    val expandX = (ServerMain.limits.maxXRange - 1) / 2
-                    val expandZ = (ServerMain.limits.maxZRange - 1) / 2
+                    val expandX = (limits.maxXRange - 1) / 2
+                    val expandZ = (limits.maxZRange - 1) / 2
                     session.world = source.world
-                    session.pos1 = BlockPos(pos.x - expandX, ServerMain.limits.minY, pos.z - expandZ)
+                    session.pos1 = BlockPos(pos.x - expandX, limits.minY, pos.z - expandZ)
                     session.pos2 = BlockPos(
                         pos.x + expandX,
-                        ServerMain.limits.maxY.coerceAtMost(ServerMain.limits.maxHeight + ServerMain.limits.minY - 1),
+                        limits.maxY.coerceAtMost(limits.maxHeight + limits.minY - 1),
                         pos.z + expandZ
                     )
                     session.owner = source.uuid
@@ -649,12 +636,12 @@ fun register(dispatcher: CommandDispatcher<ServerCommandSource>) {
                     val session = sessionOf(source)
                     checkSession(this)
                     session.trySync()
-                    val intersectArea = session.intersect(ServerMain.Instance.getAllEnclosures(session.world))
+                    val intersectArea = session.intersect(Instance.getAllEnclosures(session.world))
                     source.sendMessage(
                         TrT.of("enclosure.message.select.from")
-                            .append(ServerMain.blockPos2string(session.pos1))
+                            .append(session.pos1.toShortString())
                             .append(TrT.of("enclosure.message.select.to"))
-                            .append(ServerMain.blockPos2string(session.pos2))
+                            .append(session.pos2.toShortString())
                             .append(TrT.of("enclosure.message.select.world"))
                             .append(session.world.registryKey.value.toString())
                     )
@@ -702,12 +689,13 @@ fun register(dispatcher: CommandDispatcher<ServerCommandSource>) {
             literal("max_height") {
                 executes {
                     val session = sessionOf(source)
+                    val limits = Instance.limits
                     checkSession(this)
                     session.run {
-                        pos1 = BlockPos(pos1.x, ServerMain.limits.minY, pos1.z)
+                        pos1 = BlockPos(pos1.x, limits.minY, pos1.z)
                         pos2 = BlockPos(
                             pos2.x,
-                            ServerMain.limits.maxY.coerceAtMost(ServerMain.limits.maxHeight + ServerMain.limits.minY - 1),
+                            limits.maxY.coerceAtMost(limits.maxHeight + limits.minY - 1),
                             pos2.z
                         )
                     }
@@ -717,9 +705,10 @@ fun register(dispatcher: CommandDispatcher<ServerCommandSource>) {
             }
             literal("max_square") {
                 executes {
+                    val limits = Instance.limits
                     sessionOf(source).ordered { x1, y1, z1, x2, y2, z2 ->
-                        val expandX = (ServerMain.limits.maxXRange - x2 + x1 - 1) / 2
-                        val expandZ = (ServerMain.limits.maxZRange - z2 + z1 - 1) / 2
+                        val expandX = (limits.maxXRange - x2 + x1 - 1) / 2
+                        val expandZ = (limits.maxZRange - z2 + z1 - 1) / 2
                         pos1 = BlockPos(x1 - expandX, y1, z1 - expandZ)
                         pos2 = BlockPos(x2 + expandX, y2, z2 + expandZ)
                         trySync()
@@ -769,27 +758,25 @@ fun register(dispatcher: CommandDispatcher<ServerCommandSource>) {
                 }
             }
         }
+        literal("gui") {
+            parent.requires { it.isExecutedByPlayer }
+            optionalEnclosure {
+                val player = source.player!!
+                if (EnclosureInstalledC2SPacket.isInstalled(player)) {
+                    EnclosureScreenHandler.open(player, it)
+                }
+            }
+        }
         literal("info") {
             optionalEnclosure { area ->
                 val text = area.serialize(SerializationSettings.BarredFull, source.player)
                 if (EnclosureInstalledC2SPacket.isInstalled(source.player)) {
                     text.append(
-                        Text.literal("\n(*)")
-                            .setStyle(
-                                Style.EMPTY.withColor(Formatting.AQUA)
-                                    .withHoverEvent(
-                                        HoverEvent(
-                                            HoverEvent.Action.SHOW_TEXT,
-                                            Text.translatable("enclosure.message.suggest_gui")
-                                        )
-                                    )
-                                    .withClickEvent(
-                                        ClickEvent(
-                                            ClickEvent.Action.RUN_COMMAND,
-                                            "/enclosure gui " + area.fullName
-                                        )
-                                    )
-                            )
+                        Text.literal("\n(*)").setStyle(
+                            Style.EMPTY.withColor(Formatting.AQUA)
+                                .hoverText(Text.translatable("enclosure.message.suggest_gui"))
+                                .clickRun("/enclosure gui ${area.fullName}")
+                        )
                     )
                 }
                 source.sendMessage(text)
@@ -798,23 +785,20 @@ fun register(dispatcher: CommandDispatcher<ServerCommandSource>) {
         literal("tp") {
             argument(landArgument()) {
                 executes {
-                    val player: ServerPlayerEntity = source.player!!
+                    val player = source.player!!
                     val lastTeleportTimeSpan = System.currentTimeMillis() - (player as PlayerAccess).lastTeleportTime
-                    if (!source.hasPermissionLevel(4) && ServerMain.commonConfig.teleportCooldown > 0 && lastTeleportTimeSpan < ServerMain.commonConfig.teleportCooldown
-                    ) {
+                    val cd = Instance.commonConfig.teleportCooldown
+                    if (!source.hasPermissionLevel(4) && cd > 0 && lastTeleportTimeSpan < cd) {
                         error(
                             TrT.of(
                                 "enclosure.message.teleport_too_fast",
-                                String.format(
-                                    "%.1f",
-                                    (ServerMain.commonConfig.teleportCooldown - lastTeleportTimeSpan) / 1000.0
-                                )
+                                String.format("%.1f", (cd - lastTeleportTimeSpan) / 1000.0)
                             ), this
                         )
                     }
                     (player as PlayerAccess).lastTeleportTime = System.currentTimeMillis()
                     val area = getEnclosure(this)
-                    if (ServerMain.commonConfig.showTeleportWarning) {
+                    if (Instance.commonConfig.showTeleportWarning) {
                         val world = area.world
                         val pos = Utils.toBlockPos(area.teleportPos)
                         val down = world.getBlockState(pos.down())
@@ -850,11 +834,11 @@ fun register(dispatcher: CommandDispatcher<ServerCommandSource>) {
                         if (!source.hasPermissionLevel(4) && source.player != null && !res.isOwner(source)) {
                             error(TrT.of("enclosure.message.not_owner"), this)
                         }
-                        if (ServerMain.Instance.getEnclosure(name) != null) {
+                        if (Instance.getEnclosure(name) != null) {
                             error(TrT.of("enclosure.message.name_in_use"), this)
                         }
                         val list =
-                            (res.father as? Enclosure)?.subEnclosures ?: ServerMain.Instance.getAllEnclosures(res.world)
+                            (res.father as? Enclosure)?.subEnclosures ?: Instance.getAllEnclosures(res.world)
                         list.remove(res.name)
                         res.name = name
                         list.addArea(res)
@@ -872,14 +856,14 @@ fun register(dispatcher: CommandDispatcher<ServerCommandSource>) {
                     }
                     ConfirmManager.confirm(source.player) {
                         val list =
-                            (res.father as? Enclosure)?.subEnclosures ?: ServerMain.Instance.getAllEnclosures(res.world)
+                            (res.father as? Enclosure)?.subEnclosures ?: Instance.getAllEnclosures(res.world)
                         val success = res.father?.let {
                             it.onRemoveChild(res)
                             true
                         } ?: list.remove(res.name)
                         if (success) {
                             source.sendMessage(TrT.of("enclosure.message.deleted").append(res.fullName))
-                            ServerMain.LOGGER.info("${source.name} removed ${res.fullName}")
+                            LOGGER.info("${source.name} removed ${res.fullName}")
                         } else {
                             error(TrT.of("enclosure.message.no_enclosure"), this)
                         }
@@ -889,13 +873,12 @@ fun register(dispatcher: CommandDispatcher<ServerCommandSource>) {
         }
         literal("trust") {
             optionalEnclosure({ area ->
-                val executor: ServerPlayerEntity = source.player!!
                 val uuid = getOfflineUUID(this)
-                if (source.hasPermissionLevel(4) || area.hasPerm(executor, Permission.ADMIN)) {
+                if (source.hasPermissionLevel(4) || area.hasPerm(source.player!!, Permission.ADMIN)) {
                     area.setPermission(source, uuid, Permission.TRUSTED, true)
                     source.sendFeedback(TrT.of("enclosure.message.added_user", Utils.getDisplayNameByUUID(uuid)), true)
                 } else {
-                    error(Permission.ADMIN.getNoPermissionMsg(executor))
+                    error(Permission.ADMIN.getNoPermissionMsg(source.player))
                 }
             }, { node, command ->
                 node.then(offlinePlayerArgument().executes(command))
@@ -907,14 +890,14 @@ fun register(dispatcher: CommandDispatcher<ServerCommandSource>) {
                     executes {
                         val res = getEnclosure(this)
                         val uuid = getOfflineUUID(this)
-                        val target = ServerMain.minecraftServer.playerManager.getPlayer(uuid)
+                        val target = minecraftServer.playerManager.getPlayer(uuid)
                         if (!res.isOwner(source)) {
                             error(TrT.of("enclosure.message.not_owner"), this)
                         }
                         ConfirmManager.confirm(source.player) {
-                            val limitsOfReceiver = ServerMain.limits
+                            val limitsOfReceiver = Instance.limits
                             if (!source.hasPermissionLevel(4)) {
-                                val count = ServerMain.Instance.getAllEnclosures(uuid).size.toLong()
+                                val count = Instance.getAllEnclosures(uuid).size.toLong()
                                 if (count > limitsOfReceiver.maxLands) {
                                     error(
                                         TrT.of("enclosure.message.rcle.receiver")
@@ -971,20 +954,18 @@ fun register(dispatcher: CommandDispatcher<ServerCommandSource>) {
         literal("subzone") {
             executes {
                 val name = StringArgumentType.getString(this, "name")
-                if (name.length > ServerMain.commonConfig.maxEnclosureNameLength) {
+                if (name.length > Instance.commonConfig.maxEnclosureNameLength) {
                     error(TrT.of("enclosure.message.res_name_too_long"), this)
                 }
                 val session = sessionOf(source)
-                val list = ServerMain.Instance.getAllEnclosures(sessionOf(source).world)
+                val list = Instance.getAllEnclosures(sessionOf(source).world)
                 val area: EnclosureArea = Enclosure(session, name)
                 val enclosure = list.areas
                     .filter { res: EnclosureArea -> res.includesArea(area) }
                     .map { res: EnclosureArea -> res as Enclosure }
                     .firstOrNull()
                     ?: error(TrT.of("enclosure.message.no_father_enclosure"), this)
-                if (enclosure.subEnclosures.areas.stream().anyMatch { a: EnclosureArea ->
-                        a.name.equals(name, ignoreCase = true)
-                    }) {
+                if (enclosure.subEnclosures.areas.any { it.name.equals(name, ignoreCase = true) }) {
                     error(TrT.of("enclosure.message.name_in_use"), this)
                 }
                 if (!enclosure.isOwner(source)) {
@@ -995,7 +976,7 @@ fun register(dispatcher: CommandDispatcher<ServerCommandSource>) {
                     error(TrT.of("enclosure.message.intersected")
                         .append(intersectArea.serialize(SerializationSettings.Name, source.player)), this)
                 }
-                val limits = ServerMain.limits
+                val limits = Instance.limits
                 if (!source.hasPermissionLevel(4)) {
                     checkSessionSize(session, this)
                     val count = enclosure.subEnclosures.areas.size.toLong()
@@ -1012,7 +993,7 @@ fun register(dispatcher: CommandDispatcher<ServerCommandSource>) {
                     TrT.of("enclosure.message.created")
                         .append(area.serialize(SerializationSettings.Name, source.player))
                 )
-                ServerMain.LOGGER.info("Created subzone {} by {}", area.fullName, source.name)
+                LOGGER.info("Created subzone {} by {}", area.fullName, source.name)
             }
         }
         run {
@@ -1119,11 +1100,9 @@ fun register(dispatcher: CommandDispatcher<ServerCommandSource>) {
                     source.sendMessage(
                         TrT.of(
                             "enclosure.message.check_permission",
-                            Utils.getDisplayNameByUUID(uuid).formatted(Formatting.GOLD),
-                            permission.serialize(SerializationSettings.Summarize, source.player)
-                                .formatted(Formatting.GOLD),
-                            area.serialize(SerializationSettings.Name, source.player)
-                                .formatted(Formatting.GOLD),
+                            Utils.getDisplayNameByUUID(uuid).gold(),
+                            permission.serialize(SerializationSettings.Summarize, source.player).gold(),
+                            area.serialize(SerializationSettings.Name, source.player).gold(),
                             if (area.hasPerm(uuid, permission)) textTrue else textFalse
                         )
                     )
@@ -1169,8 +1148,7 @@ fun register(dispatcher: CommandDispatcher<ServerCommandSource>) {
                         source
                             .sendMessage(
                                 Text.literal(msg).append(" ").append(ctp).setStyle(
-                                    Style.EMPTY
-                                        .withHoverEvent(HoverEvent(HoverEvent.Action.SHOW_TEXT, ctp))
+                                    Style.EMPTY.hoverText(ctp)
                                         .withClickEvent(ClickEvent(ClickEvent.Action.COPY_TO_CLIPBOARD, msg))
                                 )
                             )
@@ -1181,8 +1159,8 @@ fun register(dispatcher: CommandDispatcher<ServerCommandSource>) {
                 withLeaveEnter({ n, c ->
                     n.then(CommandManager.argument("message", StringArgumentType.greedyString())
                         .suggests { _, builder->
-                            builder.suggest(ServerMain.commonConfig.defaultEnterMessage.replace("&", "&&").replace("§", "&"))
-                                .suggest(ServerMain.commonConfig.defaultLeaveMessage.replace("&", "&&").replace("§", "&"))
+                            builder.suggest(Instance.commonConfig.defaultEnterMessage.replace("&", "&&").replace("§", "&"))
+                                .suggest(Instance.commonConfig.defaultLeaveMessage.replace("&", "&&").replace("§", "&"))
                                 .suggest("#none")
                                 .suggest("#default")
                                 .buildFuture()
@@ -1204,7 +1182,7 @@ fun register(dispatcher: CommandDispatcher<ServerCommandSource>) {
                 }
             }
             literal("rich") {
-                parent.requires { ServerMain.commonConfig.allowRichMessage }
+                parent.requires { Instance.commonConfig.allowRichMessage }
                 withLeaveEnter({ n, c ->
                     n.then(CommandManager.argument("message", TextArgumentType.text()).executes(c))
                 }) { area, l ->

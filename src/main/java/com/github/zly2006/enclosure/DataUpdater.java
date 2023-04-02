@@ -16,6 +16,7 @@ public class DataUpdater {
         private NbtCompound update1(NbtCompound compound) {
             if (compound.contains("tp_pos") && !compound.contains("yaw")) {
                 NbtList nbtList = (NbtList) compound.get("tp_pos");
+                assert nbtList != null;
                 int x = nbtList.getInt(0);
                 int y = nbtList.getInt(1);
                 int z = nbtList.getInt(2);

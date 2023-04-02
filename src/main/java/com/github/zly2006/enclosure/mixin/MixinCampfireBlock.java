@@ -2,7 +2,7 @@ package com.github.zly2006.enclosure.mixin;
 
 import com.github.zly2006.enclosure.EnclosureArea;
 import com.github.zly2006.enclosure.EnclosureList;
-import com.github.zly2006.enclosure.ServerMain;
+import com.github.zly2006.enclosure.ServerMainKt;
 import com.github.zly2006.enclosure.utils.Permission;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.CampfireBlock;
@@ -33,7 +33,7 @@ public class MixinCampfireBlock {
     @Inject(at = @At("HEAD"), method = "extinguish", cancellable = true)
     private static void onExtinguish(Entity entity, WorldAccess world, BlockPos pos, BlockState state, CallbackInfo ci){
         if(world instanceof ServerWorld){
-            EnclosureList list = ServerMain.Instance.getAllEnclosures((ServerWorld) world);
+            EnclosureList list = ServerMainKt.Instance.getAllEnclosures((ServerWorld) world);
             EnclosureArea area = list.getArea(pos);
             if (area != null && !area.areaOf(pos).hasPubPerm(Permission.USE_CAMPFIRE)) {
                 if(entity instanceof ServerPlayerEntity player){
@@ -51,7 +51,7 @@ public class MixinCampfireBlock {
     @Inject(at = @At("HEAD"), method = "tryFillWithFluid", cancellable = true)
     private void onFillWithFluid(WorldAccess world, BlockPos pos, BlockState state, FluidState fluidState, CallbackInfoReturnable<Boolean> cir){
         if(world instanceof ServerWorld){
-            EnclosureList list = ServerMain.Instance.getAllEnclosures((ServerWorld) world);
+            EnclosureList list = ServerMainKt.Instance.getAllEnclosures((ServerWorld) world);
             EnclosureArea area = list.getArea(pos);
             if (area != null && !area.areaOf(pos).hasPubPerm(Permission.USE_CAMPFIRE)) {
                 cir.setReturnValue(false);

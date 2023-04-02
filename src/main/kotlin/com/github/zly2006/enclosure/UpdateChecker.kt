@@ -66,7 +66,7 @@ class UpdateChecker {
     }
 
     fun check() {
-        if (Thread.currentThread() === ServerMain.minecraftServer.thread) {
+        if (Thread.currentThread() === minecraftServer.thread) {
             throw RuntimeException("UpdateChecker.check() can not be called on the main thread")
         }
         if (System.currentTimeMillis() - lastCheckTime < 1000 * 60 * 60) {
@@ -76,13 +76,12 @@ class UpdateChecker {
             val httpClient = HttpClient.newHttpClient()
             // Only check release version if not in develop mode
             // fit for this minecraft version
-            val versions = ServerMain.GSON.fromJson(
+            val versions = GSON.fromJson(
                 httpClient.send(
                     HttpRequest.newBuilder(URI("https://api.modrinth.com/v2/project/enclosure/version")).build(),
                     HttpResponse.BodyHandlers.ofString()
                 ).body(), JsonArray::class.java
-            ).asList().stream().map { obj: JsonElement -> obj.asJsonObject }
-                .toList()
+            ).map { obj: JsonElement -> obj.asJsonObject }
                 .map { v ->
                     VersionEntry(
                         versionId = v["id"].asString,
@@ -94,13 +93,13 @@ class UpdateChecker {
                     )
                 }
             val filteredVersions = versions.filter {
-                if (!ServerMain.commonConfig.developMode) {
+                if (!Instance.commonConfig.developMode) {
                     // Only check release version if not in develop mode
                     if (it.versionType != VersionEntry.VersionType.RELEASE) {
                         return@filter false
                     }
                 }
-                return@filter it.gameVersions.contains(ServerMain.minecraftServer.version) && it.versionNumber > ServerMain.MOD_VERSION
+                return@filter it.gameVersions.contains(minecraftServer.version) && it.versionNumber > MOD_VERSION
             }.sortedWith{v1, v2 ->
                 if (v1.versionNumber != v2.versionNumber) {
                     return@sortedWith v1.versionNumber.compareTo(v2.versionNumber)
@@ -109,17 +108,17 @@ class UpdateChecker {
             }
             val latest = versions
                 .filter {
-                    if (!ServerMain.commonConfig.developMode) {
+                    if (!Instance.commonConfig.developMode) {
                         // Only check release version if not in develop mode
                         if (it.versionType != VersionEntry.VersionType.RELEASE) {
                             return@filter false
                         }
                     }
-                    return@filter it.gameVersions.contains(ServerMain.minecraftServer.version)
+                    return@filter it.gameVersions.contains(minecraftServer.version)
                 }.maxByOrNull { it.versionNumber }
             if (latest != null) {
                 latestVersion = latest
-                ServerMain.LOGGER.info("Found latest version: ${latestVersion?.versionNumber}, url: ${latestVersion?.url}")
+                LOGGER.info("Found latest version: ${latestVersion?.versionNumber}, url: ${latestVersion?.url}")
             }
             lastCheckTime = System.currentTimeMillis()
         } catch (ignored: IOException) {
