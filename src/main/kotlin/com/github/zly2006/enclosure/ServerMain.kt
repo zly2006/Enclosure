@@ -12,6 +12,8 @@ import com.github.zly2006.enclosure.listeners.SessionListener
 import com.github.zly2006.enclosure.network.EnclosureInstalledC2SPacket
 import com.github.zly2006.enclosure.network.RequestOpenScreenC2SPPacket
 import com.github.zly2006.enclosure.utils.Permission
+import com.github.zly2006.enclosure.utils.Permission.BREAK_BLOCK
+import com.github.zly2006.enclosure.utils.Permission.DRAGON_EGG
 import com.github.zly2006.enclosure.utils.ResourceLoader
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
@@ -19,7 +21,6 @@ import com.google.gson.JsonObject
 import com.mojang.brigadier.CommandDispatcher
 import com.mojang.brigadier.arguments.FloatArgumentType
 import com.mojang.brigadier.context.CommandContext
-import kotlinx.coroutines.flow.flow
 import net.fabricmc.api.DedicatedServerModInitializer
 import net.fabricmc.api.EnvType
 import net.fabricmc.api.Environment
@@ -27,6 +28,7 @@ import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents.ServerStarting
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerWorldEvents
+import net.fabricmc.fabric.api.event.player.AttackBlockCallback
 import net.fabricmc.fabric.api.event.player.UseBlockCallback
 import net.fabricmc.fabric.api.event.player.UseEntityCallback
 import net.fabricmc.fabric.api.event.player.UseItemCallback
@@ -440,7 +442,7 @@ object ServerMain: DedicatedServerModInitializer {
         })
         UseBlockCallback.EVENT.register { player: PlayerEntity, world: World, hand: Hand, hitResult: BlockHitResult ->
             if (player is ServerPlayerEntity) {
-                val state = player.getWorld().getBlockState(hitResult.blockPos)
+                val state = world.getBlockState(hitResult.blockPos)
                 val block = state.block
                 val context = UseContext(
                     player,
@@ -454,14 +456,14 @@ object ServerMain: DedicatedServerModInitializer {
                 if (permissionList.isEmpty() && (context.item is BlockItem || hitResult.side == Direction.UP && (context.item === Items.FLINT_AND_STEEL || context.item === Items.FIRE_CHARGE) || context.item === Items.ARMOR_STAND || context.item === Items.END_CRYSTAL || context.item is DecorationItem)) {
                     val pos = hitResult.blockPos.offset(hitResult.side)
                     if (checkPermission(player, Permission.PLACE_BLOCK, pos)) {
-                        ActionResult.PASS
+                        return@register ActionResult.PASS
                     } else {
                         player.currentScreenHandler.syncState()
                         player.sendMessage(Permission.PLACE_BLOCK.getNoPermissionMsg(player))
-                        ActionResult.FAIL
+                        return@register ActionResult.FAIL
                     }
                 }
-                permissionList.map { permission ->
+                return@register permissionList.map { permission ->
                     if (checkPermission(player, permission, context.pos!!)) {
                         return@map ActionResult.PASS
                     } else {
@@ -471,12 +473,12 @@ object ServerMain: DedicatedServerModInitializer {
                     }
                 }.firstOrNull { it != ActionResult.PASS } ?: ActionResult.PASS
             }
-            ActionResult.PASS
+            return@register ActionResult.PASS
         }
         UseItemCallback.EVENT.register { player: PlayerEntity, _, hand: Hand ->
             if (player is ServerPlayerEntity) {
                 val context = UseContext(player, null, null, null, player.getStackInHand(hand).item, null)
-                USE_PREDICATES.entries
+                return@register USE_PREDICATES.entries
                     .asSequence()
                     .filter { it.value.test(context) }
                     .map { it.key }
@@ -492,24 +494,39 @@ object ServerMain: DedicatedServerModInitializer {
                     .filter { result -> result.result != ActionResult.PASS }
                     .firstOrNull() ?: TypedActionResult.pass(player.getStackInHand(hand))
             }
-            TypedActionResult.pass(player.getStackInHand(hand))
+            return@register TypedActionResult.pass(player.getStackInHand(hand))
         }
-        UseEntityCallback.EVENT.register { player: PlayerEntity, world: World?, hand, entity: Entity, hitResult ->
-            // Note: this event only fires when is specified *part* of an entity is used. e.g. armor stand
-            //       Dyes, saddles, name tags, etc.
+        AttackBlockCallback.EVENT.register { player, world, hand, pos, direction ->
+            if (player is ServerPlayerEntity) {
+                val state = world.getBlockState(pos)
+                if (state.block is DragonEggBlock) {
+                    if (checkPermission(player, DRAGON_EGG, pos)) {
+                        return@register ActionResult.PASS
+                    }
+                    else {
+                        return@register ActionResult.FAIL
+                    }
+                }
+                if (!checkPermission(player, BREAK_BLOCK, pos)) {
+                    player.sendMessage(BREAK_BLOCK.getNoPermissionMsg(player))
+                    return@register ActionResult.FAIL
+                }
+            }
+            return@register ActionResult.PASS
+        }
+        UseEntityCallback.EVENT.register { player: PlayerEntity, world: World?, hand, entity: Entity, _ ->
+            // Note: this event only fires when is specified *part* of an entity is used.
+            // E.g. armor stand, Dyes, saddles, name tags, etc.
             if (entity is ArmorStandEntity) {
                 if (!checkPermission(world!!, entity.getBlockPos(), player, Permission.ARMOR_STAND)) {
                     player.sendMessage(Permission.ARMOR_STAND.getNoPermissionMsg(player))
-                    ActionResult.FAIL
+                    return@register ActionResult.FAIL
                 }
             }
             if (player is ServerPlayerEntity) {
                 val usingItem = player.getStackInHand(hand).item
                 val context = UseContext(player, entity.blockPos, null, null, usingItem, entity)
-                flow {
-                    emit(1)
-                }
-                USE_PREDICATES.entries
+                return@register USE_PREDICATES.entries
                     .asSequence()
                     .filter { it.value.test(context) }
                     .map { it.key }
@@ -523,14 +540,13 @@ object ServerMain: DedicatedServerModInitializer {
                         }
                     }.firstOrNull { result: ActionResult -> result != ActionResult.PASS } ?: ActionResult.PASS
             }
-            ActionResult.PASS
-            ActionResult.PASS
+            return@register ActionResult.PASS
         }
         /*PlayerUseEntityEvent.register { player, _, hand, entity, hitResult ->
             if (player is ServerPlayerEntity) {
                 val usingItem = player.getStackInHand(hand).item
-                val context = UseContext(player, Utils.toBlockPos(hitResult.pos), null, null, usingItem, entity)
-                USE_PREDICATES.entries
+                val context = UseContext(player, BlockPos.ofFloored(hitResult.pos), null, null, usingItem, entity)
+                return@register USE_PREDICATES.entries
                     .asSequence()
                     .filter { it.value.test(context) }
                     .map { it.key }
@@ -544,7 +560,7 @@ object ServerMain: DedicatedServerModInitializer {
                         }
                     }.firstOrNull { result: ActionResult -> result != ActionResult.PASS } ?: ActionResult.PASS
             }
-            ActionResult.PASS
+            return@register ActionResult.PASS
         }*/
 
         SessionListener.register()
