@@ -5,3 +5,4 @@ extendable class net/minecraft/client/network/MultiplayerServerListPinger$1
 accessible field net/minecraft/client/network/MultiplayerServerListPinger$1 sentQuery Z
 extendable class net/minecraft/server/ServerMetadata
 accessible method net/minecraft/client/gui/screen/Screen remove (Lnet/minecraft/client/gui/Element;)V
+accessible field net/minecraft/entity/data/DataTracker entries Lit/unimi/dsi/fastutil/ints/Int2ObjectMap;

@@ -45,6 +45,7 @@ import net.minecraft.entity.decoration.ArmorStandEntity
 import net.minecraft.entity.passive.*
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.item.*
+import net.minecraft.network.packet.s2c.play.EntityTrackerUpdateS2CPacket
 import net.minecraft.registry.RegistryKey
 import net.minecraft.server.MinecraftServer
 import net.minecraft.server.command.CommandManager
@@ -515,11 +516,11 @@ object ServerMain: DedicatedServerModInitializer {
             return@register ActionResult.PASS
         }
         UseEntityCallback.EVENT.register { player: PlayerEntity, world: World?, hand, entity: Entity, _ ->
-            // Note: this event only fires when is specified *part* of an entity is used.
-            // E.g. armor stand, Dyes, saddles, name tags, etc.
             if (entity is ArmorStandEntity) {
                 if (!checkPermission(world!!, entity.getBlockPos(), player, Permission.ARMOR_STAND)) {
                     player.sendMessage(Permission.ARMOR_STAND.getNoPermissionMsg(player))
+                    player.currentScreenHandler.syncState()
+                    // We don't need to sync entity in this situation
                     return@register ActionResult.FAIL
                 }
             }
@@ -536,6 +537,9 @@ object ServerMain: DedicatedServerModInitializer {
                         } else {
                             player.currentScreenHandler.syncState()
                             player.sendMessage(permission.getNoPermissionMsg(player))
+                            player.networkHandler.sendPacket(EntityTrackerUpdateS2CPacket(
+                                entity.id, entity.dataTracker.entries.map { it.value.toSerialized() }
+                            ))
                             ActionResult.FAIL
                         }
                     }.firstOrNull { result: ActionResult -> result != ActionResult.PASS } ?: ActionResult.PASS
