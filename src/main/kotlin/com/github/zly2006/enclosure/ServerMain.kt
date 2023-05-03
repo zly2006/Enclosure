@@ -232,11 +232,11 @@ object ServerMain: DedicatedServerModInitializer {
                     it.block === Blocks.SWEET_BERRY_BUSH || it.block === Blocks.CAVE_VINES_PLANT || it.block === Blocks.CAVE_VINES
                 }
                 put(Permission.DYE) {
-                    if (it.item is DyeItem)
-                        it.entity is SheepEntity || it.block is AbstractSignBlock
-                    else if (it.item == Items.INK_SAC || it.item == Items.GLOW_INK_SAC)
-                        it.block is AbstractSignBlock
-                    else false
+                    when (it.item) {
+                        is DyeItem -> it.entity is SheepEntity || it.block is AbstractSignBlock
+                        Items.INK_SAC, Items.GLOW_INK_SAC -> it.block is AbstractSignBlock
+                        else -> false
+                    }
                 }
                 put(Permission.HORSE) { it.entity is Saddleable }
                 put(Permission.FEED_ANIMAL) {

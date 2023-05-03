@@ -30,6 +30,7 @@ public abstract class MixinEnderPearl extends ThrownItemEntity {
             if (!area.hasPerm(player, Permission.TELEPORT)) {
                 player.sendMessage(Permission.TELEPORT.getNoPermissionMsg(player));
                 ci.cancel();
+                discard();
             }
         }
     }
