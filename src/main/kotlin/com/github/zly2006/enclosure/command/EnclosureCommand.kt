@@ -714,6 +714,7 @@ fun register(dispatcher: CommandDispatcher<ServerCommandSource>): LiteralCommand
                     session.world = it.world
                     session.pos1 = BlockPos(it.minX, it.minY, it.minZ)
                     session.pos2 = BlockPos(it.maxX, it.maxY, it.maxZ)
+                    session.enable()
                     session.trySync()
                     source.sendMessage(TrT.of("enclosure.message.selection_updated"))
                 }

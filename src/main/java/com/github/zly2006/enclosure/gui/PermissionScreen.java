@@ -93,12 +93,5 @@ public class PermissionScreen extends Screen {
             perms.put(key, permission.getBoolean(key));
         }
         area.getPermissionsMap().put(uuid, perms);
-        remove(permissionWidgetList);
-        double scroll = permissionWidgetList.getScrollAmount();
-        permissionWidgetList = new PermissionListWidget(client, this,
-            fullName, area, uuid, width, height, 20, height);
-        addDrawableChild(permissionWidgetList);
-        setFocused(permissionWidgetList);
-        permissionWidgetList.setScrollAmount(scroll);
     }
 }
