@@ -2,7 +2,7 @@ package com.github.zly2006.enclosure.command
 
 import com.github.zly2006.enclosure.EnclosureArea
 import com.github.zly2006.enclosure.EnclosureList
-import com.github.zly2006.enclosure.Instance
+import com.github.zly2006.enclosure.ServerMain
 import com.github.zly2006.enclosure.config.LandLimits
 import com.github.zly2006.enclosure.minecraftServer
 import com.github.zly2006.enclosure.network.EnclosureInstalledC2SPacket
@@ -17,25 +17,21 @@ import net.minecraft.text.Text
 import net.minecraft.util.math.BlockPos
 import net.minecraft.util.math.Direction
 import net.minecraft.util.math.Direction.*
-import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.min
 
 class Session(
     player: ServerPlayerEntity?
-) {
+): ClientSession() {
     var owner = player?.uuid ?: CONSOLE
     var world: ServerWorld = player?.getWorld() ?: minecraftServer.overworld
-    var pos1: BlockPos = world.spawnPos
-    var pos2: BlockPos = world.spawnPos
-    var enabled = false
     fun trySync() {
         if (owner == CONSOLE || !enabled) {
             return
         }
-        val player = world.server.playerManager.getPlayer(owner) ?: return
+        val player = world.server.playerManager?.getPlayer(owner) ?: return
         if (EnclosureInstalledC2SPacket.isInstalled(player)) {
-            val session = Instance.playerSessions[player.uuid]
+            val session = ServerMain.playerSessions[player.uuid]
             if (session != null) {
                 val buf = PacketByteBufs.create()
                 buf.writeBlockPos(session.pos1)
@@ -47,20 +43,14 @@ class Session(
 
     fun reset(serverWorld: ServerWorld) {
         world = serverWorld
-        pos1 = world.spawnPos
-        pos2 = world.spawnPos
+        pos1 = serverWorld.spawnPos
+        pos2 = serverWorld.spawnPos
     }
 
     fun syncDimension(player: ServerPlayerEntity) {
         if (world !== player.getWorld()) {
             reset(player.getWorld())
         }
-    }
-
-    fun size(): Int {
-        return (abs(pos1.x - pos2.x) + 1) *
-                (abs(pos1.y - pos2.y) + 1) *
-                (abs(pos1.z - pos2.z) + 1)
     }
 
     fun intersect(list2check: EnclosureList): EnclosureArea? {
@@ -166,7 +156,7 @@ class Session(
         shrink(direction, -amount)
     }
 
-    fun shift(direction: Direction?, amount: Int) {
+    fun shift(direction: Direction, amount: Int) {
         pos1 = pos1.offset(direction, amount)
         pos2 = pos2.offset(direction, amount)
     }

@@ -24,7 +24,7 @@ import java.util.Map;
 import static com.github.zly2006.enclosure.ServerMainKt.MOD_VERSION;
 
 public class EnclosureInstalledC2SPacket implements ServerPlayNetworking.PlayChannelHandler {
-    public static Map<ServerPlayerEntity, Version> installedClientMod = new HashMap<>();
+    public static final Map<ServerPlayerEntity, Version> installedClientMod = new HashMap<>();
 
     private EnclosureInstalledC2SPacket() {
         ServerPlayConnectionEvents.DISCONNECT.register((handler, server) ->

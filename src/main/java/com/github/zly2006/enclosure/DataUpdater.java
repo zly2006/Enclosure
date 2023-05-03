@@ -43,9 +43,9 @@ public class DataUpdater {
             compound.getKeys().forEach(key -> {
                 if (compound.get(key) instanceof NbtCompound nbt) {
                     compound.put(key, updater.update(nbt));
-                    if (compound.getCompound(key).contains(EnclosureList.SUB_ENCLOSURES_KEY)) {
+                    if (compound.getCompound(key).contains(EnclosureListKt.SUB_ENCLOSURES_KEY)) {
                         NbtCompound update = update(versionBefore, compound.getCompound(key));
-                        nbt.put(EnclosureList.SUB_ENCLOSURES_KEY, update);
+                        nbt.put(EnclosureListKt.SUB_ENCLOSURES_KEY, update);
                     }
                 }
             });

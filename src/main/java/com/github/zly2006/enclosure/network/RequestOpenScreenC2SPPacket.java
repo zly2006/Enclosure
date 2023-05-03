@@ -1,6 +1,7 @@
 package com.github.zly2006.enclosure.network;
 
 import com.github.zly2006.enclosure.EnclosureArea;
+import com.github.zly2006.enclosure.ServerMain;
 import com.github.zly2006.enclosure.gui.EnclosureScreenHandler;
 import com.github.zly2006.enclosure.utils.TrT;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
@@ -18,7 +19,6 @@ import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 
-import static com.github.zly2006.enclosure.ServerMainKt.Instance;
 import static com.github.zly2006.enclosure.ServerMainKt.minecraftServer;
 
 // 请求服务器的领地信息，
@@ -55,7 +55,7 @@ public class RequestOpenScreenC2SPPacket implements ServerPlayNetworking.PlayCha
                     player.sendMessage(TrT.of("enclosure.message.no_enclosure"));
                     return;
                 }
-                area = Instance.getAllEnclosures(world).getArea(blockPos);
+                area = ServerMain.INSTANCE.getAllEnclosures(world).getArea(blockPos);
                 if (area == null) {
                     player.sendMessage(TrT.of("enclosure.message.no_enclosure"));
                     return;
@@ -63,13 +63,12 @@ public class RequestOpenScreenC2SPPacket implements ServerPlayNetworking.PlayCha
                 area = area.areaOf(blockPos);
             }
             else {
-                area = Instance.getEnclosure(name);
+                area = ServerMain.INSTANCE.getEnclosure(name);
                 if (area == null) {
                     player.sendMessage(TrT.of("enclosure.message.no_enclosure"));
                     return;
                 }
             }
-            assert area != null;
             EnclosureScreenHandler.open(player, area);
         }
     }

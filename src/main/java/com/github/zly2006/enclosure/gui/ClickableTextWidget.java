@@ -9,7 +9,6 @@ import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.OrderedText;
-import net.minecraft.text.Style;
 import net.minecraft.text.Text;
 
 import java.util.List;
@@ -34,10 +33,6 @@ public class ClickableTextWidget implements Element, Drawable, Selectable {
     public void appendNarrations(NarrationMessageBuilder builder) {
     }
 
-    record Context(OrderedText text, Style style, int yStart, int yEnd) {
-    }
-
-    private final MinecraftClient client;
     private final Screen parent;
     final Text text;
     final Text hover;
@@ -47,7 +42,7 @@ public class ClickableTextWidget implements Element, Drawable, Selectable {
     int width;
     int renderedWidth;
     private int height;
-    TextRenderer textRenderer;
+    final TextRenderer textRenderer;
     public int getHeight() {
         return height;
     }
@@ -56,7 +51,6 @@ public class ClickableTextWidget implements Element, Drawable, Selectable {
     }
     public ClickableTextWidget(MinecraftClient client, Screen parent, Text text, Text hover, Consumer<Integer> onClick, int x, int y, int width) {
         textRenderer = client.textRenderer;
-        this.client = client;
         this.parent = parent;
         this.text = text;
         this.hover = hover;

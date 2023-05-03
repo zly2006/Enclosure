@@ -35,7 +35,7 @@ class EnclosureGroup : PermissionHolder {
                 val text = Text.empty()
                 for (enclosure in enclosures) {
                     text.append(
-                        Instance.getEnclosure(enclosure)!!
+                        ServerMain.getEnclosure(enclosure)!!
                             .serialize(SerializationSettings.Summarize, player)
                     ).append(", ")
                 }
@@ -69,12 +69,12 @@ class EnclosureGroup : PermissionHolder {
 
     override fun onRemoveChild(child: PermissionHolder) {
         enclosures.remove(child.fullName)
-        Instance.groups.markDirty()
+        ServerMain.groups.markDirty()
     }
 
     override fun addChild(child: PermissionHolder) {
         enclosures.add(child.fullName)
-        Instance.groups.markDirty()
+        ServerMain.groups.markDirty()
     }
 
     override fun inheritPermission(): Boolean {

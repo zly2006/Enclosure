@@ -9,10 +9,11 @@ public class ResourceLoader {
     public ResourceLoader(){}
 
     public static String getLanguageFile(String langCode) throws IOException {
-        InputStream resource = ResourceLoader.class.getResourceAsStream(LANGUAGE_FILES_PATH + langCode + ".json");
-        if (resource == null) {
-            throw new IOException("Language file not found: " + langCode);
+        try (InputStream resource = ResourceLoader.class.getResourceAsStream(LANGUAGE_FILES_PATH + langCode + ".json")) {
+            if (resource == null) {
+                throw new IOException("Language file not found: " + langCode);
+            }
+            return new String(resource.readAllBytes());
         }
-        return new String(resource.readAllBytes());
     }
 }

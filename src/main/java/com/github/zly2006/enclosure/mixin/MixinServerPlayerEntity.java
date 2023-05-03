@@ -1,6 +1,7 @@
 package com.github.zly2006.enclosure.mixin;
 
 import com.github.zly2006.enclosure.EnclosureArea;
+import com.github.zly2006.enclosure.ServerMain;
 import com.github.zly2006.enclosure.access.PlayerAccess;
 import com.github.zly2006.enclosure.utils.Permission;
 import com.github.zly2006.enclosure.utils.TrT;
@@ -36,7 +37,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import static com.github.zly2006.enclosure.ServerMainKt.Instance;
 import static com.github.zly2006.enclosure.command.EnclosureCommandKt.CONSOLE;
 import static com.github.zly2006.enclosure.utils.Permission.*;
 import static net.fabricmc.api.EnvType.SERVER;
@@ -78,8 +78,8 @@ public abstract class MixinServerPlayerEntity extends PlayerEntity implements Pl
     private void protectPVP(DamageSource source, float amount, CallbackInfoReturnable<Boolean> cir) {
         if (source.getAttacker() instanceof ServerPlayerEntity attacker) {
             //pvp
-            EnclosureArea area = Instance.getAllEnclosures(this.getWorld()).getArea(getBlockPos());
-            EnclosureArea attackerArea = Instance.getAllEnclosures(attacker.getWorld()).getArea(attacker.getBlockPos());
+            EnclosureArea area = ServerMain.INSTANCE.getAllEnclosures(this.getWorld()).getArea(getBlockPos());
+            EnclosureArea attackerArea = ServerMain.INSTANCE.getAllEnclosures(attacker.getWorld()).getArea(attacker.getBlockPos());
             if (area != null && !area.areaOf(getBlockPos()).hasPubPerm(Permission.PVP)) {
                 cir.setReturnValue(false);
             }
@@ -93,7 +93,7 @@ public abstract class MixinServerPlayerEntity extends PlayerEntity implements Pl
 
     @Inject(method = "dropItem", at = @At("HEAD"), cancellable = true)
     private void protectDropItem(ItemStack stack, boolean throwRandomly, boolean retainOwnership, CallbackInfoReturnable<ItemEntity> cir) {
-        EnclosureArea area = Instance.getAllEnclosures(getWorld()).getArea(getBlockPos());
+        EnclosureArea area = ServerMain.INSTANCE.getAllEnclosures(getWorld()).getArea(getBlockPos());
         if (area == null) {
             return;
         }
@@ -116,7 +116,7 @@ public abstract class MixinServerPlayerEntity extends PlayerEntity implements Pl
             return null;
         }
         if (message.startsWith("#rich:")) {
-            if (Instance.getCommonConfig().allowRichMessage) {
+            if (ServerMain.INSTANCE.getCommonConfig().allowRichMessage) {
                 return Text.Serializer.fromJson(message.substring(6));
             }
             else {
@@ -136,12 +136,12 @@ public abstract class MixinServerPlayerEntity extends PlayerEntity implements Pl
     }
 
     private void sendFormattedMessage(ServerPlayerEntity player, EnclosureArea area, boolean enter) {
-        MutableText text = Text.of(enter ? Instance.getCommonConfig().enterMessageHeader : Instance.getCommonConfig().leaveMessageHeader).copy();
+        MutableText text = Text.of(enter ? ServerMain.INSTANCE.getCommonConfig().enterMessageHeader : ServerMain.INSTANCE.getCommonConfig().leaveMessageHeader).copy();
         if (enter) {
             if (area.getEnterMessage().equals("#none")) {
                 return;
             } else if (area.getEnterMessage().isEmpty()) {
-                text.append(formatMessage(Instance.getCommonConfig().defaultEnterMessage, area, player));
+                text.append(formatMessage(ServerMain.INSTANCE.getCommonConfig().defaultEnterMessage, area, player));
             } else {
                 text.append(formatMessage(area.getEnterMessage(), area, player));
             }
@@ -149,7 +149,7 @@ public abstract class MixinServerPlayerEntity extends PlayerEntity implements Pl
             if (area.getLeaveMessage().equals("#none")) {
                 return;
             } else if (area.getLeaveMessage().isEmpty()) {
-                text.append(formatMessage(Instance.getCommonConfig().defaultLeaveMessage, area, player));
+                text.append(formatMessage(ServerMain.INSTANCE.getCommonConfig().defaultLeaveMessage, area, player));
             } else {
                 text.append(formatMessage(area.getLeaveMessage(), area, player));
             }
@@ -163,7 +163,7 @@ public abstract class MixinServerPlayerEntity extends PlayerEntity implements Pl
         }
         if (server.getTicks() % 10 == 0) {
             ServerPlayerEntity player = (ServerPlayerEntity) (Object) this;
-            EnclosureArea area = Instance.getAllEnclosures(getWorld()).getArea(getBlockPos());
+            EnclosureArea area = ServerMain.INSTANCE.getAllEnclosures(getWorld()).getArea(getBlockPos());
             if (area != null) {
                 area = area.areaOf(getBlockPos());
             }

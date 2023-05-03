@@ -93,7 +93,7 @@ class UpdateChecker {
                     )
                 }
             val filteredVersions = versions.filter {
-                if (!Instance.commonConfig.developMode) {
+                if (!ServerMain.commonConfig.developMode) {
                     // Only check release version if not in develop mode
                     if (it.versionType != VersionEntry.VersionType.RELEASE) {
                         return@filter false
@@ -108,7 +108,7 @@ class UpdateChecker {
             }
             val latest = versions
                 .filter {
-                    if (!Instance.commonConfig.developMode) {
+                    if (!ServerMain.commonConfig.developMode) {
                         // Only check release version if not in develop mode
                         if (it.versionType != VersionEntry.VersionType.RELEASE) {
                             return@filter false

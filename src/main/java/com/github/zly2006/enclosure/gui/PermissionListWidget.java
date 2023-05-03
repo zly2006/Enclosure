@@ -1,6 +1,6 @@
 package com.github.zly2006.enclosure.gui;
 
-import com.github.zly2006.enclosure.EnclosureArea;
+import com.github.zly2006.enclosure.ReadOnlyEnclosureArea;
 import com.github.zly2006.enclosure.utils.Permission;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
@@ -30,11 +30,11 @@ import static com.github.zly2006.enclosure.command.EnclosureCommandKt.CONSOLE;
 public class PermissionListWidget extends ElementListWidget<PermissionListWidget.Entry> {
     private final Screen parent;
     private final String fullName;
-    private final EnclosureArea area;
+    private final ReadOnlyEnclosureArea area;
     private final UUID uuid;
     private final Permission.Target target;
 
-    public PermissionListWidget(MinecraftClient minecraftClient, Screen parent, String fullName, EnclosureArea area, UUID uuid,
+    public PermissionListWidget(MinecraftClient minecraftClient, Screen parent, String fullName, ReadOnlyEnclosureArea area, UUID uuid,
                                 int width, int height, int top, int bottom) {
         super(minecraftClient, width, height, top, bottom, 20);
         this.parent = parent;
@@ -72,9 +72,8 @@ public class PermissionListWidget extends ElementListWidget<PermissionListWidget
 
     @Environment(EnvType.CLIENT)
     public class PermissionEntry extends Entry {
-        ButtonWidget buttonWidget;
+        final ButtonWidget buttonWidget;
         final Permission permission;
-        //@Nullable Boolean value = null;
 
         private Text value(Boolean value) {
             return value == null ? Text.translatable("enclosure.widget.none").setStyle(Style.EMPTY.withColor(Formatting.DARK_AQUA))

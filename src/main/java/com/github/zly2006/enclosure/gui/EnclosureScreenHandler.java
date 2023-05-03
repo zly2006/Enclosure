@@ -2,6 +2,7 @@ package com.github.zly2006.enclosure.gui;
 
 import com.github.zly2006.enclosure.Enclosure;
 import com.github.zly2006.enclosure.EnclosureArea;
+import com.github.zly2006.enclosure.ReadOnlyEnclosureArea;
 import com.github.zly2006.enclosure.utils.Serializable2Text;
 import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
 import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerFactory;
@@ -12,11 +13,11 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.registry.Registries;
+import net.minecraft.registry.Registry;
 import net.minecraft.screen.ScreenHandler;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
-import net.minecraft.registry.Registry;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -32,7 +33,7 @@ public class EnclosureScreenHandler extends ScreenHandler {
             Identifier worldId = buf.readIdentifier();
             NbtCompound compound = buf.readNbt();
             assert compound != null;
-            EnclosureArea area = new EnclosureArea(compound, null);
+            ReadOnlyEnclosureArea area = ReadOnlyEnclosureArea.Companion.fromTag(compound);
             List<String> subAreaNames = new ArrayList<>();
             int size = buf.readVarInt();
             for (int i = 0; i < size; i++) {
@@ -40,13 +41,13 @@ public class EnclosureScreenHandler extends ScreenHandler {
             }
             return new EnclosureScreenHandler(syncId, area, fullName, fatherFullName, worldId, subAreaNames);
         });
-    public EnclosureArea area;
+    public final ReadOnlyEnclosureArea area;
     public final String fullName;
     public final String fatherFullName;
     public final Identifier worldId;
     public final List<String> subAreaNames;
 
-    private EnclosureScreenHandler(int syncId, EnclosureArea area, String fullName, String fatherFullName, Identifier worldId, List<String> subAreaNames) {
+    private EnclosureScreenHandler(int syncId, ReadOnlyEnclosureArea area, String fullName, String fatherFullName, Identifier worldId, List<String> subAreaNames) {
         super(ENCLOSURE_SCREEN_HANDLER, syncId);
         this.area = area;
         this.fullName = fullName;

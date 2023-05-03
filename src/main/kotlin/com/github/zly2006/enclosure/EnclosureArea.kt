@@ -2,8 +2,12 @@ package com.github.zly2006.enclosure
 
 import com.github.zly2006.enclosure.command.CONSOLE
 import com.github.zly2006.enclosure.command.Session
+import com.github.zly2006.enclosure.gui.EnclosureScreenHandler
+import com.github.zly2006.enclosure.network.NetworkChannels
 import com.github.zly2006.enclosure.utils.*
 import com.github.zly2006.enclosure.utils.Serializable2Text.SerializationSettings
+import net.fabricmc.fabric.api.networking.v1.PacketByteBufs
+import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking
 import net.minecraft.nbt.NbtCompound
 import net.minecraft.nbt.NbtDouble
 import net.minecraft.nbt.NbtList
@@ -23,25 +27,32 @@ import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.math.max
 import kotlin.math.min
-import kotlin.properties.Delegates
 import kotlin.properties.ReadWriteProperty
 
-
-open class EnclosureArea : PersistentState, PermissionHolder {
+open class EnclosureArea : PersistentState, ReadOnlyEnclosureArea {
     private fun <T> lockChecker(initialValue: T): ReadWriteProperty<Any?, T> {
-        return Delegates.vetoable(initialValue) { _, _, _ ->
-            checkLock()
-            markDirty()
-            true
+        return object : ReadWriteProperty<Any?, T> {
+            var value = initialValue
+            override fun getValue(thisRef: Any?, property: kotlin.reflect.KProperty<*>): T {
+                return value
+            }
+
+            override fun setValue(thisRef: Any?, property: kotlin.reflect.KProperty<*>, value: T) {
+                if (locked) {
+                    throw IllegalStateException("Cannot modify locked area")
+                }
+                this.value = value
+                markDirty()
+            }
         }
     }
     private var locked = false
-    var minX by lockChecker(0)
-    var minY by lockChecker(0)
-    var minZ by lockChecker(0)
-    var maxX by lockChecker(0)
-    var maxY by lockChecker(0)
-    var maxZ by lockChecker(0)
+    final override var minX by lockChecker(0)
+    final override var minY by lockChecker(0)
+    final override var minZ by lockChecker(0)
+    final override var maxX by lockChecker(0)
+    final override var maxY by lockChecker(0)
+    final override var maxZ by lockChecker(0)
     var world: ServerWorld
         protected set
     final override var name = ""
@@ -49,10 +60,10 @@ open class EnclosureArea : PersistentState, PermissionHolder {
     var teleportPos: Vec3d? = null
     var yaw by lockChecker(0f)
     var pitch by lockChecker(0f)
-    var enterMessage by lockChecker("")
-    var leaveMessage by lockChecker("")
+    final override var enterMessage by lockChecker("")
+    final override var leaveMessage by lockChecker("")
     final override var permissionsMap: MutableMap<UUID, MutableMap<String, Boolean>> = HashMap()
-    var createdOn: Long = 0
+    final override var createdOn: Long = 0
         protected set
     override var father: PermissionHolder? = null
         protected set
@@ -98,8 +109,6 @@ open class EnclosureArea : PersistentState, PermissionHolder {
             permissionsMap[UUID.fromString(playerUuid)] = perm
         }
         owner = compound.getUuid("owner")
-        val r = Runnable { unlock() }
-        r.run()
     }
 
     operator fun Map<String, Boolean>.get(perm: Permission): Boolean? {
@@ -111,8 +120,11 @@ open class EnclosureArea : PersistentState, PermissionHolder {
     }
 
     constructor(session: Session, name: String) {
+        if (session.world == null) {
+            error("received a session without world.")
+        }
+        world = session.world!!
         owner = session.owner
-        world = session.world
         this.name = name
         permissionsMap[owner] = mutableMapOf()
         Permission.PERMISSIONS.values.filter { p -> p.target.fitPlayer() }
@@ -161,12 +173,8 @@ open class EnclosureArea : PersistentState, PermissionHolder {
         nbt.putString("enter_msg", enterMessage)
         nbt.putString("leave_msg", leaveMessage)
         val nbtPermission = NbtCompound()
-        permissionsMap.forEach { (key: UUID, value: Map<String, Boolean>) ->
-            val compound = NbtCompound()
-            for ((key1, value1) in value) {
-                compound.putBoolean(key1, value1)
-            }
-            nbtPermission.put(key.toString(), compound)
+        permissionsMap.forEach { (key: UUID, value) ->
+            nbtPermission.put(key.toString(), value.toNbt())
         }
         nbt.put("permission", nbtPermission)
         val nbtTpPos = NbtList()
@@ -261,7 +269,17 @@ open class EnclosureArea : PersistentState, PermissionHolder {
         }
         LOGGER.info("${source?.name ?: "<null>"} set perm ${perm.name} to $value for $uuid in $fullName")
         super.setPermission(source, uuid, perm, value)
-        Instance.getAllEnclosures(world).markDirty()
+        // sync to client
+        minecraftServer.playerManager.playerList.forEach {
+            val handler = it.currentScreenHandler as? EnclosureScreenHandler ?: return@forEach
+            if (handler.fullName == fullName) {
+                val buf = PacketByteBufs.create()
+                buf.writeUuid(uuid)
+                buf.writeNbt(permissionsMap[uuid].toNbt())
+                ServerPlayNetworking.send(it, NetworkChannels.SYNC_PERMISSION, buf)
+            }
+        }
+        markDirty()
     }
 
     override fun getSetPermissionCommand(uuid: UUID): String {
@@ -376,7 +394,7 @@ open class EnclosureArea : PersistentState, PermissionHolder {
     }
 
     final override fun markDirty() {
-        Instance.getAllEnclosures(world).markDirty()
+        ServerMain.getAllEnclosures(world).markDirty()
     }
 
     fun setTeleportPos(teleportPos: Vec3d?, yaw: Float, pitch: Float) {
@@ -429,4 +447,12 @@ open class EnclosureArea : PersistentState, PermissionHolder {
         locked = false
         markDirty()
     }
+}
+
+private fun Map<String, Boolean>?.toNbt(): NbtCompound {
+    val nbt = NbtCompound()
+    this?.forEach { (key, value) ->
+        nbt.putBoolean(key, value)
+    }
+    return nbt
 }

@@ -1,9 +1,6 @@
 package com.github.zly2006.enclosure.config;
 
-import com.github.zly2006.enclosure.Enclosure;
-import com.github.zly2006.enclosure.EnclosureArea;
-import com.github.zly2006.enclosure.EnclosureList;
-import com.github.zly2006.enclosure.ServerMainKt;
+import com.github.zly2006.enclosure.*;
 import com.mojang.authlib.GameProfile;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtInt;
@@ -19,7 +16,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.util.*;
 
-import static com.github.zly2006.enclosure.ServerMainKt.*;
+import static com.github.zly2006.enclosure.ServerMainKt.LOGGER;
+import static com.github.zly2006.enclosure.ServerMainKt.minecraftServer;
 
 public class Converter {
 
@@ -88,7 +86,7 @@ public class Converter {
             LOGGER.info("Found the old config file(s), converting!");
 
             minecraftServer.getWorlds().forEach(serverWorld -> {
-                EnclosureList enclosureList = Instance.getAllEnclosures(serverWorld);
+                EnclosureList enclosureList = ServerMain.INSTANCE.getAllEnclosures(serverWorld);
 
                 try {
                     File oldConf = oldConfFiles.get(serverWorld.getRegistryKey());
@@ -192,13 +190,13 @@ public class Converter {
                     MutableText status = null;
                     for (EnclosureArea area : enclosureList.getAreas()) {
                         if (enclosure.equals(area)) {
-                            status = Text.literal(Instance.getTranslation().get("enclosure.message.existed").getAsString());
+                            status = Text.literal(ServerMain.INSTANCE.getTranslation().get("enclosure.message.existed").getAsString());
                         }
                         else if (enclosure.intersect(area)) {
-                            status = Text.literal(Instance.getTranslation().get("enclosure.message.intersected").getAsString()).append(area.getFullName());
+                            status = Text.literal(ServerMain.INSTANCE.getTranslation().get("enclosure.message.intersected").getAsString()).append(area.getFullName());
                         }
                         else if (enclosure.getName().equals(area.getName())) {
-                            status = Text.literal(Instance.getTranslation().get("enclosure.message.name_in_use").getAsString());
+                            status = Text.literal(ServerMain.INSTANCE.getTranslation().get("enclosure.message.name_in_use").getAsString());
                         }
                     }
                     if (status == null) {

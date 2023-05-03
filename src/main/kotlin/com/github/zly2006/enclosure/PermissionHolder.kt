@@ -16,6 +16,8 @@ interface PermissionHolder : Serializable2Text {
     val owner: UUID
     fun isOwnerOrFatherAdmin(source: ServerCommandSource): Boolean
     val father: PermissionHolder?
+    val fullName: String
+        get() = name
 
     /**
      * 这个方法会判断默认权限，uuid那个不会
@@ -60,7 +62,6 @@ interface PermissionHolder : Serializable2Text {
         return hasPerm(CONSOLE, perm)
     }
 
-    @Throws(PermissionTargetException::class)
     fun setPermission(source: ServerCommandSource?, uuid: UUID, perm: Permission, value: Boolean?) {
         if (!permissionsMap.containsKey(uuid) && value != null) {
             permissionsMap[uuid] = HashMap()
@@ -82,8 +83,6 @@ interface PermissionHolder : Serializable2Text {
 
     val permissionsMap: MutableMap<UUID, MutableMap<String, Boolean>>
     val name: String
-    val fullName: String
-        get() = name
 
     fun serializePermission(map: MutableMap<String, Boolean>): Text {
         val text = Text.literal("")

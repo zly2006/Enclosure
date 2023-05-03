@@ -1,6 +1,7 @@
 package com.github.zly2006.enclosure.utils;
 
 import com.github.zly2006.enclosure.EnclosureArea;
+import com.github.zly2006.enclosure.ServerMain;
 import com.github.zly2006.enclosure.command.EnclosureCommandKt;
 import com.mojang.authlib.GameProfile;
 import net.minecraft.block.BlockState;
@@ -25,7 +26,6 @@ import org.jetbrains.annotations.Nullable;
 import java.util.List;
 import java.util.UUID;
 
-import static com.github.zly2006.enclosure.ServerMainKt.Instance;
 import static com.github.zly2006.enclosure.ServerMainKt.minecraftServer;
 
 public class Utils {
@@ -127,7 +127,7 @@ public class Utils {
         if (world.isClient) {
             return true;
         }
-        EnclosureArea area = Instance.getAllEnclosures((ServerWorld) world).getArea(pos);
+        EnclosureArea area = ServerMain.INSTANCE.getAllEnclosures((ServerWorld) world).getArea(pos);
         if (area != null) {
             area = area.areaOf(pos);
         }
@@ -144,7 +144,7 @@ public class Utils {
         if (world.isClient) {
             return true;
         }
-        EnclosureArea area = Instance.getAllEnclosures((ServerWorld) world).getArea(pos);
+        EnclosureArea area = ServerMain.INSTANCE.getAllEnclosures((ServerWorld) world).getArea(pos);
         if (area != null) {
             area = area.areaOf(pos);
         }

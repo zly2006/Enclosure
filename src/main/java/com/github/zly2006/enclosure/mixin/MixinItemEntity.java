@@ -1,7 +1,7 @@
 package com.github.zly2006.enclosure.mixin;
 
 import com.github.zly2006.enclosure.EnclosureArea;
-import com.github.zly2006.enclosure.ServerMainKt;
+import com.github.zly2006.enclosure.ServerMain;
 import com.github.zly2006.enclosure.access.PlayerAccess;
 import com.github.zly2006.enclosure.utils.Permission;
 import net.minecraft.entity.Entity;
@@ -25,7 +25,7 @@ public abstract class MixinItemEntity extends Entity {
     @Inject(method = "onPlayerCollision", at = @At("HEAD"), cancellable = true)
     private void onPlayerCollision(PlayerEntity player, CallbackInfo ci) {
         if (world instanceof ServerWorld serverWorld) {
-            EnclosureArea area = ServerMainKt.Instance.getAllEnclosures(serverWorld).getArea(getBlockPos());
+            EnclosureArea area = ServerMain.INSTANCE.getAllEnclosures(serverWorld).getArea(getBlockPos());
             if (area != null && !area.areaOf(getBlockPos()).hasPerm((ServerPlayerEntity) player, Permission.PICKUP_ITEM)) {
                 ((PlayerAccess) player).sendMessageWithCD(Permission.PICKUP_ITEM::getNoPermissionMsg);
                 ci.cancel();

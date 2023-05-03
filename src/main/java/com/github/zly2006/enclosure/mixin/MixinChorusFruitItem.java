@@ -1,6 +1,6 @@
 package com.github.zly2006.enclosure.mixin;
 
-import com.github.zly2006.enclosure.ServerMainKt;
+import com.github.zly2006.enclosure.ServerMain;
 import com.github.zly2006.enclosure.utils.Utils;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.item.ChorusFruitItem;
@@ -23,7 +23,7 @@ public class MixinChorusFruitItem {
     private void tp(ItemStack stack, World world, LivingEntity user, CallbackInfoReturnable<ItemStack> cir, ItemStack itemStack, double d, double e, double f, int i, double g, double h, double j, Vec3d vec3d) {
         if (user instanceof ServerPlayerEntity player) {
             BlockPos pos = Utils.toBlockPos(g, h, j);
-            if (!ServerMainKt.Instance.checkPermission(player, CHORUS_TP, pos)) {
+            if (!ServerMain.INSTANCE.checkPermission(player, CHORUS_TP, pos)) {
                 player.sendMessage(CHORUS_TP.getNoPermissionMsg(player));
                 cir.setReturnValue(stack);
             }
