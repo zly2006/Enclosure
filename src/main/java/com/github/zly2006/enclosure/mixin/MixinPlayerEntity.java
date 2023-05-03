@@ -2,7 +2,6 @@ package com.github.zly2006.enclosure.mixin;
 
 import com.github.zly2006.enclosure.ServerMain;
 import com.github.zly2006.enclosure.events.PlayerUseEntityEvent;
-import net.minecraft.command.argument.NumberRangeArgumentType;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
@@ -46,8 +45,6 @@ public abstract class MixinPlayerEntity extends LivingEntity {
     @Inject(method = "interact", at = @At("HEAD"), cancellable = true)
     private void protectInteract(Entity entity, Hand hand, CallbackInfoReturnable<ActionResult> cir) {
         EntityHitResult hitResult = new EntityHitResult(entity);
-        NumberRangeArgumentType.floatRange();
-
         ActionResult result = PlayerUseEntityEvent.onPlayerUseEntity(inventory.player, getWorld(), hand, entity, hitResult);
         if (result != ActionResult.PASS) {
             cir.setReturnValue(result);
@@ -58,7 +55,7 @@ public abstract class MixinPlayerEntity extends LivingEntity {
     @Inject(method = "canPlaceOn", at = @At("HEAD"), cancellable = true)
     private void protectPlacing(BlockPos pos, Direction facing, ItemStack stack, CallbackInfoReturnable<Boolean> cir) {
         if (((LivingEntity) this) instanceof ServerPlayerEntity serverPlayer) {
-            if (!ServerMain.Instance.checkPermission(serverPlayer, PLACE_BLOCK, pos)) {
+            if (!ServerMain.INSTANCE.checkPermission(serverPlayer, PLACE_BLOCK, pos)) {
                 serverPlayer.sendMessage(PLACE_BLOCK.getNoPermissionMsg(serverPlayer));
                 cir.setReturnValue(false);
             }

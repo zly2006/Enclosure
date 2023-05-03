@@ -22,7 +22,7 @@ import static net.fabricmc.api.EnvType.SERVER;
 public class MixinFireBlock {
     private void set(World instance, BlockPos pos, BlockState blockState, int i) {
         if (instance.isClient) return;
-        EnclosureList list = ServerMain.Instance.getAllEnclosures((ServerWorld) instance);
+        EnclosureList list = ServerMain.INSTANCE.getAllEnclosures((ServerWorld) instance);
         EnclosureArea area = list.getArea(pos);
         if (area == null || area.areaOf(pos).hasPubPerm(Permission.FIRE_SPREADING)) {
             instance.setBlockState(pos, blockState, i);
@@ -31,7 +31,7 @@ public class MixinFireBlock {
 
     private void remove(World instance, BlockPos pos, boolean move) {
         if (instance.isClient) return;
-        EnclosureList list = ServerMain.Instance.getAllEnclosures((ServerWorld) instance);
+        EnclosureList list = ServerMain.INSTANCE.getAllEnclosures((ServerWorld) instance);
         EnclosureArea area = list.getArea(pos);
         if (area != null && !area.areaOf(pos).hasPubPerm(Permission.FIRE_SPREADING)) {
             if (instance.getBlockState(pos).isOf(Blocks.FIRE)) {

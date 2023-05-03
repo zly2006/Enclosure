@@ -2,6 +2,7 @@ package com.github.zly2006.enclosure.mixin;
 
 import com.github.zly2006.enclosure.EnclosureArea;
 import com.github.zly2006.enclosure.EnclosureList;
+import com.github.zly2006.enclosure.ServerMain;
 import com.github.zly2006.enclosure.utils.Permission;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntity;
@@ -13,8 +14,6 @@ import net.minecraft.util.math.BlockPos;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
-
-import static com.github.zly2006.enclosure.ServerMain.Instance;
 
 @Mixin(SculkCatalystBlockEntity.class)
 public class MixinSculkCatalystBlockEntity extends BlockEntity {
@@ -28,7 +27,7 @@ public class MixinSculkCatalystBlockEntity extends BlockEntity {
             // 爱咋咋地，不改变行为
             instance.spread(pos, charge);
         }
-        EnclosureList list = Instance.getAllEnclosures((ServerWorld) getWorld());
+        EnclosureList list = ServerMain.INSTANCE.getAllEnclosures((ServerWorld) getWorld());
         EnclosureArea area = list.getArea(pos);
         if (area == null || area.areaOf(pos).hasPubPerm(Permission.SCULK_SPREAD)) {
             instance.spread(pos, charge);

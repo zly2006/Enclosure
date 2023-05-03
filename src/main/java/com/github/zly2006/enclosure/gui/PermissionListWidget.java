@@ -1,6 +1,6 @@
 package com.github.zly2006.enclosure.gui;
 
-import com.github.zly2006.enclosure.EnclosureArea;
+import com.github.zly2006.enclosure.ReadOnlyEnclosureArea;
 import com.github.zly2006.enclosure.utils.Permission;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
@@ -25,16 +25,16 @@ import org.lwjgl.glfw.GLFW;
 import java.util.*;
 import java.util.function.Supplier;
 
-import static com.github.zly2006.enclosure.commands.EnclosureCommand.CONSOLE;
+import static com.github.zly2006.enclosure.command.EnclosureCommandKt.CONSOLE;
 
 public class PermissionListWidget extends ElementListWidget<PermissionListWidget.Entry> {
     private final Screen parent;
     private final String fullName;
-    private final EnclosureArea area;
+    private final ReadOnlyEnclosureArea area;
     private final UUID uuid;
     private final Permission.Target target;
 
-    public PermissionListWidget(MinecraftClient minecraftClient, Screen parent, String fullName, EnclosureArea area, UUID uuid,
+    public PermissionListWidget(MinecraftClient minecraftClient, Screen parent, String fullName, ReadOnlyEnclosureArea area, UUID uuid,
                                 int width, int height, int top, int bottom) {
         super(minecraftClient, width, height, top, bottom, 20);
         this.parent = parent;
@@ -72,9 +72,8 @@ public class PermissionListWidget extends ElementListWidget<PermissionListWidget
 
     @Environment(EnvType.CLIENT)
     public class PermissionEntry extends Entry {
-        ButtonWidget buttonWidget;
+        final ButtonWidget buttonWidget;
         final Permission permission;
-        //@Nullable Boolean value = null;
 
         private Text value(Boolean value) {
             return value == null ? Text.translatable("enclosure.widget.none").setStyle(Style.EMPTY.withColor(Formatting.DARK_AQUA))
@@ -86,12 +85,12 @@ public class PermissionListWidget extends ElementListWidget<PermissionListWidget
         }
 
         private Optional<Boolean> getValue() {
-            return permission.get(area.getPermissionsMap().getOrDefault(uuid, Collections.emptyMap()));
+            return permission.getValue(area.getPermissionsMap().getOrDefault(uuid, Collections.emptyMap()));
         }
 
         private void setValue(@Nullable Boolean value) {
             Map<String, Boolean> perm = area.getPermissionsMap().getOrDefault(uuid, new HashMap<>());
-            permission.set(perm, value);
+            permission.setValue(perm, value);
             area.getPermissionsMap().put(uuid, perm);
         }
 
@@ -104,6 +103,7 @@ public class PermissionListWidget extends ElementListWidget<PermissionListWidget
         public void render(MatrixStack matrices, int index, int y, int x, int entryWidth, int entryHeight, int mouseX, int mouseY, boolean hovered, float tickDelta) {
             buttonWidget.setY(y);
             buttonWidget.setX(x + entryWidth - 40);
+            buttonWidget.setMessage(value());
             buttonWidget.render(matrices, mouseX, mouseY, tickDelta);
             client.textRenderer.draw(matrices, permission.getName(), x + 20, y + 3, 0xFFFFFF);
             client.textRenderer.draw(matrices, permission.getDescription(), x + 140, y + 3, 0x999999);

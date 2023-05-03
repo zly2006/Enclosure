@@ -1,5 +1,6 @@
 package com.github.zly2006.enclosure.mixin;
 
+import com.github.zly2006.enclosure.ServerMain;
 import com.github.zly2006.enclosure.utils.Permission;
 import net.fabricmc.api.Environment;
 import net.minecraft.entity.Entity;
@@ -16,8 +17,6 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-import static com.github.zly2006.enclosure.ServerMain.Instance;
-import static com.github.zly2006.enclosure.ServerMain.checkPermissionInDifferentEnclosure;
 import static net.fabricmc.api.EnvType.SERVER;
 
 @Environment(SERVER)
@@ -39,11 +38,11 @@ public abstract class MixinFallingBlockEntity extends Entity {
         if (world.isClient) {
             return;
         }
-        if (Instance.getAllEnclosures((ServerWorld) world).getArea(getBlockPos()) == null) {
+        if (ServerMain.INSTANCE.getAllEnclosures((ServerWorld) world).getArea(getBlockPos()) == null) {
             // not in any residence, do nothing
             return;
         }
-        if (!checkPermissionInDifferentEnclosure((ServerWorld) world, getFallingBlockPos(), getBlockPos(), Permission.FALLING_BLOCK)) {
+        if (!ServerMain.INSTANCE.checkPermissionInDifferentEnclosure((ServerWorld) world, getFallingBlockPos(), getBlockPos(), Permission.FALLING_BLOCK)) {
             discard();
             ci.cancel();
         }

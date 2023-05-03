@@ -2,6 +2,7 @@ package com.github.zly2006.enclosure.mixin;
 
 import com.github.zly2006.enclosure.EnclosureArea;
 import com.github.zly2006.enclosure.EnclosureList;
+import com.github.zly2006.enclosure.ServerMain;
 import com.github.zly2006.enclosure.utils.Permission;
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.Entity;
@@ -16,8 +17,6 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 
-import static com.github.zly2006.enclosure.ServerMain.Instance;
-
 @Mixin(WitherEntity.class)
 public abstract class MixinWitherEntity extends Entity {
     public MixinWitherEntity(EntityType<?> type, World world) {
@@ -29,7 +28,7 @@ public abstract class MixinWitherEntity extends Entity {
         if (world.isClient) {
             return;
         }
-        EnclosureList list = Instance.getAllEnclosures((ServerWorld) world);
+        EnclosureList list = ServerMain.INSTANCE.getAllEnclosures((ServerWorld) world);
         EnclosureArea a = list.getArea(blockPos);
         if (a != null && !a.areaOf(blockPos).hasPubPerm(Permission.WITHER_DESTROY)) {
             // prevent breaking block

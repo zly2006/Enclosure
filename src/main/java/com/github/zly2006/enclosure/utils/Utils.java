@@ -1,13 +1,14 @@
 package com.github.zly2006.enclosure.utils;
 
 import com.github.zly2006.enclosure.EnclosureArea;
-import com.github.zly2006.enclosure.commands.EnclosureCommand;
+import com.github.zly2006.enclosure.ServerMain;
+import com.github.zly2006.enclosure.command.EnclosureCommandKt;
 import com.mojang.authlib.GameProfile;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.damage.DamageSource;
-import net.minecraft.entity.mob.HostileEntity;
+import net.minecraft.entity.mob.Monster;
 import net.minecraft.entity.passive.AllayEntity;
 import net.minecraft.entity.passive.IronGolemEntity;
 import net.minecraft.entity.passive.PassiveEntity;
@@ -25,8 +26,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.List;
 import java.util.UUID;
 
-import static com.github.zly2006.enclosure.ServerMain.Instance;
-import static com.github.zly2006.enclosure.ServerMain.minecraftServer;
+import static com.github.zly2006.enclosure.ServerMainKt.minecraftServer;
 
 public class Utils {
     public static boolean isAnimal(Entity entity) {
@@ -37,7 +37,7 @@ public class Utils {
     }
 
     public static boolean isMonster(Entity entity) {
-        return entity instanceof HostileEntity;
+        return entity instanceof Monster;
     }
 
     public static <T extends Serializable2Text> Text pager(int size, int page, List<T> list, @Nullable ServerPlayerEntity player) {
@@ -127,7 +127,7 @@ public class Utils {
         if (world.isClient) {
             return true;
         }
-        EnclosureArea area = Instance.getAllEnclosures((ServerWorld) world).getArea(pos);
+        EnclosureArea area = ServerMain.INSTANCE.getAllEnclosures((ServerWorld) world).getArea(pos);
         if (area != null) {
             area = area.areaOf(pos);
         }
@@ -144,7 +144,7 @@ public class Utils {
         if (world.isClient) {
             return true;
         }
-        EnclosureArea area = Instance.getAllEnclosures((ServerWorld) world).getArea(pos);
+        EnclosureArea area = ServerMain.INSTANCE.getAllEnclosures((ServerWorld) world).getArea(pos);
         if (area != null) {
             area = area.areaOf(pos);
         }
@@ -168,7 +168,7 @@ public class Utils {
         if (player != null) {
             return player.getDisplayName().copy();
         }
-        if (uuid.equals(EnclosureCommand.CONSOLE)) {
+        if (uuid.equals(EnclosureCommandKt.CONSOLE)) {
             return Text.literal(serverName);
         }
         String name = getNameByUUID(uuid);

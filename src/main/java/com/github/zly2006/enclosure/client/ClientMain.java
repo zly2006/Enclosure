@@ -1,6 +1,6 @@
 package com.github.zly2006.enclosure.client;
 
-import com.github.zly2006.enclosure.commands.Session;
+import com.github.zly2006.enclosure.command.ClientSession;
 import com.github.zly2006.enclosure.gui.EnclosureScreen;
 import com.github.zly2006.enclosure.gui.EnclosureScreenHandler;
 import com.github.zly2006.enclosure.network.*;
@@ -10,7 +10,6 @@ import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
-import net.fabricmc.fabric.api.renderer.v1.RendererAccess;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.gui.screen.ingame.HandledScreens;
 import net.minecraft.client.option.KeyBinding;
@@ -27,21 +26,20 @@ public class ClientMain implements ClientModInitializer {
             GLFW.GLFW_KEY_R,
             "enclosure.key._category"
     ));
-    public static Session clientSession;
+    public static ClientSession clientSession;
     public static boolean isEnclosureInstalled = false;
 
     @Override
     public void onInitializeClient() {
-        RendererAccess.INSTANCE.getRenderer();
         EnclosureScreenHandler.register();
         UUIDCacheS2CPacket.register();
         SyncSelectionS2CPacket.register();
         ConfirmRequestS2CPacket.register();
         HandledScreens.register(EnclosureScreenHandler.ENCLOSURE_SCREEN_HANDLER, EnclosureScreen::new);
-        EnclosureWorldRenderer.register();
+        EnclosureWorldRenderer.INSTANCE.register();
         SyncPermissionS2CPacket.register();
         ClientPlayConnectionEvents.JOIN.register((handler, sender, client) -> {
-            clientSession = new Session();
+            clientSession = new ClientSession();
             EnclosureInstalledC2SPacket.send();
             if (FabricLoader.getInstance().isDevelopmentEnvironment()) {
                 isEnclosureInstalled = true;

@@ -11,13 +11,11 @@ import net.minecraft.network.PacketByteBuf;
 public class ConfirmRequestS2CPacket implements ClientPlayNetworking.PlayChannelHandler {
     @Override
     public void receive(MinecraftClient client, ClientPlayNetworkHandler handler, PacketByteBuf buf, PacketSender responseSender) {
-        {
-            if (client.currentScreen instanceof EnclosureScreen screen) {
-                screen.requestConfirm(buf.readText());
-            }
-            if (client.currentScreen instanceof PermissionScreen screen) {
-                screen.requestConfirm(buf.readText());
-            }
+        if (client.currentScreen instanceof EnclosureScreen screen) {
+            screen.requestConfirm(buf.readText());
+        }
+        if (client.currentScreen instanceof PermissionScreen screen) {
+            screen.requestConfirm(buf.readText());
         }
     }
 

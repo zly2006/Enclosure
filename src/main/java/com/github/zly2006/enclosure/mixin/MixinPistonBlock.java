@@ -1,5 +1,6 @@
 package com.github.zly2006.enclosure.mixin;
 
+import com.github.zly2006.enclosure.ServerMain;
 import com.github.zly2006.enclosure.utils.Permission;
 import com.github.zly2006.enclosure.utils.Utils;
 import net.fabricmc.api.Environment;
@@ -20,8 +21,6 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-import static com.github.zly2006.enclosure.ServerMain.Instance;
-import static com.github.zly2006.enclosure.ServerMain.checkPermissionInDifferentEnclosure;
 import static net.fabricmc.api.EnvType.SERVER;
 
 @Environment(SERVER)
@@ -62,8 +61,8 @@ public class MixinPistonBlock extends FacingBlock {
                 // 活塞向内收
                 pistonPos = pos.offset(pistonDir.getOpposite(), 2);
             }
-            if (!checkPermissionInDifferentEnclosure(serverWorld, pistonPos, newPos, Permission.PISTON) ||
-                !checkPermissionInDifferentEnclosure(serverWorld, pos, newPos, Permission.PISTON)) {
+            if (!ServerMain.INSTANCE.checkPermissionInDifferentEnclosure(serverWorld, pistonPos, newPos, Permission.PISTON) ||
+                !ServerMain.INSTANCE.checkPermissionInDifferentEnclosure(serverWorld, pos, newPos, Permission.PISTON)) {
                 // this method will be called even the target pos is out of the world.
                 Utils.mark4updateChecked(serverWorld, pos);
                 Utils.mark4updateChecked(serverWorld, newPos);
@@ -75,7 +74,7 @@ public class MixinPistonBlock extends FacingBlock {
     @Redirect(method = "onSyncedBlockEvent", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/World;removeBlock(Lnet/minecraft/util/math/BlockPos;Z)Z"))
     private boolean protectBlockEvent(World world, BlockPos pos, boolean move) {
         if (world instanceof ServerWorld serverWorld) {
-            if (!Instance.checkPermission(serverWorld, pos, null, Permission.BREAK_BLOCK) && !serverWorld.getBlockState(pos).isOf(Blocks.MOVING_PISTON)) {
+            if (!ServerMain.INSTANCE.checkPermission(serverWorld, pos, null, Permission.BREAK_BLOCK) && !serverWorld.getBlockState(pos).isOf(Blocks.MOVING_PISTON)) {
                 return false;
             }
         }

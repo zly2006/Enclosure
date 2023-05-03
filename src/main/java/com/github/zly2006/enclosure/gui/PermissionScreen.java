@@ -1,6 +1,6 @@
 package com.github.zly2006.enclosure.gui;
 
-import com.github.zly2006.enclosure.EnclosureArea;
+import com.github.zly2006.enclosure.ReadOnlyEnclosureArea;
 import com.github.zly2006.enclosure.network.UUIDCacheS2CPacket;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.util.math.MatrixStack;
@@ -13,17 +13,17 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
-import static com.github.zly2006.enclosure.commands.EnclosureCommand.CONSOLE;
+import static com.github.zly2006.enclosure.command.EnclosureCommandKt.CONSOLE;
 
 public class PermissionScreen extends Screen {
     public static final Identifier PERMISSION_SCREEN_ID = new Identifier("enclosure", "screen.permission");
 
-    final EnclosureArea area;
-    final UUID uuid;
+    final ReadOnlyEnclosureArea area;
+    public final UUID uuid;
     final String fullName;
     final Screen parent;
     PermissionListWidget permissionWidgetList;
-    public PermissionScreen(EnclosureArea area, UUID uuid, String fullName, Screen parent) {
+    public PermissionScreen(ReadOnlyEnclosureArea area, UUID uuid, String fullName, Screen parent) {
         super(Text.of("Set permission"));
         this.area = area;
         this.uuid = uuid;
@@ -93,12 +93,5 @@ public class PermissionScreen extends Screen {
             perms.put(key, permission.getBoolean(key));
         }
         area.getPermissionsMap().put(uuid, perms);
-        remove(permissionWidgetList);
-        double scroll = permissionWidgetList.getScrollAmount();
-        permissionWidgetList = new PermissionListWidget(client, this,
-            fullName, area, uuid, width, height, 20, height);
-        addDrawableChild(permissionWidgetList);
-        setFocused(permissionWidgetList);
-        permissionWidgetList.setScrollAmount(scroll);
     }
 }

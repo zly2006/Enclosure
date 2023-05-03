@@ -1,5 +1,6 @@
 package com.github.zly2006.enclosure.mixin;
 
+import com.github.zly2006.enclosure.ServerMain;
 import com.github.zly2006.enclosure.utils.Permission;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
@@ -13,8 +14,6 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-import static com.github.zly2006.enclosure.ServerMain.Instance;
-
 @Mixin(TadpoleEntity.class)
 public abstract class MixinTadpoleEntity extends Entity {
     public MixinTadpoleEntity(EntityType<?> type, World world) {
@@ -23,9 +22,10 @@ public abstract class MixinTadpoleEntity extends Entity {
 
     @Inject(method = "interactMob", at = @At("HEAD"), cancellable = true)
     private void interactMob(PlayerEntity player, Hand hand, CallbackInfoReturnable<ActionResult> cir) {
-        if (!Instance.checkPermission(getWorld(), getBlockPos(), player, Permission.FISH)) {
-            player.sendMessage(Permission.FISH.getNoPermissionMsg(player));
-            cir.setReturnValue(ActionResult.FAIL);
+        if (ServerMain.INSTANCE.checkPermission(getWorld(), getBlockPos(), player, Permission.FISH)) {
+            return;
         }
+        player.sendMessage(Permission.FISH.getNoPermissionMsg(player));
+        cir.setReturnValue(ActionResult.FAIL);
     }
 }

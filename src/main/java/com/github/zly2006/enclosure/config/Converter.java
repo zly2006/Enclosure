@@ -1,13 +1,14 @@
 package com.github.zly2006.enclosure.config;
 
-import com.github.zly2006.enclosure.Enclosure;
-import com.github.zly2006.enclosure.EnclosureList;
-import com.github.zly2006.enclosure.ServerMain;
+import com.github.zly2006.enclosure.*;
 import com.mojang.authlib.GameProfile;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtInt;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.registry.RegistryKey;
+import net.minecraft.server.world.ServerWorld;
+import net.minecraft.text.MutableText;
+import net.minecraft.text.Text;
 import net.minecraft.world.World;
 import org.yaml.snakeyaml.Yaml;
 
@@ -15,7 +16,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.util.*;
 
-import static com.github.zly2006.enclosure.ServerMain.*;
+import static com.github.zly2006.enclosure.ServerMainKt.LOGGER;
+import static com.github.zly2006.enclosure.ServerMainKt.minecraftServer;
 
 public class Converter {
 
@@ -60,7 +62,7 @@ public class Converter {
 
     public static void convert() {
         // 不存在储存旧配置文件的文件夹时创建一个
-        File oldConfDictionary = ServerMain.OLD_CONF_PATH.toFile();
+        File oldConfDictionary = ServerMainKt.OLD_CONF_PATH.toFile();
         if (!oldConfDictionary.exists() || oldConfDictionary.isFile()) {
             oldConfDictionary.mkdirs();
         }
@@ -84,13 +86,13 @@ public class Converter {
             LOGGER.info("Found the old config file(s), converting!");
 
             minecraftServer.getWorlds().forEach(serverWorld -> {
-                EnclosureList enclosureList = Instance.getAllEnclosures(serverWorld);
+                EnclosureList enclosureList = ServerMain.INSTANCE.getAllEnclosures(serverWorld);
 
                 try {
                     File oldConf = oldConfFiles.get(serverWorld.getRegistryKey());
                     Map<String, Object> confData = YAML_INSTANCE.load(new FileInputStream(oldConf));
                     LOGGER.info("Converting [%s] data from residence format to enclosures...".formatted(serverWorld.getRegistryKey().getValue().toString()));
-                    convertToList(confData, enclosureList);
+                    convertToList(confData, enclosureList, serverWorld);
                     oldConf.renameTo(new File(oldConfDictionary, oldConf.getName() + ".converted"));
                 } catch (Exception ignore) {
                 }
@@ -99,7 +101,7 @@ public class Converter {
     }
 
     @SuppressWarnings("unchecked")
-    private static void convertToList(Map<String, Object> data, EnclosureList enclosureList) {
+    private static void convertToList(Map<String, Object> data, EnclosureList enclosureList, ServerWorld world) {
         List<NbtCompound> nbtList = new ArrayList<>();
 
         Map<String, Map<Object, Object>> enclosuresList = (Map<String, Map<Object, Object>>) data.get("Residences");
@@ -184,8 +186,19 @@ public class Converter {
 
             nbtList.forEach(item -> {
                 if (item != null) {
-                    Enclosure enclosure = new Enclosure(item);
-                    String status = enclosureList.getAreaStatus(enclosure);
+                    Enclosure enclosure = new Enclosure(item, world);
+                    MutableText status = null;
+                    for (EnclosureArea area : enclosureList.getAreas()) {
+                        if (enclosure.equals(area)) {
+                            status = Text.literal(ServerMain.INSTANCE.getTranslation().get("enclosure.message.existed").getAsString());
+                        }
+                        else if (enclosure.intersect(area)) {
+                            status = Text.literal(ServerMain.INSTANCE.getTranslation().get("enclosure.message.intersected").getAsString()).append(area.getFullName());
+                        }
+                        else if (enclosure.getName().equals(area.getName())) {
+                            status = Text.literal(ServerMain.INSTANCE.getTranslation().get("enclosure.message.name_in_use").getAsString());
+                        }
+                    }
                     if (status == null) {
                         enclosureList.addArea(enclosure);
                     }

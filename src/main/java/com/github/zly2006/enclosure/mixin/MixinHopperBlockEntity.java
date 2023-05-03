@@ -21,8 +21,6 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 
-import static com.github.zly2006.enclosure.ServerMain.Instance;
-
 @Mixin(HopperBlockEntity.class)
 public class MixinHopperBlockEntity extends BlockEntity {
     public MixinHopperBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
@@ -34,14 +32,14 @@ public class MixinHopperBlockEntity extends BlockEntity {
         if (world.isClient) return;
         BlockPos pos = Utils.toBlockPos(hopper.getHopperX(), hopper.getHopperY(), hopper.getHopperZ());
         BlockPos inventoryPos = pos.offset(Direction.UP);
-        if (!ServerMain.checkPermissionInDifferentEnclosure((ServerWorld) world, pos, inventoryPos, Permission.CONTAINER)) {
+        if (!ServerMain.INSTANCE.checkPermissionInDifferentEnclosure((ServerWorld) world, pos, inventoryPos, Permission.CONTAINER)) {
             cir.setReturnValue(false);
         }
     }
     @Inject(method = "extract(Lnet/minecraft/inventory/Inventory;Lnet/minecraft/entity/ItemEntity;)Z", at = @At("HEAD"), cancellable = true)
     private static void onExtract(Inventory inventory, ItemEntity itemEntity, CallbackInfoReturnable<Boolean> cir) {
         if (itemEntity.world.isClient) return;
-        EnclosureArea area = Instance.getAllEnclosures((ServerWorld) itemEntity.world).getArea(itemEntity.getBlockPos());
+        EnclosureArea area = ServerMain.INSTANCE.getAllEnclosures((ServerWorld) itemEntity.world).getArea(itemEntity.getBlockPos());
         if (area != null && !area.areaOf(itemEntity.getBlockPos()).hasPubPerm(Permission.PICKUP_ITEM)) {
             cir.setReturnValue(false);
         }

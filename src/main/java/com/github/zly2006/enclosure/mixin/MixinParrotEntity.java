@@ -1,6 +1,7 @@
 package com.github.zly2006.enclosure.mixin;
 
 import com.github.zly2006.enclosure.EnclosureArea;
+import com.github.zly2006.enclosure.ServerMain;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.passive.AnimalEntity;
 import net.minecraft.entity.passive.ParrotEntity;
@@ -18,7 +19,6 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-import static com.github.zly2006.enclosure.ServerMain.Instance;
 import static com.github.zly2006.enclosure.utils.Permission.PARROT_COOKIE;
 
 @Mixin(ParrotEntity.class)
@@ -35,7 +35,7 @@ public abstract class MixinParrotEntity extends AnimalEntity {
     private void interactMob(PlayerEntity p, Hand hand, CallbackInfoReturnable<ActionResult> cir) {
         if (p instanceof ServerPlayerEntity player) {
             if (player.getStackInHand(hand).isOf(COOKIE)) {
-                EnclosureArea area = Instance.getAllEnclosures((ServerWorld) getWorld()).getArea(getBlockPos());
+                EnclosureArea area = ServerMain.INSTANCE.getAllEnclosures((ServerWorld) getWorld()).getArea(getBlockPos());
 
                 if (area != null && !area.areaOf(getBlockPos()).hasPerm(player, PARROT_COOKIE)) {
                     player.sendMessage(PARROT_COOKIE.getNoPermissionMsg(player));

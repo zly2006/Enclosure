@@ -12,7 +12,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
-import static com.github.zly2006.enclosure.ServerMain.LOGGER;
+import static com.github.zly2006.enclosure.ServerMainKt.LOGGER;
 
 public class UUIDCacheS2CPacket implements ClientPlayNetworking.PlayChannelHandler {
     public static final Map<UUID, String> uuid2name = new HashMap<>();

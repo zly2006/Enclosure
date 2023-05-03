@@ -12,11 +12,11 @@ import java.util.List;
 
 public class ConfirmScreen extends Screen {
     private static final Identifier TEXTURE = new Identifier("textures/gui/demo_background.png");
-    Screen parent;
-    Text message;
-    Runnable action;
-    ButtonWidget yesButton;
-    ButtonWidget noButton;
+    final Screen parent;
+    final Text message;
+    final Runnable action;
+    final ButtonWidget yesButton;
+    final ButtonWidget noButton;
 
     public ConfirmScreen(Screen parent, Text message, Runnable action) {
         super(Text.of("Confirm"));

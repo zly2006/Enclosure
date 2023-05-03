@@ -26,8 +26,10 @@
   "environment": "*",
   "entrypoints": {
     "server": [
-      "com.github.zly2006.enclosure.ServerMain",
-      "com.github.zly2006.enclosure.PaidMain"
+      {
+        "adapter": "kotlin",
+        "value": "com.github.zly2006.enclosure.ServerMain"
+      }
     ],
     "client": [
       "com.github.zly2006.enclosure.client.ClientMain"
@@ -44,7 +46,8 @@
   "depends": {
     "fabricloader": ">=0.13.0",
     "fabric-api": "*",
-    "minecraft": "~1.19",
+    "minecraft": "~1.19.4",
+    "fabric-language-kotlin": "*",
     "java": ">=17"
   },
   "suggests": {

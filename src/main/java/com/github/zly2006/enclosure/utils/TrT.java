@@ -12,9 +12,8 @@ import java.lang.reflect.Field;
 public class TrT {
     public static @NotNull MutableText of(String key, Object... arguments) {
         if (FabricLoader.getInstance().getEnvironmentType() == EnvType.SERVER) {
-            ServerMain.load();
-            if (ServerMain.translation.has(key)) {
-                return Text.translatableWithFallback(key, ServerMain.translation.get(key).getAsString(), arguments);
+            if (ServerMain.INSTANCE.getTranslation().has(key)) {
+                return Text.translatableWithFallback(key, ServerMain.INSTANCE.getTranslation().get(key).getAsString(), arguments);
             }
         }
         return Text.translatable(key, arguments);

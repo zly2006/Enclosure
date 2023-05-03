@@ -18,7 +18,7 @@ public class MixinBowItem {
     @Inject(at = @At("HEAD"), method = "onStoppedUsing", cancellable = true)
     public void checkBowPermission(ItemStack stack, World world, LivingEntity user, int remainingUseTicks, CallbackInfo ci) {
         if (user instanceof ServerPlayerEntity player) {
-            if (!ServerMain.Instance.checkPermission(player, SHOOT, player.getBlockPos())) {
+            if (!ServerMain.INSTANCE.checkPermission(player, SHOOT, player.getBlockPos())) {
                 player.sendMessage(SHOOT.getNoPermissionMsg(player));
                 player.currentScreenHandler.syncState();  // update player's inventory
                 ci.cancel();

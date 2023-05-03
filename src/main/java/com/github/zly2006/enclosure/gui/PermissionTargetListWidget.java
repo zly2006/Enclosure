@@ -1,6 +1,6 @@
 package com.github.zly2006.enclosure.gui;
 
-import com.github.zly2006.enclosure.EnclosureArea;
+import com.github.zly2006.enclosure.ReadOnlyEnclosureArea;
 import com.github.zly2006.enclosure.network.UUIDCacheS2CPacket;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.fabricmc.api.EnvType;
@@ -23,10 +23,10 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Stream;
 
-import static com.github.zly2006.enclosure.commands.EnclosureCommand.CONSOLE;
+import static com.github.zly2006.enclosure.command.EnclosureCommandKt.CONSOLE;
 
 public class PermissionTargetListWidget extends ElementListWidget<PermissionTargetListWidget.Entry> {
-    final EnclosureArea area;
+    final ReadOnlyEnclosureArea area;
     final String fullName;
     final Screen parent;
     enum Mode {
@@ -34,9 +34,9 @@ public class PermissionTargetListWidget extends ElementListWidget<PermissionTarg
         Unspecified,
     }
     Mode mode = Mode.Players;
-    SearchEntry searchEntry = new SearchEntry();
+    final SearchEntry searchEntry = new SearchEntry();
 
-    public PermissionTargetListWidget(MinecraftClient minecraftClient, EnclosureArea area, String fullName, Screen parent, int width, int height, int top, int bottom) {
+    public PermissionTargetListWidget(MinecraftClient minecraftClient, ReadOnlyEnclosureArea area, String fullName, Screen parent, int width, int height, int top, int bottom) {
         super(minecraftClient, width, height, top, bottom, 20);
         this.area = area;
         this.fullName = fullName;
@@ -87,7 +87,7 @@ public class PermissionTargetListWidget extends ElementListWidget<PermissionTarg
     class PlayerEntry extends Entry {
         final Text name;
         final UUID uuid;
-        ButtonWidget setButton;
+        final ButtonWidget setButton;
         private PermissionScreen screen = null;
 
         PlayerEntry(Text name, UUID uuid) {
@@ -128,7 +128,7 @@ public class PermissionTargetListWidget extends ElementListWidget<PermissionTarg
     }
     @Environment(EnvType.CLIENT)
     public class SearchEntry extends Entry {
-        TextFieldWidget searchWidget;
+        final TextFieldWidget searchWidget;
 
         public SearchEntry() {
             searchWidget = new TextFieldWidget(client.textRenderer, 0, 0, 100, 16, Text.of("search"));

@@ -1,6 +1,6 @@
 package com.github.zly2006.enclosure.gui;
 
-import com.github.zly2006.enclosure.EnclosureArea;
+import com.github.zly2006.enclosure.ReadOnlyEnclosureArea;
 import com.github.zly2006.enclosure.network.UUIDCacheS2CPacket;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.Element;
@@ -17,14 +17,14 @@ import java.util.List;
 import java.util.UUID;
 
 public class EnclosureScreen extends HandledScreen<EnclosureScreenHandler> {
-    final EnclosureArea area;
+    final ReadOnlyEnclosureArea area;
     PermissionTargetListWidget permissionTargetListWidget;
     ButtonWidget globalWidget;
     ButtonWidget playerWidget;
     ButtonWidget unlistedWidget;
     ButtonWidget aboutWidget;
-    List<ClickableTextWidget> textWidgets = new ArrayList<>();
-    List<ClickableTextWidget> subLandWidgets = new ArrayList<>();
+    final List<ClickableTextWidget> textWidgets = new ArrayList<>();
+    final List<ClickableTextWidget> subLandWidgets = new ArrayList<>();
     int renderBottom = 5;
 
     public EnclosureScreen(EnclosureScreenHandler handler, PlayerInventory inventory, Text title) {

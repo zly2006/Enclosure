@@ -2,6 +2,7 @@ package com.github.zly2006.enclosure.mixin;
 
 import com.github.zly2006.enclosure.EnclosureArea;
 import com.github.zly2006.enclosure.EnclosureList;
+import com.github.zly2006.enclosure.ServerMain;
 import com.github.zly2006.enclosure.utils.Permission;
 import net.fabricmc.api.Environment;
 import net.minecraft.entity.EntityType;
@@ -14,7 +15,6 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
 
-import static com.github.zly2006.enclosure.ServerMain.Instance;
 import static net.fabricmc.api.EnvType.SERVER;
 
 @Environment(SERVER)
@@ -29,7 +29,7 @@ public class MixinEnderDragonEntity extends MobEntity {
         if (instance.isClient) {
             return false;
         }
-        EnclosureList list = Instance.getAllEnclosures((ServerWorld) world);
+        EnclosureList list = ServerMain.INSTANCE.getAllEnclosures((ServerWorld) world);
         EnclosureArea a = list.getArea(pos);
         if (a != null && !a.areaOf(pos).hasPubPerm(Permission.DRAGON_DESTROY)) {
             return true;

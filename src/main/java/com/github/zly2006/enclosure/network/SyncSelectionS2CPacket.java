@@ -1,6 +1,7 @@
 package com.github.zly2006.enclosure.network;
 
 import com.github.zly2006.enclosure.client.ClientMain;
+import com.github.zly2006.enclosure.command.Session;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
@@ -22,6 +23,9 @@ public class SyncSelectionS2CPacket implements ClientPlayNetworking.PlayChannelH
     public void receive(MinecraftClient client, ClientPlayNetworkHandler handler, PacketByteBuf buf, PacketSender responseSender) {
         BlockPos pos1 = buf.readBlockPos();
         BlockPos pos2 = buf.readBlockPos();
+        if (ClientMain.clientSession == null) {
+            ClientMain.clientSession = new Session(null);
+        }
         ClientMain.clientSession.setPos1(pos1);
         ClientMain.clientSession.setPos2(pos2);
     }

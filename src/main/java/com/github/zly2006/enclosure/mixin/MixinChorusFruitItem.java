@@ -23,7 +23,7 @@ public class MixinChorusFruitItem {
     private void tp(ItemStack stack, World world, LivingEntity user, CallbackInfoReturnable<ItemStack> cir, ItemStack itemStack, double d, double e, double f, int i, double g, double h, double j, Vec3d vec3d) {
         if (user instanceof ServerPlayerEntity player) {
             BlockPos pos = Utils.toBlockPos(g, h, j);
-            if (!ServerMain.Instance.checkPermission(player, CHORUS_TP, pos)) {
+            if (!ServerMain.INSTANCE.checkPermission(player, CHORUS_TP, pos)) {
                 player.sendMessage(CHORUS_TP.getNoPermissionMsg(player));
                 cir.setReturnValue(stack);
             }

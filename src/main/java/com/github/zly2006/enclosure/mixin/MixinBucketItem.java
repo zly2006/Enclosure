@@ -1,5 +1,6 @@
 package com.github.zly2006.enclosure.mixin;
 
+import com.github.zly2006.enclosure.ServerMain;
 import com.github.zly2006.enclosure.utils.Permission;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.fluid.Fluid;
@@ -21,8 +22,6 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 
-import static com.github.zly2006.enclosure.ServerMain.Instance;
-
 @Mixin(BucketItem.class)
 public class MixinBucketItem {
     @Shadow @Final private Fluid fluid;
@@ -31,8 +30,8 @@ public class MixinBucketItem {
     private void onUse(World world, PlayerEntity user, Hand hand, CallbackInfoReturnable<TypedActionResult<ItemStack>> cir, ItemStack itemStack, BlockHitResult blockHitResult, BlockPos blockPos, Direction direction, BlockPos blockPos2) {
         if (user instanceof ServerPlayerEntity player) {
             Permission permission = this.fluid == Fluids.EMPTY ? Permission.BREAK_BLOCK : Permission.PLACE_BLOCK;
-            if (!Instance.checkPermission(world, blockPos, player, permission) ||
-                    !Instance.checkPermission(world, blockPos2, player, permission)) {
+            if (!ServerMain.INSTANCE.checkPermission(world, blockPos, player, permission) ||
+                    !ServerMain.INSTANCE.checkPermission(world, blockPos2, player, permission)) {
                 player.currentScreenHandler.syncState();
                 player.sendMessage(permission.getNoPermissionMsg(player));
                 cir.setReturnValue(TypedActionResult.fail(itemStack));

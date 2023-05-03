@@ -12,7 +12,7 @@ import java.util.List;
 
 public class AboutScreen extends Screen {
     final Screen parent;
-    List<ClickableTextWidget> textWidgets = new ArrayList<>();
+    final List<ClickableTextWidget> textWidgets = new ArrayList<>();
     public static final String WIKI_ZH = "https://enclosure.fandom.com/zh/wiki/Enclosure_Wiki";
     public static final String WIKI_EN = "https://enclosure.fandom.com";
 

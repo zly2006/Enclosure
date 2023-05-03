@@ -2,6 +2,7 @@ package com.github.zly2006.enclosure.mixin;
 
 import com.github.zly2006.enclosure.EnclosureArea;
 import com.github.zly2006.enclosure.EnclosureList;
+import com.github.zly2006.enclosure.ServerMain;
 import com.github.zly2006.enclosure.utils.Permission;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import net.minecraft.entity.Entity;
@@ -17,8 +18,6 @@ import org.spongepowered.asm.mixin.injection.ModifyVariable;
 
 import java.util.List;
 
-import static com.github.zly2006.enclosure.ServerMain.Instance;
-
 @Mixin(Explosion.class)
 public abstract class MixinExplosion {
     @Shadow
@@ -32,7 +31,7 @@ public abstract class MixinExplosion {
     @ModifyVariable(at = @At(value = "INVOKE", target = "Lnet/minecraft/util/math/Vec3d;<init>(DDD)V", ordinal = 1), method = "collectBlocksAndDamageEntities")
     private List<Entity> protectEntities(List<Entity> list) {
         if (!world.isClient) {
-            EnclosureList enclosureList = Instance.getAllEnclosures((ServerWorld) world);
+            EnclosureList enclosureList = ServerMain.INSTANCE.getAllEnclosures((ServerWorld) world);
             list.removeIf(e -> {
                 assert e != null;
                 BlockPos pos = e.getBlockPos();

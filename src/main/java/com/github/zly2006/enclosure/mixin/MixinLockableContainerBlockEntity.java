@@ -1,6 +1,7 @@
 package com.github.zly2006.enclosure.mixin;
 
 import com.github.zly2006.enclosure.EnclosureArea;
+import com.github.zly2006.enclosure.ServerMain;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.BlockEntityType;
@@ -17,7 +18,6 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-import static com.github.zly2006.enclosure.ServerMain.Instance;
 import static com.github.zly2006.enclosure.utils.Permission.CONTAINER;
 
 @Mixin(LockableContainerBlockEntity.class)
@@ -34,7 +34,7 @@ public class MixinLockableContainerBlockEntity extends BlockEntity {
             if (player.interactionManager.getGameMode() == GameMode.SPECTATOR) {
                 return;
             }
-            EnclosureArea area = Instance.getAllEnclosures((ServerWorld) getWorld()).getArea(getPos());
+            EnclosureArea area = ServerMain.INSTANCE.getAllEnclosures((ServerWorld) getWorld()).getArea(getPos());
 
             if (area != null && !area.areaOf(getPos()).hasPerm(player, CONTAINER)) {
                 player.sendMessage(CONTAINER.getNoPermissionMsg(player));

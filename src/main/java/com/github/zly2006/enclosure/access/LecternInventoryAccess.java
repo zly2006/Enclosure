@@ -6,8 +6,8 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.BlockPos;
 
 public class LecternInventoryAccess implements Inventory {
-    Inventory inventory;
-    BlockPos pos;
+    final Inventory inventory;
+    final BlockPos pos;
     public LecternInventoryAccess(Inventory inventory, BlockPos pos) {
         this.inventory = inventory;
         this.pos = pos;
