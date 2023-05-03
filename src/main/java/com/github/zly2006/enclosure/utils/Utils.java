@@ -8,7 +8,7 @@ import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.damage.DamageSource;
-import net.minecraft.entity.mob.HostileEntity;
+import net.minecraft.entity.mob.Monster;
 import net.minecraft.entity.passive.AllayEntity;
 import net.minecraft.entity.passive.IronGolemEntity;
 import net.minecraft.entity.passive.PassiveEntity;
@@ -37,7 +37,7 @@ public class Utils {
     }
 
     public static boolean isMonster(Entity entity) {
-        return entity instanceof HostileEntity;
+        return entity instanceof Monster;
     }
 
     public static <T extends Serializable2Text> Text pager(int size, int page, List<T> list, @Nullable ServerPlayerEntity player) {

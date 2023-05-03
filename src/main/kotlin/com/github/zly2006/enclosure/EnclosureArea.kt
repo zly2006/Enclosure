@@ -120,10 +120,7 @@ open class EnclosureArea : PersistentState, ReadOnlyEnclosureArea {
     }
 
     constructor(session: Session, name: String) {
-        if (session.world == null) {
-            error("received a session without world.")
-        }
-        world = session.world!!
+        world = session.world
         owner = session.owner
         this.name = name
         permissionsMap[owner] = mutableMapOf()

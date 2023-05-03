@@ -32,12 +32,10 @@ import net.fabricmc.fabric.api.event.player.AttackBlockCallback
 import net.fabricmc.fabric.api.event.player.UseBlockCallback
 import net.fabricmc.fabric.api.event.player.UseEntityCallback
 import net.fabricmc.fabric.api.event.player.UseItemCallback
-import net.fabricmc.fabric.api.networking.v1.PacketSender
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents
 import net.fabricmc.loader.api.FabricLoader
 import net.fabricmc.loader.api.Version
 import net.minecraft.block.*
-import net.minecraft.command.CommandRegistryAccess
 import net.minecraft.command.argument.Vec3ArgumentType
 import net.minecraft.entity.Entity
 import net.minecraft.entity.Saddleable
@@ -49,7 +47,6 @@ import net.minecraft.network.packet.s2c.play.EntityTrackerUpdateS2CPacket
 import net.minecraft.registry.RegistryKey
 import net.minecraft.server.MinecraftServer
 import net.minecraft.server.command.CommandManager
-import net.minecraft.server.command.CommandManager.RegistrationEnvironment
 import net.minecraft.server.command.ServerCommandSource
 import net.minecraft.server.network.ServerPlayNetworkHandler
 import net.minecraft.server.network.ServerPlayerEntity
@@ -369,7 +366,7 @@ object ServerMain: DedicatedServerModInitializer {
     override fun onInitializeServer() {
         operationItem = Items.WOODEN_HOE
 
-        ServerPlayConnectionEvents.JOIN.register(ServerPlayConnectionEvents.Join { handler: ServerPlayNetworkHandler, sender: PacketSender?, server: MinecraftServer? ->
+        ServerPlayConnectionEvents.JOIN.register(ServerPlayConnectionEvents.Join { handler: ServerPlayNetworkHandler, _, _ ->
             // warn the server ops that this server is running in development mode and not secure.
             if (minecraftServer.playerManager.isOperator(handler.player.gameProfile) && commonConfig.developMode) {
                 handler.player.sendMessage(
@@ -383,7 +380,7 @@ object ServerMain: DedicatedServerModInitializer {
             }
         })
 
-        CommandRegistrationCallback.EVENT.register(CommandRegistrationCallback { dispatcher: CommandDispatcher<ServerCommandSource>, registryAccess: CommandRegistryAccess, environment: RegistrationEnvironment ->
+        CommandRegistrationCallback.EVENT.register(CommandRegistrationCallback { dispatcher: CommandDispatcher<ServerCommandSource>, _, _ ->
             val node = register(dispatcher)
             if (commonConfig.developMode) {
                 dispatcher.register(
@@ -497,7 +494,7 @@ object ServerMain: DedicatedServerModInitializer {
             }
             return@register TypedActionResult.pass(player.getStackInHand(hand))
         }
-        AttackBlockCallback.EVENT.register { player, world, hand, pos, direction ->
+        AttackBlockCallback.EVENT.register { player, world, _, pos, _ ->
             if (player is ServerPlayerEntity) {
                 val state = world.getBlockState(pos)
                 if (state.block is DragonEggBlock) {
