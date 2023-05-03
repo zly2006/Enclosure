@@ -15,7 +15,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 
-import static com.github.zly2006.enclosure.utils.Permission.CHORUS_TP;
+import static com.github.zly2006.enclosure.utils.Permission.TELEPORT;
 
 @Mixin(ChorusFruitItem.class)
 public class MixinChorusFruitItem {
@@ -23,8 +23,8 @@ public class MixinChorusFruitItem {
     private void tp(ItemStack stack, World world, LivingEntity user, CallbackInfoReturnable<ItemStack> cir, ItemStack itemStack, double d, double e, double f, int i, double g, double h, double j, Vec3d vec3d) {
         if (user instanceof ServerPlayerEntity player) {
             BlockPos pos = Utils.toBlockPos(g, h, j);
-            if (!ServerMain.INSTANCE.checkPermission(player, CHORUS_TP, pos)) {
-                player.sendMessage(CHORUS_TP.getNoPermissionMsg(player));
+            if (!ServerMain.INSTANCE.checkPermission(player, TELEPORT, pos)) {
+                player.sendMessage(TELEPORT.getNoPermissionMsg(player));
                 cir.setReturnValue(stack);
             }
         }

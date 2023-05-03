@@ -58,6 +58,7 @@
     "MixinTurtleEggBlock",
     "MixinUserCache",
     "MixinWitherEntity",
-    "MixinWitherSkullBlock"
+    "MixinWitherSkullBlock",
+    "MixinEnderPearl"
   ]
 }

@@ -792,6 +792,10 @@ fun register(dispatcher: CommandDispatcher<ServerCommandSource>): LiteralCommand
                     }
                     (player as PlayerAccess).lastTeleportTime = System.currentTimeMillis()
                     val area = getEnclosure(this)
+                    if (!area.hasPerm(player, Permission.COMMAND_TP)) {
+                        player.sendMessage(Permission.COMMAND_TP.getNoPermissionMsg(player))
+                        return@executes
+                    }
                     if (ServerMain.commonConfig.showTeleportWarning) {
                         val world = area.world
                         val pos = Utils.toBlockPos(area.teleportPos)
