@@ -12,8 +12,6 @@ import com.github.zly2006.enclosure.listeners.SessionListener
 import com.github.zly2006.enclosure.network.EnclosureInstalledC2SPacket
 import com.github.zly2006.enclosure.network.RequestOpenScreenC2SPPacket
 import com.github.zly2006.enclosure.utils.Permission
-import com.github.zly2006.enclosure.utils.Permission.BREAK_BLOCK
-import com.github.zly2006.enclosure.utils.Permission.DRAGON_EGG
 import com.github.zly2006.enclosure.utils.ResourceLoader
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
@@ -40,6 +38,7 @@ import net.minecraft.command.argument.Vec3ArgumentType
 import net.minecraft.entity.Entity
 import net.minecraft.entity.Saddleable
 import net.minecraft.entity.decoration.ArmorStandEntity
+import net.minecraft.entity.decoration.ItemFrameEntity
 import net.minecraft.entity.passive.*
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.item.*
@@ -74,7 +73,6 @@ import java.util.function.Consumer
 import java.util.function.Predicate
 import kotlin.properties.ReadWriteProperty
 import kotlin.reflect.KProperty
-
 
 const val MOD_ID = "enclosure" // 模组标识符
 @JvmField
@@ -259,6 +257,12 @@ object ServerMain: DedicatedServerModInitializer {
                 put(Permission.VEHICLE) { it.item is BoatItem || it.item is MinecartItem }
                 put(Permission.ALLAY) { it.entity is AllayEntity }
                 put(Permission.CAULDRON) { it.block is AbstractCauldronBlock }
+                put(Permission.COMMAND_TP) { it.entity is ItemFrameEntity }
+                put(Permission.PLACE_BLOCK) {
+                    if (it.entity is ItemFrameEntity)
+                        it.entity.heldItemStack.isOf(Items.AIR) && it.item != Items.AIR
+                    else false
+                }
             }
         }
 
@@ -504,15 +508,15 @@ object ServerMain: DedicatedServerModInitializer {
             if (player is ServerPlayerEntity) {
                 val state = world.getBlockState(pos)
                 if (state.block is DragonEggBlock) {
-                    if (checkPermission(player, DRAGON_EGG, pos)) {
+                    if (checkPermission(player, Permission.DRAGON_EGG, pos)) {
                         return@register ActionResult.PASS
                     }
                     else {
                         return@register ActionResult.FAIL
                     }
                 }
-                if (!checkPermission(player, BREAK_BLOCK, pos)) {
-                    player.sendMessage(BREAK_BLOCK.getNoPermissionMsg(player))
+                if (!checkPermission(player, Permission.BREAK_BLOCK, pos)) {
+                    player.sendMessage(Permission.BREAK_BLOCK.getNoPermissionMsg(player))
                     return@register ActionResult.FAIL
                 }
             }
@@ -549,26 +553,6 @@ object ServerMain: DedicatedServerModInitializer {
             }
             return@register ActionResult.PASS
         }
-        /*PlayerUseEntityEvent.register { player, _, hand, entity, hitResult ->
-            if (player is ServerPlayerEntity) {
-                val usingItem = player.getStackInHand(hand).item
-                val context = UseContext(player, BlockPos.ofFloored(hitResult.pos), null, null, usingItem, entity)
-                return@register USE_PREDICATES.entries
-                    .asSequence()
-                    .filter { it.value.test(context) }
-                    .map { it.key }
-                    .map { permission: Permission ->
-                        if (checkPermission(player, permission, entity.blockPos)) {
-                            ActionResult.PASS
-                        } else {
-                            player.currentScreenHandler.syncState()
-                            player.sendMessage(permission.getNoPermissionMsg(player))
-                            ActionResult.FAIL
-                        }
-                    }.firstOrNull { result: ActionResult -> result != ActionResult.PASS } ?: ActionResult.PASS
-            }
-            return@register ActionResult.PASS
-        }*/
 
         SessionListener.register()
 
@@ -613,7 +597,7 @@ object ServerMain: DedicatedServerModInitializer {
                 }, ENCLOSURE_LIST_KEY)
         })
         ServerLifecycleEvents.SERVER_STARTED.register { server ->
-            backupManager = BackupManager()
+            //backupManager = BackupManager()
             playerSessions[CONSOLE] = Session(null)
             groups = server.overworld.persistentStateManager
                 .getOrCreate(

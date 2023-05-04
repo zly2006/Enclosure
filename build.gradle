@@ -69,7 +69,7 @@ dependencies {
     include(modImplementation("org.yaml:snakeyaml:1.33"))
 
     // SQLite. To store the data
-    include(implementation("org.xerial:sqlite-jdbc:3.41.0.0"))
+    compileOnly("org.xerial:sqlite-jdbc:3.41.0.0")
     // REI. To avoid the REI GUI overlap with the Enclosure GUI
     modCompileOnly "me.shedaniel:RoughlyEnoughItems-api-fabric:${project.rei_version}"
 

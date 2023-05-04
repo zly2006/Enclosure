@@ -132,7 +132,7 @@
   "enclosure.message.unexpected_optional_boolean": "接收到意外的值: 期望输入: true | false | none",
   "enclosure.message.unknown_user": "未知用户",
   "enclosure.message.user_not_found": "未找到对应用户",
-  "enclosure.message.warn_quit_items": "由于你没有扔出物品的权限，你的物品尚未保存。推出将会导致他们丢失。\n请尽快为这些物品腾出空间。",
+  "enclosure.message.warn_quit_items": "由于你没有扔出物品的权限，你的物品尚未保存。断开连接将会导致它们丢失。\n请尽快为这些物品腾出空间。",
   "enclosure.permission.admin": "管理员权限",
   "enclosure.permission.all": "给予该玩家全部权限",
   "enclosure.permission.allay": "领地内与悦灵交互的权限",

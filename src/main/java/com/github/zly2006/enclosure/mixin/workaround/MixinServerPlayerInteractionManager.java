@@ -1,4 +1,4 @@
-package com.github.zly2006.enclosure.mixin;
+package com.github.zly2006.enclosure.mixin.workaround;
 
 import com.github.zly2006.enclosure.access.MiningStatusAccess;
 import net.minecraft.server.network.ServerPlayerInteractionManager;

@@ -3,8 +3,8 @@
 [![](https://cf.way2muchnoise.eu/short_enclosure.svg)](https://www.curseforge.com/minecraft/mc-mods/enclosure)
 [![Modrinth Downloads](https://img.shields.io/badge/dynamic/json?color=1bd96a&label=Modrinth&query=downloads&suffix=%20Downloads&url=https://api.modrinth.com/v2/project/enclosure)](https://modrinth.com/mod/enclosure)
 
-This is a server-side mod that allows players to manage and protect their homes.
+Enclosure is a server-side mod that allows players to manage and protect their homes.
 
-This project is the open-source part of this mod.
+
 
 
