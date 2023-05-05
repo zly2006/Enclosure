@@ -20,6 +20,7 @@
     "MixinChorusFruitItem",
     "MixinEndCrystalEntity",
     "MixinEnderDragonEntity",
+    "MixinEnderPearl",
     "MixinExplosion",
     "MixinFallingBlockEntity",
     "MixinFarmlandBlock",
@@ -47,8 +48,6 @@
     "MixinSculkSpreadManagerCursor",
     "MixinSculkVeinBlock",
     "MixinServerPlayerEntity",
-    "workaround.MixinServerPlayerInteractionManager",
-    "workaround.MixinServerPlayNetworkHandler",
     "MixinStorageMinecartEntity",
     "MixinTadpoleEntity",
     "MixinTntMinecartEntity",
@@ -56,6 +55,10 @@
     "MixinUserCache",
     "MixinWitherEntity",
     "MixinWitherSkullBlock",
-    "MixinEnderPearl"
+    "workaround.MixinServerPlayerInteractionManager",
+    "workaround.MixinServerPlayNetworkHandler"
+  ],
+  "mixins": [
+    "MixinChestBlock"
   ]
 }

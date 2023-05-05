@@ -9,10 +9,7 @@ import net.minecraft.block.Blocks;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.mob.Monster;
-import net.minecraft.entity.passive.AllayEntity;
-import net.minecraft.entity.passive.IronGolemEntity;
-import net.minecraft.entity.passive.PassiveEntity;
-import net.minecraft.entity.passive.SnowGolemEntity;
+import net.minecraft.entity.passive.*;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.*;
@@ -144,19 +141,33 @@ public class Utils {
         if (world.isClient) {
             return true;
         }
-        EnclosureArea area = ServerMain.INSTANCE.getAllEnclosures((ServerWorld) world).getArea(pos);
-        if (area != null) {
-            area = area.areaOf(pos);
-        }
+        EnclosureArea area = ServerMain.INSTANCE.getSmallestEnclosure((ServerWorld) world, pos);
+        if (area == null) return true;
         if (source.getAttacker() instanceof ServerPlayerEntity attacker) {
-            if (area != null && !area.hasPerm(attacker, permission)) {
+            if (!area.hasPerm(attacker, permission)) {
                 attacker.sendMessage(permission.getNoPermissionMsg(attacker));
                 return false;
             }
         } else {
-            return area == null || area.hasPubPerm(permission);
+            return area.hasPubPerm(permission);
         }
         return true;
+    }
+
+    public static boolean commonOnDamage(DamageSource source, Entity entity) {
+        EnclosureArea area = ServerMain.INSTANCE.getSmallestEnclosure((ServerWorld) entity.world, entity.getBlockPos());
+        if (isAnimal(entity)) {
+            return commonOnDamage(source, entity.getBlockPos(), entity.world, Permission.ATTACK_ANIMAL);
+        }
+        else if (isMonster(entity)) {
+            return commonOnDamage(source, entity.getBlockPos(), entity.world, Permission.ATTACK_MONSTER);
+        }
+        else if (entity instanceof VillagerEntity) {
+            return commonOnDamage(source, entity.getBlockPos(), entity.world, Permission.ATTACK_VILLAGER);
+        }
+        else {
+            return commonOnDamage(source, entity.getBlockPos(), entity.world, Permission.ATTACK_ENTITY);
+        }
     }
 
     public static MutableText getDisplayNameByUUID(UUID uuid) {
