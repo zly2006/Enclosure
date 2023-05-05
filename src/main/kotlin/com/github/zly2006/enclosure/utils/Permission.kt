@@ -114,7 +114,7 @@ class Permission(
         @JvmField val CONTAINER = Permission("container", icon = Items.CHEST).apply(::register)
         @JvmField val DYE = Permission("dye", icon = Items.BLUE_DYE).apply(::register)
         @JvmField val PICK_BERRIES = Permission("pick_berries", icon = Items.SWEET_BERRIES).apply(::register)
-        @JvmField val DOOR = Permission("door", Target.Both, true, Items.OAK_DOOR).apply(::register)
+        @JvmField val DOOR = Permission("door", icon = Items.OAK_DOOR).apply(::register)
         @JvmField val DRAGON_EGG = Permission("dragon_egg", icon = Items.DRAGON_EGG).apply(::register)
         @JvmField val HONEY = Permission("honey", icon = Items.HONEY_BOTTLE).apply(::register)
         @JvmField val LEASH = Permission("leash", icon = Items.LEAD).apply(::register)
@@ -161,7 +161,7 @@ class Permission(
         @JvmField val CAULDRON = Permission("cauldron", icon = Items.CAULDRON).apply(::register)
         @JvmField val BREAK_TURTLE_EGG = Permission("break_turtle_egg", Target.Both, true, Items.TURTLE_EGG).apply(::register)
         @JvmField val ITEM_FRAME = Permission("item_frame", icon = Items.ITEM_FRAME).apply(::register)
-
+        @JvmField val PRIME_TNT = Permission("prime_tnt", icon = Items.TNT).apply(::register)
 
         fun getValue(name: String): Permission? {
             return PERMISSIONS[name]

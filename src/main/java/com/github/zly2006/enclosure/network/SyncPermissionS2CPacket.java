@@ -20,7 +20,9 @@ public class SyncPermissionS2CPacket implements ClientPlayNetworking.PlayChannel
         NbtCompound permission = buf.readNbt();
         if (client.currentScreen instanceof PermissionScreen screen) {
             if (screen.uuid.equals(uuid)) {
-                screen.syncPermission(permission);
+                if (permission != null) {
+                    screen.syncPermission(permission);
+                }
             }
         }
     }

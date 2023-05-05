@@ -1,8 +1,8 @@
 package com.github.zly2006.enclosure.client
 
 import com.github.zly2006.enclosure.command.ClientSession
+import com.github.zly2006.enclosure.command.border
 import com.mojang.blaze3d.systems.RenderSystem
-import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.render.*
@@ -16,7 +16,7 @@ import kotlin.math.min
 object EnclosureWorldRenderer {
     private const val DELTA = 0.001f
     fun register() {
-        WorldRenderEvents.BEFORE_BLOCK_OUTLINE.register a@{ context: WorldRenderContext, _ ->
+        WorldRenderEvents.BEFORE_BLOCK_OUTLINE.register a@{ context, _ ->
             val client = MinecraftClient.getInstance()
             if (client.options.hudHidden) return@a true
             val session = ClientMain.clientSession ?: return@a true
@@ -24,7 +24,7 @@ object EnclosureWorldRenderer {
             drawSessionOutline(context.matrixStack(), session, cameraPos, context.tickDelta(), context.consumers())
             true
         }
-        WorldRenderEvents.AFTER_TRANSLUCENT.register a@{ context: WorldRenderContext ->
+        WorldRenderEvents.AFTER_TRANSLUCENT.register a@{ context ->
             val client = MinecraftClient.getInstance()
             if (client.options.hudHidden) return@a
             val session = ClientMain.clientSession ?: return@a
@@ -43,12 +43,7 @@ object EnclosureWorldRenderer {
         provider: VertexConsumerProvider?
     ) {
         val linesBuffer = provider!!.getBuffer(RenderLayer.getLines())
-        val minX = (min(session.pos1.x, session.pos2.x) - cameraPos.getX()).toFloat()
-        val minY = (min(session.pos1.y, session.pos2.y) - cameraPos.getY()).toFloat()
-        val minZ = (min(session.pos1.z, session.pos2.z) - cameraPos.getZ()).toFloat()
-        val maxX = (max(session.pos1.x, session.pos2.x) + 1 - cameraPos.getX()).toFloat()
-        val maxY = (max(session.pos1.y, session.pos2.y) + 1 - cameraPos.getY()).toFloat()
-        val maxZ = (max(session.pos1.z, session.pos2.z) + 1 - cameraPos.getZ()).toFloat()
+        val (minX, minY, minZ, maxX, maxY, maxZ) = session.border(cameraPos.x.toFloat(), cameraPos.y.toFloat(), cameraPos.z.toFloat())
         val red = 1f
         val green = 1f
         val blue = 1f
@@ -201,3 +196,10 @@ object EnclosureWorldRenderer {
         }
     }
 }
+
+private operator fun <E> List<E>.component1(): E = this[0]
+private operator fun <E> List<E>.component2(): E = this[1]
+private operator fun <E> List<E>.component3(): E = this[2]
+private operator fun <E> List<E>.component4(): E = this[3]
+private operator fun <E> List<E>.component5(): E = this[4]
+private operator fun <E> List<E>.component6(): E = this[5]

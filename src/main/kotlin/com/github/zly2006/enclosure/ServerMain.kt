@@ -44,6 +44,7 @@ import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.item.*
 import net.minecraft.network.packet.s2c.play.EntityTrackerUpdateS2CPacket
 import net.minecraft.registry.RegistryKey
+import net.minecraft.registry.tag.BlockTags
 import net.minecraft.server.MinecraftServer
 import net.minecraft.server.command.CommandManager
 import net.minecraft.server.command.ServerCommandSource
@@ -249,12 +250,9 @@ object ServerMain: DedicatedServerModInitializer {
                 put(Permission.USE_JUKEBOX) { it.block === Blocks.JUKEBOX }
                 put(Permission.REDSTONE) {
                     it.block is ButtonBlock || it.block === Blocks.LEVER || it.block === Blocks.DAYLIGHT_DETECTOR
-                            || it.block == Blocks.REPEATER || it.block == Blocks.COMPARATOR
+                            || it.block === Blocks.REPEATER || it.block === Blocks.COMPARATOR || it.block === Blocks.REDSTONE_WIRE
                 }
-                put(Permission.STRIP_LOG) {
-                    (it.block === Blocks.ACACIA_LOG || it.block === Blocks.BIRCH_LOG || it.block === Blocks.OAK_LOG || it.block === Blocks.DARK_OAK_LOG || it.block === Blocks.JUNGLE_LOG || it.block === Blocks.MANGROVE_LOG || it.block === Blocks.SPRUCE_LOG) &&
-                            it.item is AxeItem
-                }
+                put(Permission.STRIP_LOG) { (it.state?.isIn(BlockTags.LOGS) ?: false) && it.item is AxeItem }
                 put(Permission.VEHICLE) { it.item is BoatItem || it.item is MinecartItem }
                 put(Permission.ALLAY) { it.entity is AllayEntity }
                 put(Permission.CAULDRON) { it.block is AbstractCauldronBlock }
@@ -276,14 +274,13 @@ object ServerMain: DedicatedServerModInitializer {
         world: ServerWorld,
         pos1: BlockPos,
         pos2: BlockPos,
-        permission: Permission?
+        permission: Permission
     ): Boolean {
-        val list = getAllEnclosures(world)
-        val from = list.getArea(pos1)
-        val to = list.getArea(pos2)
+        val from = getSmallestEnclosure(world, pos1)
+        val to = getSmallestEnclosure(world, pos2)
         if (from === to) return true
-        return (from?.areaOf(pos1)?.hasPubPerm(permission!!) == true) &&
-                (to?.areaOf(pos2)?.hasPubPerm(permission!!) == true)
+        return (from?.areaOf(pos1)?.hasPubPerm(permission) == true) &&
+                (to?.areaOf(pos2)?.hasPubPerm(permission) == true)
     }
 
     fun checkPermission(world: World, pos: BlockPos, player: PlayerEntity?, permission: Permission): Boolean {

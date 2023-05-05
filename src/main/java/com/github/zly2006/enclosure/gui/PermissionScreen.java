@@ -8,6 +8,7 @@ import net.minecraft.nbt.NbtCompound;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -87,7 +88,7 @@ public class PermissionScreen extends Screen {
         })));
     }
 
-    public void syncPermission(NbtCompound permission) {
+    public void syncPermission(@NotNull NbtCompound permission) {
         Map<String, Boolean> perms = new HashMap<>();
         for (String key : permission.getKeys()) {
             perms.put(key, permission.getBoolean(key));
