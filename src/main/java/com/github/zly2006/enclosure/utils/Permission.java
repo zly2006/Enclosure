@@ -134,7 +134,7 @@ public class Permission implements Serializable2Text {
 
     public static final Permission CAULDRON = new Permission("cauldron", Target.Both, false, Items.CAULDRON);
 
-    public static final Permission BREAK_TURTLE_EGG = new Permission("break_turtle_egg", Target.Enclosure, true, Items.TURTLE_EGG);
+    public static final Permission BREAK_TURTLE_EGG = new Permission("break_turtle_egg", Target.Both, true, Items.TURTLE_EGG);
 
     public static final Map<String, Permission> PERMISSIONS = new HashMap<>();
 

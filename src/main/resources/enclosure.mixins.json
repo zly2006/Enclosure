@@ -51,7 +51,6 @@
     "MixinServerPlayerEntity",
     "workaround.MixinServerPlayerInteractionManager",
     "workaround.MixinServerPlayNetworkHandler",
-    "MixinStepAndDestroyBlockGoal",
     "MixinStorageMinecartEntity",
     "MixinTadpoleEntity",
     "MixinTntMinecartEntity",
