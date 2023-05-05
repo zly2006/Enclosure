@@ -112,7 +112,7 @@ open class EnclosureArea : PersistentState, ReadOnlyEnclosureArea {
     }
 
     operator fun Map<String, Boolean>.get(perm: Permission): Boolean? {
-        return perm.getValue(this).orElse(null)
+        return perm.getValue(this)
     }
 
     operator fun MutableMap<String, Boolean>.set(perm: Permission, value: Boolean?) {

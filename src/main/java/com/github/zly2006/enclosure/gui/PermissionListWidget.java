@@ -13,7 +13,6 @@ import net.minecraft.client.gui.widget.ElementListWidget;
 import net.minecraft.client.gui.widget.TextFieldWidget;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
 import net.minecraft.text.Style;
 import net.minecraft.text.Text;
 import net.minecraft.text.TranslatableTextContent;
@@ -81,10 +80,10 @@ public class PermissionListWidget extends ElementListWidget<PermissionListWidget
                             : Text.translatable("enclosure.widget.false").setStyle(Style.EMPTY.withColor(Formatting.RED));
         }
         private Text value() {
-            return value(getValue().orElse(null));
+            return value(getValue());
         }
 
-        private Optional<Boolean> getValue() {
+        private @Nullable Boolean getValue() {
             return permission.getValue(area.getPermissionsMap().getOrDefault(uuid, Collections.emptyMap()));
         }
 
@@ -107,12 +106,8 @@ public class PermissionListWidget extends ElementListWidget<PermissionListWidget
             buttonWidget.render(matrices, mouseX, mouseY, tickDelta);
             client.textRenderer.draw(matrices, permission.getName(), x + 20, y + 3, 0xFFFFFF);
             client.textRenderer.draw(matrices, permission.getDescription(), x + 140, y + 3, 0x999999);
-            if (permission.getIcon() != null) {
-                client.getItemRenderer().renderInGui(matrices, new ItemStack(permission.getIcon()), x, y);
-            }
-            else {
-                client.getItemRenderer().renderInGui(matrices, new ItemStack(Items.STRUCTURE_VOID), x, y);
-            }
+            permission.getIcon();
+            client.getItemRenderer().renderInGui(matrices, new ItemStack(permission.getIcon()), x, y);
             if (buttonWidget.isHovered()) {
                 parent.renderTooltip(matrices, List.of(
                     Text.translatable("enclosure.widget.click.left").styled(style -> style.withColor(Formatting.GREEN)),
@@ -149,25 +144,25 @@ public class PermissionListWidget extends ElementListWidget<PermissionListWidget
                     return false;
                 }
                 else if (button == GLFW.GLFW_MOUSE_BUTTON_LEFT) {
-                    Boolean value = getValue().orElse(null);
+                    Boolean value = getValue();
                     if (value == null) setValue(true);
                     else setValue(null);
 
                     client.player.networkHandler.sendChatCommand("enclosure set " + fullName + " uuid " +
                         uuid.toString() + " " +
                         permission.getName() + " " +
-                        getValue().map(String::valueOf).orElse("none"));
+                        Optional.ofNullable(getValue()).map(String::valueOf).orElse("none"));
                     buttonWidget.setMessage(value());
                     return true;
                 }
                 else if (button == GLFW.GLFW_MOUSE_BUTTON_RIGHT) {
-                    Boolean value = getValue().orElse(null);
+                    Boolean value = getValue();
                     if (value == null) setValue(false);
                     else setValue(null);
                     client.player.networkHandler.sendChatCommand("enclosure set " + fullName + " uuid " +
                         uuid.toString() + " " +
                         permission.getName() + " " +
-                        getValue().map(String::valueOf).orElse("none"));
+                        Optional.ofNullable(getValue()).map(String::valueOf).orElse("none"));
                     buttonWidget.setMessage(value());
                     return true;
                 }

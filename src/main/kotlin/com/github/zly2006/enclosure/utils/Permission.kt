@@ -9,7 +9,6 @@ import net.minecraft.text.MutableText
 import net.minecraft.text.Style
 import net.minecraft.text.Text
 import net.minecraft.util.Formatting
-import java.util.*
 
 class Permission(
     val name: String,
@@ -26,17 +25,17 @@ class Permission(
     constructor(name: String, target: Target = Target.Both, defaultValue: Boolean = false, icon: Item):
             this(name, target, setOf<String>(name), defaultValue, icon)
 
-    fun getValue(map: Map<String, Boolean>): Optional<Boolean> {
+    fun getValue(map: Map<String, Boolean>): Boolean? {
         for (permission in permissions) {
             if (map.containsKey(permission)) {
                 if (!map[permission]!!) {
-                    return Optional.of(false)
+                    return false
                 }
             } else {
-                return Optional.empty()
+                return null
             }
         }
-        return Optional.of(true)
+        return true
     }
 
     fun setValue(map: MutableMap<String, Boolean>, value: Boolean?) {
@@ -55,7 +54,7 @@ class Permission(
                 .styled { style: Style -> style.withColor(Formatting.RED) })
     }
 
-    override fun serialize(settings: SerializationSettings, player: ServerPlayerEntity): MutableText {
+    override fun serialize(settings: SerializationSettings, player: ServerPlayerEntity?): MutableText {
         return when (settings) {
             SerializationSettings.Name -> Text.literal(name)
             SerializationSettings.Full -> Text.literal(name)

@@ -37,14 +37,14 @@ interface PermissionHolder : Serializable2Text {
     fun hasPerm(uuid: UUID, perm: Permission): Boolean {
         if (perm.target.fitPlayer() && permissionsMap.containsKey(uuid)) {
             val ob = perm.getValue(permissionsMap[uuid] ?: mapOf())
-            if (ob.isPresent) {
-                return ob.get()
+            if (ob != null) {
+                return ob
             }
         }
         if (perm.target.fitEnclosure() && permissionsMap.containsKey(CONSOLE)) {
             val ob = perm.getValue(permissionsMap[CONSOLE] ?: mapOf())
-            if (ob.isPresent) {
-                return ob.get()
+            if (ob != null) {
+                return ob
             }
         }
         return if (father != null && inheritPermission()) {
