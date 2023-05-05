@@ -155,7 +155,6 @@ public class Utils {
     }
 
     public static boolean commonOnDamage(DamageSource source, Entity entity) {
-        EnclosureArea area = ServerMain.INSTANCE.getSmallestEnclosure((ServerWorld) entity.world, entity.getBlockPos());
         if (isAnimal(entity)) {
             return commonOnDamage(source, entity.getBlockPos(), entity.world, Permission.ATTACK_ANIMAL);
         }

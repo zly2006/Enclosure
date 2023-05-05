@@ -56,9 +56,8 @@
     "MixinWitherEntity",
     "MixinWitherSkullBlock",
     "workaround.MixinServerPlayerInteractionManager",
-    "workaround.MixinServerPlayNetworkHandler"
-  ],
-  "mixins": [
-    "MixinChestBlock"
+    "workaround.MixinServerPlayNetworkHandler",
+    "MixinChestBlock",
+    "MixinFishingBobber"
   ]
 }
