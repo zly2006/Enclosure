@@ -249,6 +249,7 @@ object ServerMain: DedicatedServerModInitializer {
                 put(Permission.USE_JUKEBOX) { it.block === Blocks.JUKEBOX }
                 put(Permission.REDSTONE) {
                     it.block is ButtonBlock || it.block === Blocks.LEVER || it.block === Blocks.DAYLIGHT_DETECTOR
+                            || it.block == Blocks.REPEATER || it.block == Blocks.COMPARATOR
                 }
                 put(Permission.STRIP_LOG) {
                     (it.block === Blocks.ACACIA_LOG || it.block === Blocks.BIRCH_LOG || it.block === Blocks.OAK_LOG || it.block === Blocks.DARK_OAK_LOG || it.block === Blocks.JUNGLE_LOG || it.block === Blocks.MANGROVE_LOG || it.block === Blocks.SPRUCE_LOG) &&
