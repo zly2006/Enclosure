@@ -185,12 +185,4 @@ public class Utils {
     public static BlockPos toBlockPos(double g, double h, double j) {
         return new BlockPos((int) g, (int) h, (int) j);
     }
-
-    public static boolean mark4updateChecked(ServerWorld world, BlockPos pos) {
-        if (world.getWorldBorder().contains(pos) && pos.getY() >= world.getBottomY() && pos.getY() < world.getTopY()) {
-            world.getChunkManager().markForUpdate(pos);
-            return true;
-        }
-        return false;
-    }
 }

@@ -1,7 +1,9 @@
 package com.github.zly2006.enclosure.utils
 
+import net.minecraft.server.world.ServerWorld
 import net.minecraft.text.*
 import net.minecraft.util.Formatting
+import net.minecraft.util.math.BlockPos
 
 fun MutableText.hoverText(text: Text): MutableText {
     return this.styled { it.withHoverEvent(HoverEvent(HoverEvent.Action.SHOW_TEXT, text)) }
@@ -53,4 +55,12 @@ fun literalText(text: Any): MutableText {
         is String -> Text.literal(text)
         else -> Text.literal(text.toString())
     }
+}
+
+fun ServerWorld.mark4updateChecked(pos: BlockPos): Boolean {
+    if (worldBorder.contains(pos) && pos.y >= bottomY && pos.y < topY) {
+        chunkManager.markForUpdate(pos)
+        return true
+    }
+    return false
 }
