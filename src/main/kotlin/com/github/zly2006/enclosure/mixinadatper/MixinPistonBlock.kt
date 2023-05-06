@@ -2,6 +2,7 @@ package com.github.zly2006.enclosure.mixinadatper
 
 import com.github.zly2006.enclosure.ServerMain
 import com.github.zly2006.enclosure.utils.Permission
+import com.github.zly2006.enclosure.utils.mark4updateChecked
 import net.minecraft.block.piston.PistonHandler
 import net.minecraft.server.world.ServerWorld
 import net.minecraft.util.math.BlockPos
@@ -16,7 +17,6 @@ fun protectPiston(
     dir: Direction, // facing
     extend: Boolean,
     cir: CallbackInfoReturnable<Boolean?>,
-    newPos: BlockPos,
     pistonHandler: PistonHandler
 ) {
     var positions = pistonHandler.brokenBlocks + pistonHandler.movedBlocks + pistonPos
@@ -27,8 +27,7 @@ fun protectPiston(
         .distinct()
     val cancel = areas.size > 1 && areas.mapNotNull { it.getOrNull()?.hasPubPerm(Permission.PISTON)?.not() }.any { it }
     if (cancel) {
-        // this method will be called even the target pos is out of the world.
-        positions.forEach(world.chunkManager::markForUpdate)
+        positions.forEach(world::mark4updateChecked) // some position may be invalid
         cir.returnValue = false
     }
 }

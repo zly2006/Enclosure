@@ -950,48 +950,50 @@ fun register(dispatcher: CommandDispatcher<ServerCommandSource>): LiteralCommand
             }
         }
         literal("subzone") {
-            executes {
-                val name = StringArgumentType.getString(this, "name")
-                if (name.length > ServerMain.commonConfig.maxEnclosureNameLength) {
-                    error(TrT.of("enclosure.message.res_name_too_long"), this)
-                }
-                val session = sessionOf(source)
-                val list = ServerMain.getAllEnclosures(sessionOf(source).world)
-                val area: EnclosureArea = Enclosure(session, name)
-                val enclosure = list.areas.firstOrNull { res ->
-                    res is Enclosure && res.includesArea(area)
-                } as Enclosure? ?: error(TrT.of("enclosure.message.no_father_enclosure"), this)
-                if (enclosure.subEnclosures.areas.any { it.name.equals(name, ignoreCase = true) }) {
-                    error(TrT.of("enclosure.message.name_in_use"), this)
-                }
-                if (!enclosure.isOwner(source)) {
-                    error(TrT.of("enclosure.message.not_owner"), this)
-                }
-                val intersectArea = sessionOf(source).intersect(enclosure.subEnclosures)
-                if (intersectArea != null) {
-                    error(
-                        TrT.of("enclosure.message.intersected")
-                            .append(intersectArea.serialize(SerializationSettings.Name, source.player)), this
-                    )
-                }
-                val limits = ServerMain.limits
-                if (!source.hasPermissionLevel(4)) {
-                    checkSessionSize(session, this)
-                    val count = enclosure.subEnclosures.areas.size.toLong()
-                    if (count > limits.maxSubLands) {
+            argument("name", StringArgumentType.string()) {
+                executes {
+                    val name = StringArgumentType.getString(this, "name")
+                    if (name.length > ServerMain.commonConfig.maxEnclosureNameLength) {
+                        error(TrT.of("enclosure.message.res_name_too_long"), this)
+                    }
+                    val session = sessionOf(source)
+                    val list = ServerMain.getAllEnclosures(sessionOf(source).world)
+                    val area: EnclosureArea = Enclosure(session, name)
+                    val enclosure = list.areas.firstOrNull { res ->
+                        res is Enclosure && res.includesArea(area)
+                    } as Enclosure? ?: error(TrT.of("enclosure.message.no_father_enclosure"), this)
+                    if (enclosure.subEnclosures.areas.any { it.name.equals(name, ignoreCase = true) }) {
+                        error(TrT.of("enclosure.message.name_in_use"), this)
+                    }
+                    if (!enclosure.isOwner(source)) {
+                        error(TrT.of("enclosure.message.not_owner"), this)
+                    }
+                    val intersectArea = sessionOf(source).intersect(enclosure.subEnclosures)
+                    if (intersectArea != null) {
                         error(
-                            TrT.of("enclosure.message.scle").append(Text.literal(limits.maxSubLands.toString())),
-                            this
+                            TrT.of("enclosure.message.intersected")
+                                .append(intersectArea.serialize(SerializationSettings.Name, source.player)), this
                         )
                     }
+                    val limits = ServerMain.limits
+                    if (!source.hasPermissionLevel(4)) {
+                        checkSessionSize(session, this)
+                        val count = enclosure.subEnclosures.areas.size.toLong()
+                        if (count > limits.maxSubLands) {
+                            error(
+                                TrT.of("enclosure.message.scle").append(Text.literal(limits.maxSubLands.toString())),
+                                this
+                            )
+                        }
+                    }
+                    area.changeWorld(session.world)
+                    enclosure.addChild(area)
+                    source.sendMessage(
+                        TrT.of("enclosure.message.created")
+                            .append(area.serialize(SerializationSettings.Name, source.player))
+                    )
+                    LOGGER.info("Created subzone {} by {}", area.fullName, source.name)
                 }
-                area.changeWorld(session.world)
-                enclosure.addChild(area)
-                source.sendMessage(
-                    TrT.of("enclosure.message.created")
-                        .append(area.serialize(SerializationSettings.Name, source.player))
-                )
-                LOGGER.info("Created subzone {} by {}", area.fullName, source.name)
             }
         }
         run {

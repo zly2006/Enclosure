@@ -20,6 +20,7 @@ import net.minecraft.text.Style
 import net.minecraft.text.Text
 import net.minecraft.util.Formatting
 import net.minecraft.util.math.BlockPos
+import net.minecraft.util.math.Box
 import net.minecraft.util.math.Vec3d
 import net.minecraft.world.Heightmap
 import net.minecraft.world.PersistentState
@@ -444,6 +445,11 @@ open class EnclosureArea : PersistentState, ReadOnlyEnclosureArea {
         locked = false
         markDirty()
     }
+
+    fun toBox() = Box(
+        BlockPos(minX, minY, minZ),
+        BlockPos(maxX + 1, maxY + 1, maxZ + 1)
+    )
 }
 
 private fun Map<String, Boolean>?.toNbt(): NbtCompound {

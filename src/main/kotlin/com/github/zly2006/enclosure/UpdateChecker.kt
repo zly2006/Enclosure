@@ -1,7 +1,6 @@
 package com.github.zly2006.enclosure
 
 import com.google.gson.JsonArray
-import com.google.gson.JsonElement
 import net.fabricmc.loader.api.Version
 import net.fabricmc.loader.api.VersionParsingException
 import net.minecraft.server.network.ServerPlayerEntity
@@ -81,7 +80,7 @@ class UpdateChecker {
                     HttpRequest.newBuilder(URI("https://api.modrinth.com/v2/project/enclosure/version")).build(),
                     HttpResponse.BodyHandlers.ofString()
                 ).body(), JsonArray::class.java
-            ).map { obj: JsonElement -> obj.asJsonObject }
+            ).map { it.asJsonObject }
                 .map { v ->
                     VersionEntry(
                         versionId = v["id"].asString,
