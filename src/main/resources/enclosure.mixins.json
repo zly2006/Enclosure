@@ -1,11 +1,11 @@
 {
-  "required": true,
-  "minVersion": "0.8",
-  "package": "com.github.zly2006.enclosure.mixin",
   "compatibilityLevel": "JAVA_17",
   "injectors": {
     "defaultRequire": 1
   },
+  "minVersion": "0.8",
+  "package": "com.github.zly2006.enclosure.mixin",
+  "required": true,
   "server": [
     "MixinAbstractDecorationEntity",
     "MixinAbstractMinecartEntity",
@@ -16,6 +16,7 @@
     "MixinBowItem",
     "MixinBucketItem",
     "MixinCampfireBlock",
+    "MixinChestBlock",
     "MixinChestBoatEntity",
     "MixinChorusFruitItem",
     "MixinEndCrystalEntity",
@@ -25,6 +26,7 @@
     "MixinFallingBlockEntity",
     "MixinFarmlandBlock",
     "MixinFireBlock",
+    "MixinFishingBobber",
     "MixinFlowableFluid",
     "MixinHopperBlockEntity",
     "MixinItemEntity",
@@ -57,7 +59,6 @@
     "MixinWitherSkullBlock",
     "workaround.MixinServerPlayerInteractionManager",
     "workaround.MixinServerPlayNetworkHandler",
-    "MixinChestBlock",
-    "MixinFishingBobber"
+    "MixinCrossBowItem"
   ]
 }
