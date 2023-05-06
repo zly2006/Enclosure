@@ -6,3 +6,4 @@ accessible field net/minecraft/client/network/MultiplayerServerListPinger$1 sent
 extendable class net/minecraft/server/ServerMetadata
 accessible method net/minecraft/client/gui/screen/Screen remove (Lnet/minecraft/client/gui/Element;)V
 accessible field net/minecraft/entity/data/DataTracker entries Lit/unimi/dsi/fastutil/ints/Int2ObjectMap;
+accessible method net/minecraft/item/Item raycast (Lnet/minecraft/world/World;Lnet/minecraft/entity/player/PlayerEntity;Lnet/minecraft/world/RaycastContext$FluidHandling;)Lnet/minecraft/util/hit/BlockHitResult;

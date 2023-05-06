@@ -58,7 +58,7 @@ subprojects {
 }
 
 loom {
-    accessWidenerPath = file("src/main/resources/enclosure.server.accesswidener")
+    accessWidenerPath = file("src/main/resources/enclosure.accesswidener")
 }
 
 dependencies {

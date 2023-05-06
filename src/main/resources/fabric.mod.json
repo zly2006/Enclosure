@@ -42,7 +42,7 @@
     "enclosure.mixins.json",
     "client.mixins.json"
   ],
-  "accessWidener": "enclosure.server.accesswidener",
+  "accessWidener": "enclosure.accesswidener",
   "depends": {
     "fabricloader": ">=0.13.0",
     "fabric-api": "*",

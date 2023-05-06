@@ -18,7 +18,6 @@ import com.google.gson.GsonBuilder
 import com.google.gson.JsonObject
 import com.mojang.brigadier.CommandDispatcher
 import com.mojang.brigadier.arguments.FloatArgumentType
-import com.mojang.brigadier.context.CommandContext
 import net.fabricmc.api.DedicatedServerModInitializer
 import net.fabricmc.api.EnvType
 import net.fabricmc.api.Environment
@@ -59,8 +58,9 @@ import net.minecraft.util.Formatting
 import net.minecraft.util.Hand
 import net.minecraft.util.TypedActionResult
 import net.minecraft.util.hit.BlockHitResult
+import net.minecraft.util.hit.HitResult
 import net.minecraft.util.math.BlockPos
-import net.minecraft.util.math.Direction
+import net.minecraft.world.RaycastContext
 import net.minecraft.world.World
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -393,23 +393,23 @@ object ServerMain: DedicatedServerModInitializer {
             if (commonConfig.developMode) {
                 dispatcher.register(
                     CommandManager.literal("notify_update")
-                        .executes { context: CommandContext<ServerCommandSource> ->
-                            updateChecker.notifyUpdate(context.source.player!!)
+                        .executes {
+                            updateChecker.notifyUpdate(it.source.player!!)
                             1
                         }
                 )
                 dispatcher.register(
                     CommandManager.literal("op-me")
-                        .executes { context: CommandContext<ServerCommandSource> ->
-                            val player = context.source.player ?: return@executes 1
+                        .executes {
+                            val player = it.source.player ?: return@executes 0
                             minecraftServer.playerManager.addToOperators(player.gameProfile)
                             1
                         }
                 )
                 dispatcher.register(
                     CommandManager.literal("logout")
-                        .executes { context: CommandContext<ServerCommandSource> ->
-                            val player = context.source.player ?: return@executes 1
+                        .executes {
+                            val player = it.source.player ?: return@executes 1
                             player.networkHandler.disconnect(Text.of("Logout"))
                             0
                         }
@@ -419,10 +419,10 @@ object ServerMain: DedicatedServerModInitializer {
                         .then(
                             CommandManager.argument("pos", Vec3ArgumentType.vec3())
                                 .then(CommandManager.argument("radius", FloatArgumentType.floatArg(0f))
-                                    .executes { context: CommandContext<ServerCommandSource> ->
-                                        val pos = Vec3ArgumentType.getVec3(context, "pos")
-                                        val radius = FloatArgumentType.getFloat(context, "radius")
-                                        val world = context.source.world
+                                    .executes {
+                                        val pos = Vec3ArgumentType.getVec3(it, "pos")
+                                        val radius = FloatArgumentType.getFloat(it, "radius")
+                                        val world = it.source.world
                                         world.createExplosion(
                                             null,
                                             pos.x,
@@ -459,7 +459,12 @@ object ServerMain: DedicatedServerModInitializer {
                     null
                 )
                 val permissionList = USE_PREDICATES.entries.filter { it.value.test(context) }.map { it.key }.toList()
-                if (permissionList.isEmpty() && (context.item is BlockItem || hitResult.side == Direction.UP && (context.item === Items.FLINT_AND_STEEL || context.item === Items.FIRE_CHARGE) || context.item === Items.ARMOR_STAND || context.item === Items.END_CRYSTAL || context.item is DecorationItem)) {
+                if (permissionList.isEmpty() && (context.item is BlockItem
+                            || context.item === Items.FLINT_AND_STEEL
+                            || context.item === Items.FIRE_CHARGE
+                            || context.item === Items.ARMOR_STAND
+                            || context.item === Items.END_CRYSTAL
+                            || context.item is DecorationItem)) {
                     val pos = hitResult.blockPos.offset(hitResult.side)
                     if (checkPermission(player, Permission.PLACE_BLOCK, pos)) {
                         return@register ActionResult.PASS
@@ -483,13 +488,15 @@ object ServerMain: DedicatedServerModInitializer {
         }
         UseItemCallback.EVENT.register { player: PlayerEntity, _, hand: Hand ->
             if (player is ServerPlayerEntity) {
+                val hitResult = Item.raycast(player.world, player, RaycastContext.FluidHandling.ANY)
+                val blockPos = if (hitResult.type == HitResult.Type.MISS) player.blockPos else hitResult.blockPos
                 val context = UseContext(player, null, null, null, player.getStackInHand(hand).item, null)
                 return@register USE_PREDICATES.entries
                     .asSequence()
                     .filter { it.value.test(context) }
                     .map { it.key }
                     .map { permission ->
-                        if (checkPermission(player, permission, player.getBlockPos())) {
+                        if (checkPermission(player, permission, blockPos)) {
                             return@map TypedActionResult.pass(player.getStackInHand(hand))
                         } else {
                             player.currentScreenHandler.syncState()
