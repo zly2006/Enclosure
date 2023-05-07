@@ -1,23 +1,22 @@
 package com.github.zly2006.enclosure.client
 
 import com.github.zly2006.enclosure.command.ClientSession
-import com.github.zly2006.enclosure.command.border
-import com.github.zly2006.enclosure.utils.component6
 import com.mojang.blaze3d.systems.RenderSystem
+import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.render.*
 import net.minecraft.client.util.math.MatrixStack
 import net.minecraft.util.math.Vec3d
+import org.joml.Matrix3f
 import org.joml.Matrix4f
 import kotlin.math.max
 import kotlin.math.min
 
-
 object EnclosureWorldRenderer {
     private const val DELTA = 0.001f
     fun register() {
-        WorldRenderEvents.BEFORE_BLOCK_OUTLINE.register a@{ context, _ ->
+        WorldRenderEvents.BEFORE_BLOCK_OUTLINE.register a@{ context: WorldRenderContext, _ ->
             val client = MinecraftClient.getInstance()
             if (client.options.hudHidden) return@a true
             val session = ClientMain.clientSession ?: return@a true
@@ -25,7 +24,7 @@ object EnclosureWorldRenderer {
             drawSessionOutline(context.matrixStack(), session, cameraPos, context.tickDelta(), context.consumers())
             true
         }
-        WorldRenderEvents.AFTER_TRANSLUCENT.register a@{ context ->
+        WorldRenderEvents.AFTER_TRANSLUCENT.register a@{ context: WorldRenderContext ->
             val client = MinecraftClient.getInstance()
             if (client.options.hudHidden) return@a
             val session = ClientMain.clientSession ?: return@a
@@ -44,7 +43,12 @@ object EnclosureWorldRenderer {
         provider: VertexConsumerProvider?
     ) {
         val linesBuffer = provider!!.getBuffer(RenderLayer.getLines())
-        val (minX, minY, minZ, maxX, maxY, maxZ) = session.border(cameraPos.x.toFloat(), cameraPos.y.toFloat(), cameraPos.z.toFloat())
+        val minX = (min(session.pos1.x, session.pos2.x) - cameraPos.getX()).toFloat()
+        val minY = (min(session.pos1.y, session.pos2.y) - cameraPos.getY()).toFloat()
+        val minZ = (min(session.pos1.z, session.pos2.z) - cameraPos.getZ()).toFloat()
+        val maxX = (max(session.pos1.x, session.pos2.x) + 1 - cameraPos.getX()).toFloat()
+        val maxY = (max(session.pos1.y, session.pos2.y) + 1 - cameraPos.getY()).toFloat()
+        val maxZ = (max(session.pos1.z, session.pos2.z) + 1 - cameraPos.getZ()).toFloat()
         val red = 1f
         val green = 1f
         val blue = 1f
@@ -73,18 +77,18 @@ object EnclosureWorldRenderer {
             0.25f, 0.25f, 1f, alpha
         )
         // Render the outline of the box
-        renderLine(matrix4f, minX, minY, minZ, 0, maxX, red, 0f, 0f, alpha)
-        renderLine(matrix4f, minX, minY, maxZ, 0, maxX, red, 0f, 0f, alpha)
-        renderLine(matrix4f, minX, maxY, maxZ, 0, maxX, red, 0f, 0f, alpha)
-        renderLine(matrix4f, minX, maxY, minZ, 0, maxX, red, 0f, 0f, alpha)
-        renderLine(matrix4f, minX, minY, minZ, 1, maxY, 0f, green, 0f, alpha)
-        renderLine(matrix4f, minX, minY, maxZ, 1, maxY, 0f, green, 0f, alpha)
-        renderLine(matrix4f, maxX, minY, maxZ, 1, maxY, 0f, green, 0f, alpha)
-        renderLine(matrix4f, maxX, minY, minZ, 1, maxY, 0f, green, 0f, alpha)
-        renderLine(matrix4f, minX, minY, minZ, 2, maxZ, 0f, 0f, blue, alpha)
-        renderLine(matrix4f, minX, maxY, minZ, 2, maxZ, 0f, 0f, blue, alpha)
-        renderLine(matrix4f, maxX, maxY, minZ, 2, maxZ, 0f, 0f, blue, alpha)
-        renderLine(matrix4f, maxX, minY, minZ, 2, maxZ, 0f, 0f, blue, alpha)
+        renderLine(linesBuffer, matrix4f, matrix3f, minX, minY, minZ, 0, maxX, red, 0f, 0f, alpha)
+        renderLine(linesBuffer, matrix4f, matrix3f, minX, minY, maxZ, 0, maxX, red, 0f, 0f, alpha)
+        renderLine(linesBuffer, matrix4f, matrix3f, minX, maxY, maxZ, 0, maxX, red, 0f, 0f, alpha)
+        renderLine(linesBuffer, matrix4f, matrix3f, minX, maxY, minZ, 0, maxX, red, 0f, 0f, alpha)
+        renderLine(linesBuffer, matrix4f, matrix3f, minX, minY, minZ, 1, maxY, 0f, green, 0f, alpha)
+        renderLine(linesBuffer, matrix4f, matrix3f, minX, minY, maxZ, 1, maxY, 0f, green, 0f, alpha)
+        renderLine(linesBuffer, matrix4f, matrix3f, maxX, minY, maxZ, 1, maxY, 0f, green, 0f, alpha)
+        renderLine(linesBuffer, matrix4f, matrix3f, maxX, minY, minZ, 1, maxY, 0f, green, 0f, alpha)
+        renderLine(linesBuffer, matrix4f, matrix3f, minX, minY, minZ, 2, maxZ, 0f, 0f, blue, alpha)
+        renderLine(linesBuffer, matrix4f, matrix3f, minX, maxY, minZ, 2, maxZ, 0f, 0f, blue, alpha)
+        renderLine(linesBuffer, matrix4f, matrix3f, maxX, maxY, minZ, 2, maxZ, 0f, 0f, blue, alpha)
+        renderLine(linesBuffer, matrix4f, matrix3f, maxX, minY, minZ, 2, maxZ, 0f, 0f, blue, alpha)
     }
 
     private fun drawSessionFaces(matrices: MatrixStack, session: ClientSession, cameraPos: Vec3d, delta: Float) {
@@ -136,28 +140,64 @@ object EnclosureWorldRenderer {
      * @param alpha 0-1
      */
     private fun renderLine(
-        matrix4f: Matrix4f, x1: Float, y1: Float,
-        z1: Float, way: Int, to: Float,
-        red: Float, green: Float,
-        blue: Float, alpha: Float
+        linesBuffer: VertexConsumer, matrix4f: Matrix4f, matrix3f: Matrix3f,
+        x1: Float, y1: Float, z1: Float,
+        way: Int, to: Float,
+        red: Float, green: Float, blue: Float, alpha: Float
     ) {
-        val tessellator = Tessellator.getInstance()
-        val bufferbuilder = tessellator.buffer
-        bufferbuilder.begin(VertexFormat.DrawMode.LINES, VertexFormats.POSITION_COLOR)
+        if (x1 * x1 + y1 * y1 + z1 * z1 > 256 * 56) return
+        var min: Float
+        val max: Float
         when (way) {
             0 -> {
-                bufferbuilder.vertex(matrix4f, x1, y1, z1).color(red, green, blue, alpha).next()
-                bufferbuilder.vertex(matrix4f, to, y1, z1).color(red, green, blue, alpha).next()
+                min = x1
+                max = to
+                while (min < max - 64) {
+                    linesBuffer.vertex(matrix4f, min, y1, z1).color(red, green, blue, alpha)
+                        .normal(matrix3f, 1f, 0f, 0f).next()
+                    linesBuffer.vertex(matrix4f, min + 64, y1, z1).color(red, green, blue, alpha)
+                        .normal(matrix3f, 1f, 0f, 0f).next()
+                    min += 64f
+                }
+                linesBuffer.vertex(matrix4f, min, y1, z1).color(red, green, blue, alpha).normal(matrix3f, 1f, 0f, 0f)
+                    .next()
+                linesBuffer.vertex(matrix4f, max, y1, z1).color(red, green, blue, alpha).normal(matrix3f, 1f, 0f, 0f)
+                    .next()
             }
+
             1 -> {
-                bufferbuilder.vertex(matrix4f, x1, y1, z1).color(red, green, blue, alpha).next()
-                bufferbuilder.vertex(matrix4f, x1, to, z1).color(red, green, blue, alpha).next()
+                min = y1
+                max = to
+                while (min < max - 64) {
+                    linesBuffer.vertex(matrix4f, x1, min, z1).color(red, green, blue, alpha)
+                        .normal(matrix3f, 0f, 1f, 0f).next()
+                    linesBuffer.vertex(matrix4f, x1, min + 64, z1).color(red, green, blue, alpha)
+                        .normal(matrix3f, 0f, 1f, 0f).next()
+                    min += 64f
+                }
+                linesBuffer.vertex(matrix4f, x1, min, z1).color(red, green, blue, alpha).normal(matrix3f, 0f, 1f, 0f)
+                    .next()
+                linesBuffer.vertex(matrix4f, x1, max, z1).color(red, green, blue, alpha).normal(matrix3f, 0f, 1f, 0f)
+                    .next()
             }
+
             2 -> {
-                bufferbuilder.vertex(matrix4f, x1, y1, z1).color(red, green, blue, alpha).next()
-                bufferbuilder.vertex(matrix4f, x1, y1, to).color(red, green, blue, alpha).next()
+                min = z1
+                max = to
+                while (min < max - 64) {
+                    linesBuffer.vertex(matrix4f, x1, y1, min).color(red, green, blue, alpha)
+                        .normal(matrix3f, 0f, 0f, 1f).next()
+                    linesBuffer.vertex(matrix4f, x1, y1, min + 64).color(red, green, blue, alpha)
+                        .normal(matrix3f, 0f, 0f, 1f).next()
+                    min += 64f
+                }
+                linesBuffer.vertex(matrix4f, x1, y1, min).color(red, green, blue, alpha).normal(matrix3f, 0f, 0f, 1f)
+                    .next()
+                linesBuffer.vertex(matrix4f, x1, y1, max).color(red, green, blue, alpha).normal(matrix3f, 0f, 0f, 1f)
+                    .next()
             }
+
+            else -> throw IllegalStateException("Unexpected value: $way")
         }
-        tessellator.draw()
     }
 }
