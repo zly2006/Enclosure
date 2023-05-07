@@ -164,6 +164,7 @@
   "enclosure.permission.glowing": "Ensure that all players inside the enclosure glowing",
   "enclosure.permission.honey": "Allows to collect honey / honeycomb",
   "enclosure.permission.horse": "Allows to ride horse, donkey, pig, etc",
+  "enclosure.permission.item_frame": "Allows to interact with item frames",
   "enclosure.permission.leash": "Allows to use lead",
   "enclosure.permission.move": "Allows to move",
   "enclosure.permission.nametag": "Allows to use name tag",

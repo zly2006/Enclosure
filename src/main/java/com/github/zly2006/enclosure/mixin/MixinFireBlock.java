@@ -8,6 +8,7 @@ import net.fabricmc.api.Environment;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.FireBlock;
+import net.minecraft.block.TntBlock;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
@@ -65,5 +66,14 @@ public class MixinFireBlock {
     private boolean redirectSetter(World instance, BlockPos pos, boolean move) {
         remove(instance, pos, move);
         return true;
+    }
+
+    @Redirect(method = "trySpreadingFire", at = @At(value = "INVOKE", target = "Lnet/minecraft/block/TntBlock;primeTnt(Lnet/minecraft/world/World;Lnet/minecraft/util/math/BlockPos;)V"))
+    private void redirectSetter(World instance, BlockPos pos) {
+        if (instance.isClient) return;
+        EnclosureArea area = ServerMain.INSTANCE.getSmallestEnclosure((ServerWorld) instance, pos);
+        if (area == null || area.hasPubPerm(Permission.FIRE_SPREADING)) {
+            TntBlock.primeTnt(instance, pos);
+        }  // 不允许火点燃TNT
     }
 }

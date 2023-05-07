@@ -164,6 +164,7 @@
   "enclosure.permission.glowing": "领地内玩家是否保持发光",
   "enclosure.permission.honey": "领地内采集蜂蜜/蜜脾权限",
   "enclosure.permission.horse": "领地内骑马/驴等权限",
+  "enclosure.permission.item_frame": "领地内物品展示框交互权限",
   "enclosure.permission.leash": "领地内拴绳使用权限",
   "enclosure.permission.move": "领地内移动权限",
   "enclosure.permission.nametag": "领地内命名牌使用权限",
