@@ -74,7 +74,7 @@ public class AboutScreen extends Screen {
     }
 
     private void drawTextAtCenter(MatrixStack matrices, Text text, int center, int y) {
-        // draw text at center
+        // draw text at the center
         textRenderer.draw(matrices, text, center - textRenderer.getWidth(text) / 2.0f, y, 0xffffff);
     }
 }

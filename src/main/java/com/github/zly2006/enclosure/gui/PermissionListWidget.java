@@ -173,7 +173,7 @@ public class PermissionListWidget extends ElementListWidget<PermissionListWidget
 
     @Environment(EnvType.CLIENT)
     public class SearchEntry extends Entry {
-        TextFieldWidget searchWidget;
+        final TextFieldWidget searchWidget;
 
         public SearchEntry() {
             searchWidget = new TextFieldWidget(client.textRenderer, 0, 0, 100, 16, Text.of("search"));

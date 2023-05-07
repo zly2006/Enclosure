@@ -30,6 +30,7 @@
     "MixinFishingBobber",
     "MixinFlowableFluid",
     "MixinHopperBlockEntity",
+    "MixinHopperMinecartEntity",
     "MixinItemEntity",
     "MixinItemFrameEntity",
     "MixinLanguage",
@@ -53,6 +54,7 @@
     "MixinServerPlayerEntity",
     "MixinStorageMinecartEntity",
     "MixinTadpoleEntity",
+    "MixinTntBlock",
     "MixinTntMinecartEntity",
     "MixinTurtleEggBlock",
     "MixinUserCache",
@@ -60,6 +62,6 @@
     "MixinWitherSkullBlock",
     "workaround.MixinServerPlayerInteractionManager",
     "workaround.MixinServerPlayNetworkHandler",
-    "MixinHopperMinecartEntity"
+    "MixinCreeperEntity"
   ]
 }

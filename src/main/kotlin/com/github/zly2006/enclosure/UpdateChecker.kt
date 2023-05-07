@@ -73,8 +73,6 @@ class UpdateChecker {
         }
         try {
             val httpClient = HttpClient.newHttpClient()
-            // Only check release version if not in develop mode
-            // fit for this minecraft version
             val versions = GSON.fromJson(
                 httpClient.send(
                     HttpRequest.newBuilder(URI("https://api.modrinth.com/v2/project/enclosure/version")).build(),
@@ -93,7 +91,7 @@ class UpdateChecker {
                 }
             val filteredVersions = versions.filter {
                 if (!ServerMain.commonConfig.developMode) {
-                    // Only check release version if not in develop mode
+                    // Only check release versions if not in development mode
                     if (it.versionType != VersionEntry.VersionType.RELEASE) {
                         return@filter false
                     }
@@ -108,7 +106,7 @@ class UpdateChecker {
             val latest = versions
                 .filter {
                     if (!ServerMain.commonConfig.developMode) {
-                        // Only check release version if not in develop mode
+                        // Only check release versions if not in development mode
                         if (it.versionType != VersionEntry.VersionType.RELEASE) {
                             return@filter false
                         }

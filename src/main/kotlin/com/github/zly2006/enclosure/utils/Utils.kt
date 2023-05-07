@@ -79,3 +79,11 @@ fun Box.contains(box: Box) =
 fun isCrossBorderRestricted(entity: Entity): Boolean {
     return entity is HopperMinecartEntity
 }
+
+operator fun <E> List<E>.component1(): E = this[0]
+operator fun <E> List<E>.component2(): E = this[1]
+operator fun <E> List<E>.component3(): E = this[2]
+operator fun <E> List<E>.component4(): E = this[3]
+operator fun <E> List<E>.component5(): E = this[4]
+operator fun <E> List<E>.component6(): E = this[5]
+

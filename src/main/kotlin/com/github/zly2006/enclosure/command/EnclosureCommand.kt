@@ -37,8 +37,6 @@ import net.minecraft.util.math.BlockPos
 import net.minecraft.util.math.Direction
 import java.util.*
 import java.util.function.Consumer
-import kotlin.math.max
-import kotlin.math.min
 import kotlin.properties.Delegates
 import kotlin.properties.ReadWriteProperty
 
@@ -332,16 +330,6 @@ private fun createEnclosure(context: CommandContext<ServerCommandSource>) {
     LOGGER.info(context.source.name + " created enclosure " + enclosure.name)
 }
 
-private fun Session.ordered(action: Session.(Int, Int, Int, Int, Int, Int)-> Unit) {
-    val x1 = min(pos1.x, pos2.x)
-    val y1 = min(pos1.y, pos2.y)
-    val z1 = min(pos1.z, pos2.z)
-    val x2 = max(pos1.x, pos2.x)
-    val y2 = max(pos1.y, pos2.y)
-    val z2 = max(pos1.z, pos2.z)
-    action(x1, y1, z1, x2, y2, z2)
-}
-
 private fun getOfflineUUID(context: CommandContext<ServerCommandSource>): UUID {
     return Utils.getUUIDByName(StringArgumentType.getString(context, "player"))
         ?: error(TrT.of("enclosure.message.player_not_found"), context)
@@ -605,14 +593,15 @@ fun register(dispatcher: CommandDispatcher<ServerCommandSource>): LiteralCommand
                             val session = sessionOf(source)
                             session.world = source.world
                             session.action(pos)
+                            session.enable()
                             source.sendMessage(TrT.of("enclosure.message.$name", pos.x, pos.y, pos.z))
                             session.trySync()
                         }
                     }
                 }
             }
-            setPos("pos1") { pos1 = it; enable() }
-            setPos("pos2") { pos2 = it; enable() }
+            setPos("pos1") { pos1 = it }
+            setPos("pos2") { pos2 = it }
             literal("world") {
                 argument("world", DimensionArgumentType.dimension()) {
                     executes {
@@ -699,13 +688,13 @@ fun register(dispatcher: CommandDispatcher<ServerCommandSource>): LiteralCommand
             literal("max_square") {
                 executes {
                     val limits = ServerMain.limits
-                    sessionOf(source).ordered { x1, y1, z1, x2, y2, z2 ->
-                        val expandX = (limits.maxXRange - x2 + x1 - 1) / 2
-                        val expandZ = (limits.maxZRange - z2 + z1 - 1) / 2
-                        pos1 = BlockPos(x1 - expandX, y1, z1 - expandZ)
-                        pos2 = BlockPos(x2 + expandX, y2, z2 + expandZ)
-                        trySync()
-                    }
+                    val session = sessionOf(source)
+                    val (x1, y1, z1, x2, y2, z2) = session.ordered()
+                    val expandX = (limits.maxXRange - x2 + x1 - 1) / 2
+                    val expandZ = (limits.maxZRange - z2 + z1 - 1) / 2
+                    session.pos1 = BlockPos(x1 - expandX, y1, z1 - expandZ)
+                    session.pos2 = BlockPos(x2 + expandX, y2, z2 + expandZ)
+                    session.trySync()
                 }
             }
             literal("land") {
@@ -733,12 +722,7 @@ fun register(dispatcher: CommandDispatcher<ServerCommandSource>): LiteralCommand
                             error(TrT.of("enclosure.message.sub_enclosure_outside", it.fullName), this)
                         }
                     }
-                    val minX = min(session.pos1.x, session.pos2.x)
-                    val minY = min(session.pos1.y, session.pos2.y)
-                    val minZ = min(session.pos1.z, session.pos2.z)
-                    val maxX = max(session.pos1.x, session.pos2.x)
-                    val maxY = max(session.pos1.y, session.pos2.y)
-                    val maxZ = max(session.pos1.z, session.pos2.z)
+                    val (minX, minY, minZ, maxX, maxY, maxZ) = session.ordered()
                     area.minX = minX
                     area.minY = minY
                     area.minZ = minZ

@@ -115,6 +115,6 @@ publishing {
     }
 }
 
-task 'rebuild' {
+tasks.register('rebuild') {
     dependsOn 'clean', 'remapJar'
 }
