@@ -162,6 +162,7 @@ class Permission(
         @JvmField val BREAK_TURTLE_EGG = Permission("break_turtle_egg", Target.Both, true, Items.TURTLE_EGG).apply(::register)
         @JvmField val ITEM_FRAME = Permission("item_frame", icon = Items.ITEM_FRAME).apply(::register)
         @JvmField val PRIME_TNT = Permission("prime_tnt", icon = Items.TNT).apply(::register)
+        @JvmField val EDIT_SIGN = Permission("edit_sign", icon = Items.OAK_SIGN).apply(::register)
 
         fun getValue(name: String): Permission? {
             return PERMISSIONS[name]

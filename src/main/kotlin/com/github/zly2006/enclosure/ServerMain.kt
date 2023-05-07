@@ -233,7 +233,7 @@ object ServerMain: DedicatedServerModInitializer {
                 put(Permission.DYE) {
                     when (it.item) {
                         is DyeItem -> it.entity is SheepEntity || it.block is AbstractSignBlock
-                        Items.INK_SAC, Items.GLOW_INK_SAC -> it.block is AbstractSignBlock
+                        Items.INK_SAC, Items.GLOW_INK_SAC, Items.HONEYCOMB -> it.block is AbstractSignBlock
                         else -> false
                     }
                 }
