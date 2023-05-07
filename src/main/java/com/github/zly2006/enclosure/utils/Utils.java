@@ -81,7 +81,7 @@ public class Utils {
         int airCount = 0;
         for (int y = startY; y >= world.getBottomY(); y--) {
             BlockState state = world.getBlockState(new BlockPos(x, y, z));
-            if (state.getMaterial().blocksMovement()) {
+            if (state.isFullCube(world, new BlockPos(x, y, z))) {
                 if (state.isOf(Blocks.BEDROCK)) {
                     secondary = y;
                 }
@@ -156,16 +156,16 @@ public class Utils {
 
     public static boolean commonOnDamage(DamageSource source, Entity entity) {
         if (isAnimal(entity)) {
-            return commonOnDamage(source, entity.getBlockPos(), entity.world, Permission.ATTACK_ANIMAL);
+            return commonOnDamage(source, entity.getBlockPos(), entity.getWorld(), Permission.ATTACK_ANIMAL);
         }
         else if (isMonster(entity)) {
-            return commonOnDamage(source, entity.getBlockPos(), entity.world, Permission.ATTACK_MONSTER);
+            return commonOnDamage(source, entity.getBlockPos(), entity.getWorld(), Permission.ATTACK_MONSTER);
         }
         else if (entity instanceof VillagerEntity) {
-            return commonOnDamage(source, entity.getBlockPos(), entity.world, Permission.ATTACK_VILLAGER);
+            return commonOnDamage(source, entity.getBlockPos(), entity.getWorld(), Permission.ATTACK_VILLAGER);
         }
         else {
-            return commonOnDamage(source, entity.getBlockPos(), entity.world, Permission.ATTACK_ENTITY);
+            return commonOnDamage(source, entity.getBlockPos(), entity.getWorld(), Permission.ATTACK_ENTITY);
         }
     }
 

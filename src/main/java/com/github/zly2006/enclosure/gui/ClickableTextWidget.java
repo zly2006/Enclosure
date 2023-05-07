@@ -2,12 +2,13 @@ package com.github.zly2006.enclosure.gui;
 
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
+import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.Drawable;
 import net.minecraft.client.gui.Element;
 import net.minecraft.client.gui.Selectable;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder;
-import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.client.gui.tooltip.HoveredTooltipPositioner;
 import net.minecraft.text.OrderedText;
 import net.minecraft.text.Text;
 
@@ -85,12 +86,12 @@ public class ClickableTextWidget implements Element, Drawable, Selectable {
     }
 
     @Override
-    public void render(MatrixStack matrices, int mouseX, int mouseY, float delta) {
+    public void render(DrawContext context, int mouseX, int mouseY, float delta) {
         if (mouseX >= x && mouseX <= x + renderedWidth) {
             if (mouseY >= y && mouseY <= y + height) {
                 hovered = true;
                 if (hover != null) {
-                    parent.renderOrderedTooltip(matrices, textRenderer.wrapLines(hover, Math.max(200, parent.width / 2)), mouseX, mouseY);
+                    context.drawTooltip(textRenderer, textRenderer.wrapLines(hover, Math.max(200, parent.width / 2)), HoveredTooltipPositioner.INSTANCE, mouseX, mouseY);
                 }
             }
         }
@@ -105,7 +106,7 @@ public class ClickableTextWidget implements Element, Drawable, Selectable {
             renderedWidth = width;
         }
         for (OrderedText orderedText : orderedTexts) {
-            textRenderer.draw(matrices, orderedText, x, y + height, 0xffffff);
+            context.drawText(textRenderer, orderedText, x, y + height, 0xffffff, false);
             height += textRenderer.fontHeight + 1;
         }
     }

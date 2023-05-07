@@ -64,8 +64,6 @@ public abstract class MixinServerPlayerEntity extends PlayerEntity implements Pl
 
     @Shadow public abstract void sendMessage(Text message);
 
-    @Shadow public abstract ServerWorld getWorld();
-
     @Shadow public abstract void sendMessage(Text message, boolean overlay);
 
     @Shadow @Final public MinecraftServer server;
@@ -78,8 +76,8 @@ public abstract class MixinServerPlayerEntity extends PlayerEntity implements Pl
     private void protectPVP(DamageSource source, float amount, CallbackInfoReturnable<Boolean> cir) {
         if (source.getAttacker() instanceof ServerPlayerEntity attacker) {
             //pvp
-            EnclosureArea area = ServerMain.INSTANCE.getAllEnclosures(this.getWorld()).getArea(getBlockPos());
-            EnclosureArea attackerArea = ServerMain.INSTANCE.getAllEnclosures(attacker.getWorld()).getArea(attacker.getBlockPos());
+            EnclosureArea area = ServerMain.INSTANCE.getAllEnclosures((ServerWorld) getWorld()).getArea(getBlockPos());
+            EnclosureArea attackerArea = ServerMain.INSTANCE.getAllEnclosures((ServerWorld) attacker.getWorld()).getArea(attacker.getBlockPos());
             if (area != null && !area.areaOf(getBlockPos()).hasPubPerm(Permission.PVP)) {
                 cir.setReturnValue(false);
             }
@@ -93,7 +91,7 @@ public abstract class MixinServerPlayerEntity extends PlayerEntity implements Pl
 
     @Inject(method = "dropItem", at = @At("HEAD"), cancellable = true)
     private void protectDropItem(ItemStack stack, boolean throwRandomly, boolean retainOwnership, CallbackInfoReturnable<ItemEntity> cir) {
-        EnclosureArea area = ServerMain.INSTANCE.getAllEnclosures(getWorld()).getArea(getBlockPos());
+        EnclosureArea area = ServerMain.INSTANCE.getAllEnclosures((ServerWorld) getWorld()).getArea(getBlockPos());
         if (area == null) {
             return;
         }
@@ -163,7 +161,7 @@ public abstract class MixinServerPlayerEntity extends PlayerEntity implements Pl
         }
         if (server.getTicks() % 10 == 0) {
             ServerPlayerEntity player = (ServerPlayerEntity) (Object) this;
-            EnclosureArea area = ServerMain.INSTANCE.getAllEnclosures(getWorld()).getArea(getBlockPos());
+            EnclosureArea area = ServerMain.INSTANCE.getAllEnclosures((ServerWorld) getWorld()).getArea(getBlockPos());
             if (area != null) {
                 area = area.areaOf(getBlockPos());
             }
@@ -193,7 +191,7 @@ public abstract class MixinServerPlayerEntity extends PlayerEntity implements Pl
             }
             lastArea = area;
             lastPos = player.getPos();
-            lastWorld = player.getWorld();
+            lastWorld = (ServerWorld) player.getWorld();
         }
     }
 

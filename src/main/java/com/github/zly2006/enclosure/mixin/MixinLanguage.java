@@ -13,8 +13,8 @@ import java.util.function.BiConsumer;
 
 @Mixin(Language.class)
 public class MixinLanguage {
-    @Inject(method = "create", locals = LocalCapture.CAPTURE_FAILHARD, at = @At(value = "INVOKE", target = "Ljava/lang/Class;getResourceAsStream(Ljava/lang/String;)Ljava/io/InputStream;"))
-    private static void create(CallbackInfoReturnable<Language> cir, ImmutableMap.Builder<String, String> builder, BiConsumer<String, String> biConsumer, String string) {
+    @Inject(method = "create", locals = LocalCapture.CAPTURE_FAILHARD, at = @At(value = "INVOKE", target = "Lcom/google/common/collect/ImmutableMap$Builder;build()Lcom/google/common/collect/ImmutableMap;"))
+    private static void create(CallbackInfoReturnable<Language> cir, ImmutableMap.Builder<String, String> builder, BiConsumer<?, ?> biConsumer) {
         if (ServerMain.INSTANCE.getCommonConfig().injectServerLanguage) {
             ServerMain.INSTANCE.getTranslation().entrySet().forEach(entry ->
                 builder.put(entry.getKey(), entry.getValue().getAsString()));

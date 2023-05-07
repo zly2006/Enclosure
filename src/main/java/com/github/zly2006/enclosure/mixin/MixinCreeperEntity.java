@@ -25,7 +25,7 @@ public class MixinCreeperEntity extends HostileEntity {
 
     @Inject(method = "interactMob", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/mob/CreeperEntity;ignite()V"), cancellable = true)
     private void onUse(PlayerEntity player, Hand hand, CallbackInfoReturnable<ActionResult> cir) {
-        EnclosureArea area = ServerMain.INSTANCE.getSmallestEnclosure((ServerWorld) world, getBlockPos());
+        EnclosureArea area = ServerMain.INSTANCE.getSmallestEnclosure((ServerWorld) getWorld(), getBlockPos());
         if (area != null && !area.hasPerm((ServerPlayerEntity) player, Permission.PRIME_TNT)) {
             player.sendMessage(Permission.PRIME_TNT.getNoPermissionMsg(player));
             cir.setReturnValue(ActionResult.FAIL);

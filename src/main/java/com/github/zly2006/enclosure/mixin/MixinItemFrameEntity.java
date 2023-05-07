@@ -10,6 +10,7 @@ import net.minecraft.entity.decoration.AbstractDecorationEntity;
 import net.minecraft.entity.decoration.ItemFrameEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
 import net.minecraft.world.World;
@@ -27,7 +28,7 @@ public abstract class MixinItemFrameEntity extends AbstractDecorationEntity {
     @Inject(method = "interact", at = @At("HEAD"), cancellable = true)
     private void onUse(PlayerEntity player, Hand hand, CallbackInfoReturnable<ActionResult> cir) {
         if (player instanceof ServerPlayerEntity serverPlayer) {
-            EnclosureArea area = ServerMain.INSTANCE.getSmallestEnclosure(serverPlayer.getWorld(), getBlockPos());
+            EnclosureArea area = ServerMain.INSTANCE.getSmallestEnclosure((ServerWorld) serverPlayer.getWorld(), getBlockPos());
             if (area != null && !area.areaOf(getBlockPos()).hasPerm(serverPlayer, Permission.ITEM_FRAME)) {
                 player.sendMessage(Permission.ITEM_FRAME.getNoPermissionMsg(serverPlayer));
                 cir.setReturnValue(ActionResult.FAIL);

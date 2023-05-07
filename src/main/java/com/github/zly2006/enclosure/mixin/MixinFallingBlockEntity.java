@@ -35,14 +35,14 @@ public abstract class MixinFallingBlockEntity extends Entity {
 
     @Inject(at = @At(value = "INVOKE", target = "Lnet/minecraft/world/World;setBlockState(Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/BlockState;I)Z"), method = "tick", cancellable = true)
     private void protectFallingBlocks(CallbackInfo ci) {
-        if (world.isClient) {
+        if (getWorld().isClient) {
             return;
         }
-        if (ServerMain.INSTANCE.getAllEnclosures((ServerWorld) world).getArea(getBlockPos()) == null) {
+        if (ServerMain.INSTANCE.getAllEnclosures((ServerWorld) getWorld()).getArea(getBlockPos()) == null) {
             // not in any residence, do nothing
             return;
         }
-        if (!ServerMain.INSTANCE.checkPermissionInDifferentEnclosure((ServerWorld) world, getFallingBlockPos(), getBlockPos(), Permission.FALLING_BLOCK)) {
+        if (!ServerMain.INSTANCE.checkPermissionInDifferentEnclosure((ServerWorld) getWorld(), getFallingBlockPos(), getBlockPos(), Permission.FALLING_BLOCK)) {
             discard();
             ci.cancel();
         }

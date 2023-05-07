@@ -29,11 +29,11 @@ public class MixinEnderDragonEntity extends MobEntity {
         if (instance.isClient) {
             return false;
         }
-        EnclosureList list = ServerMain.INSTANCE.getAllEnclosures((ServerWorld) world);
+        EnclosureList list = ServerMain.INSTANCE.getAllEnclosures((ServerWorld) getWorld());
         EnclosureArea a = list.getArea(pos);
         if (a != null && !a.areaOf(pos).hasPubPerm(Permission.DRAGON_DESTROY)) {
             return true;
         }
-        return this.world.removeBlock(pos, false);
+        return this.getWorld().removeBlock(pos, false);
     }
 }

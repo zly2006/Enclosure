@@ -24,7 +24,7 @@ class Session(
     player: ServerPlayerEntity?
 ): ClientSession() {
     var owner = player?.uuid ?: CONSOLE
-    var world: ServerWorld = player?.getWorld() ?: minecraftServer.overworld
+    var world: ServerWorld = player?.world as? ServerWorld ?: minecraftServer.overworld
     fun trySync() {
         if (owner == CONSOLE || !enabled) {
             return
@@ -48,8 +48,8 @@ class Session(
     }
 
     fun syncDimension(player: ServerPlayerEntity) {
-        if (world !== player.getWorld()) {
-            reset(player.getWorld())
+        if (world !== player.world) {
+            reset(player.world as ServerWorld)
         }
     }
 

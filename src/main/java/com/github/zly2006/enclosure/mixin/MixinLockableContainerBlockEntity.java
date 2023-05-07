@@ -9,6 +9,7 @@ import net.minecraft.block.entity.LockableContainerBlockEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.inventory.ContainerLock;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.GameMode;
 import org.spongepowered.asm.mixin.Mixin;
@@ -33,7 +34,7 @@ public class MixinLockableContainerBlockEntity extends BlockEntity {
             if (player.interactionManager.getGameMode() == GameMode.SPECTATOR) {
                 return;
             }
-            EnclosureArea area = ServerMain.INSTANCE.getSmallestEnclosure(player.getWorld(), getPos());
+            EnclosureArea area = ServerMain.INSTANCE.getSmallestEnclosure((ServerWorld) player.getWorld(), getPos());
             if (area != null && !area.hasPerm(player, CONTAINER)) {
                 player.sendMessage(CONTAINER.getNoPermissionMsg(player));
                 cir.setReturnValue(false);

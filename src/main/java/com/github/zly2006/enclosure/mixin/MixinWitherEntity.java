@@ -24,10 +24,10 @@ public abstract class MixinWitherEntity extends Entity {
 
     @Inject(method = "mobTick", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/World;breakBlock(Lnet/minecraft/util/math/BlockPos;ZLnet/minecraft/entity/Entity;)Z"), locals = LocalCapture.CAPTURE_FAILSOFT, cancellable = true)
     private void onBreakBlock(CallbackInfo ci, int i, int j, int k, boolean bl, int l, int m, int n, int o, int p, int q, BlockPos blockPos, BlockState blockState) {
-        if (world.isClient) {
+        if (getWorld().isClient) {
             return;
         }
-        EnclosureArea a = ServerMain.INSTANCE.getSmallestEnclosure((ServerWorld) world, blockPos);
+        EnclosureArea a = ServerMain.INSTANCE.getSmallestEnclosure((ServerWorld) getWorld(), blockPos);
         if (a == null) return;
         if (!a.hasPubPerm(Permission.WITHER_DESTROY)) {
             // prevent breaking block
@@ -36,10 +36,10 @@ public abstract class MixinWitherEntity extends Entity {
     }
     @Inject(method = "mobTick", at = @At("HEAD"), cancellable = true)
     private void onTick(CallbackInfo ci) {
-        if (world.isClient) {
+        if (getWorld().isClient) {
             return;
         }
-        EnclosureArea a = ServerMain.INSTANCE.getSmallestEnclosure((ServerWorld) world, getBlockPos());
+        EnclosureArea a = ServerMain.INSTANCE.getSmallestEnclosure((ServerWorld) getWorld(), getBlockPos());
         if (a == null) return;
         if (!a.hasPubPerm(Permission.WITHER_ENTER)) {
             // prevent entering enclosure

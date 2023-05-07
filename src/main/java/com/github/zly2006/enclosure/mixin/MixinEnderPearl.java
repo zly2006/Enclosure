@@ -23,7 +23,7 @@ public abstract class MixinEnderPearl extends ThrownItemEntity {
 
     @Inject(method = "onCollision", at = @At("HEAD"), cancellable = true)
     private void onLand(HitResult hitResult, CallbackInfo ci) {
-        if (world instanceof ServerWorld serverWorld && getOwner() instanceof ServerPlayerEntity player) {
+        if (getWorld() instanceof ServerWorld serverWorld && getOwner() instanceof ServerPlayerEntity player) {
             EnclosureArea area = ServerMain.INSTANCE.getSmallestEnclosure(serverWorld, getBlockPos());
             if (area == null)
                 return;

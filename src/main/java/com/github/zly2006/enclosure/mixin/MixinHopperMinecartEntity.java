@@ -34,8 +34,7 @@ public abstract class MixinHopperMinecartEntity extends AbstractMinecartEntity {
 
     @Inject(method = "tick", at = @At("RETURN"))
     private void onMoveEnd(CallbackInfo ci) {
-        //noinspection PatternVariableHidesField
-        if (world instanceof ServerWorld world) {
+        if (getWorld() instanceof ServerWorld world) {
             EnclosureArea a1 = ServerMain.INSTANCE.getSmallestEnclosure(world, lastBlockPos);
             EnclosureArea a2 = ServerMain.INSTANCE.getSmallestEnclosure(world, getBlockPos());
             if (a1 != a2) {

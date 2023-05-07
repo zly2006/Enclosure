@@ -30,18 +30,18 @@ public abstract class MixinPotionEntity extends ThrownItemEntity {
 
     @Inject(at = @At("HEAD"), method = "extinguishFire", cancellable = true)
     private void onExtinguishFire(BlockPos pos, CallbackInfo ci) {
-        if (world.isClient) {
+        if (getWorld().isClient) {
             return;
         }
-        Block block = world.getBlockState(pos).getBlock();
+        Block block = getWorld().getBlockState(pos).getBlock();
         if (block instanceof CampfireBlock) {
-            EnclosureList list = ServerMain.INSTANCE.getAllEnclosures((ServerWorld) world);
+            EnclosureList list = ServerMain.INSTANCE.getAllEnclosures((ServerWorld) getWorld());
             EnclosureArea area = list.getArea(pos);
             if (area != null && !area.areaOf(pos).hasPubPerm(Permission.USE_CAMPFIRE)) {
                 if (getOwner() instanceof ServerPlayerEntity player) {
                     player.sendMessage(USE_CAMPFIRE.getNoPermissionMsg(player));
                 }
-                world.setBlockState(pos, world.getBlockState(pos).with(WATERLOGGED, false).with(LIT, true), 252);
+                getWorld().setBlockState(pos, getWorld().getBlockState(pos).with(WATERLOGGED, false).with(LIT, true), 252);
                 ci.cancel();
             }
         }

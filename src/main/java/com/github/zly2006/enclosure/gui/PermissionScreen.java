@@ -2,8 +2,8 @@ package com.github.zly2006.enclosure.gui;
 
 import com.github.zly2006.enclosure.ReadOnlyEnclosureArea;
 import com.github.zly2006.enclosure.network.UUIDCacheS2CPacket;
+import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
@@ -61,9 +61,9 @@ public class PermissionScreen extends Screen {
     }
 
     @Override
-    public void render(MatrixStack matrices, int mouseX, int mouseY, float delta) {
-        renderBackground(matrices);
-        super.render(matrices, mouseX, mouseY, delta);
+    public void render(DrawContext context, int mouseX, int mouseY, float delta) {
+        renderBackground(context);
+        super.render(context, mouseX, mouseY, delta);
         MutableText title = Text.translatable("enclosure.widget.set_permission").append(" ");
         if (CONSOLE.equals(uuid)) {
             title.append(Text.translatable("enclosure.widget.global"));
@@ -77,7 +77,7 @@ public class PermissionScreen extends Screen {
                 .append(Text.translatable("enclosure.widget.in_enclosure"))
                 .append(" ")
                 .append(fullName);
-        textRenderer.draw(matrices, title, 10, 10, 0xffffff);
+        context.drawText(textRenderer, title, 10, 10, 0xffffff, false);
     }
 
     public void requestConfirm(Text readString) {

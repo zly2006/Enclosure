@@ -329,7 +329,7 @@ object ServerMain: DedicatedServerModInitializer {
     @Environment(EnvType.SERVER)
     fun checkPermission(player: ServerPlayerEntity, permission: Permission, pos: BlockPos): Boolean {
         if (player.commandSource.hasPermissionLevel(4) && permission.isIgnoreOp) return true
-        val enclosure = getAllEnclosures(player.getWorld()).getArea(pos)
+        val enclosure = getAllEnclosures(player.world as ServerWorld).getArea(pos)
         return enclosure?.areaOf(pos)?.hasPerm(player, permission) ?: true
     }
 

@@ -24,7 +24,7 @@ public abstract class MixinItemEntity extends Entity {
 
     @Inject(method = "onPlayerCollision", at = @At("HEAD"), cancellable = true)
     private void onPlayerCollision(PlayerEntity player, CallbackInfo ci) {
-        if (world instanceof ServerWorld serverWorld) {
+        if (getWorld() instanceof ServerWorld serverWorld) {
             EnclosureArea area = ServerMain.INSTANCE.getAllEnclosures(serverWorld).getArea(getBlockPos());
             if (area != null && !area.areaOf(getBlockPos()).hasPerm((ServerPlayerEntity) player, Permission.PICKUP_ITEM)) {
                 ((PlayerAccess) player).sendMessageWithCD(Permission.PICKUP_ITEM::getNoPermissionMsg);

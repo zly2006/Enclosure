@@ -1,14 +1,10 @@
 package com.github.zly2006.enclosure.gui;
 
-import com.mojang.blaze3d.systems.RenderSystem;
+import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.ButtonWidget;
-import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.text.OrderedText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
-
-import java.util.List;
 
 public class ConfirmScreen extends Screen {
     private static final Identifier TEXTURE = new Identifier("textures/gui/demo_background.png");
@@ -41,24 +37,19 @@ public class ConfirmScreen extends Screen {
         addDrawableChild(yesButton);
         addDrawableChild(noButton);
     }
+
     @Override
-    public void render(MatrixStack matrices, int mouseX, int mouseY, float delta) {
-        parent.render(matrices, 0, 0, delta);
-        renderBackground(matrices);
-        RenderSystem.setShaderTexture(0, TEXTURE);
+    public void render(DrawContext context, int mouseX, int mouseY, float delta) {
+        parent.render(context, 0, 0, delta);
+        renderBackground(context);
         int height = 150;
         int x = (parent.width - 200) / 2;
         int y = (parent.height - height) / 2;
-        int linesY = y + 10;
-        drawTexture(matrices, x, y, 0, 0, 200, 150, 200, 150);
-        List<OrderedText> lines = textRenderer.wrapLines(message, 180);
-        for (OrderedText line : lines) {
-            textRenderer.draw(matrices, line, x + 10, linesY, 0xFFFFFF);
-            linesY += 10;
-        }
+        context.drawTexture(TEXTURE, x, y, 0, 0, 200, 150, 200, 150);
+        context.drawTextWrapped(textRenderer, message, x + 10, y + 10, 180, 0xFFFFFF);
         yesButton.setY(y + height - 30);
         noButton.setY(y + height - 30);
-        yesButton.render(matrices, mouseX, mouseY, delta);
-        noButton.render(matrices, mouseX, mouseY, delta);
+        yesButton.render(context, mouseX, mouseY, delta);
+        noButton.render(context, mouseX, mouseY, delta);
     }
 }

@@ -786,7 +786,7 @@ fun register(dispatcher: CommandDispatcher<ServerCommandSource>): LiteralCommand
                         val down = world.getBlockState(pos.down())
                         val state = world.getBlockState(pos)
                         val up = world.getBlockState(pos.up())
-                        if (!down.material.blocksMovement() || state.material.blocksMovement() && up.material.blocksMovement()) {
+                        if (!down.isFullCube(world, pos) || state.isFullCube(world, pos) && up.isFullCube(world, pos)) {
                             source.sendMessage(
                                 TrT.of("enclosure.message.teleport_warning").formatted(Formatting.YELLOW)
                             )
