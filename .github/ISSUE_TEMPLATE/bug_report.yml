@@ -1,0 +1,73 @@
+name: Bug report
+about: Create a report to help us improve
+title: "[BUG] "
+labels: bug
+assignees: zly2006
+
+body:
+  - type: checkboxes
+    attributes:
+      label: Check the following items before submitting this issue.
+      options:
+      - label: I am sure that this bug happens in the newest version of Enclosure.
+        required: true
+      - label: I am using the official Enclosure, not a fork from this repo.
+        required: true
+      - label: I am using a Minecraft version that is still being maintained.
+        required: true
+  - type: textarea
+    attributes:
+      label: Describe the bug
+      description: A clear and concise description of what the bug is.
+      placeholder: ''
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: To Reproduce
+      description: Steps to reproduce the behavior
+      placeholder: ''
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: Expected behavior
+      description: A clear and concise description of what you expected to happen.
+      placeholder: ''
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: Screenshots
+      description: If applicable, add screenshots to help explain your problem.
+      placeholder: ''
+    validations:
+      required: false
+  - type: textarea
+    attributes:
+      label: Environment
+      description:
+      placeholder: ''
+      value: |
+        - OS: [e.g. Windows 11]
+        - MC Version: [e.g. 1.19.4]
+        - Version [e.g. 0.1]
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: Mod list
+      description: e.g.
+      placeholder: ''
+      value: |
+        + fabric-api
+        + ...
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: Log (Optional)
+      description: ''
+      placeholder: ''
+    validations:
+      required: false
