@@ -39,7 +39,7 @@ e.g.
 
 - [ ] I am sure that this bug happens in the newest version of Enclosure.
 - [ ] I am using the official Enclosure, not a fork from this repo.
-- [ ] I am using a Minecraft version that is still [being maintained]().
+- [ ] I am using a Minecraft version that is still [being maintained](https://github.com/zly2006/Enclosure#Supported%20Versions).
 
 **Additional context**
 Add any other context about the problem here.

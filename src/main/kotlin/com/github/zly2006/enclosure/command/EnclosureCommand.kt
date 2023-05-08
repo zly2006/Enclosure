@@ -412,10 +412,10 @@ fun register(dispatcher: CommandDispatcher<ServerCommandSource>): LiteralCommand
                         }.forEach { (owner, enclosures) ->
                             if (enclosures.size > ServerMain.limits.maxLands) {
                                 source.sendMessage(
-                                    Text.literal("Player ")
-                                        .append(Utils.getDisplayNameByUUID(owner))
-                                        .append(" has too many enclosures: ")
-                                        .append(enclosures.size.toString())
+                                    Text.literal("Player ") +
+                                            Utils.getDisplayNameByUUID(owner) +
+                                            " has too many enclosures: " +
+                                            enclosures.size.toString()
                                 )
                             }
                         }
@@ -449,17 +449,7 @@ fun register(dispatcher: CommandDispatcher<ServerCommandSource>): LiteralCommand
                             val permission = Permission.getValue(StringArgumentType.getString(this, "permission"))
                                 ?: error(TrT.of("enclosure.message.invalid_permission"), this)
                             source.sendMessage(
-                                Text.empty()
-                                    .append(Text.literal("Name: "))
-                                    .append(permission.name)
-                                    .append(Text.literal(" Target: "))
-                                    .append(permission.target.toString())
-                                    .append(Text.literal("\nDescription: "))
-                                    .append(permission.description)
-                                    .append(Text.literal("\nDefault: "))
-                                    .append(permission.defaultValue.toString())
-                                    .append(Text.literal("\nComponents: "))
-                                    .append(permission.permissions.joinToString())
+                                Text.literal("Name: ${permission.name} Target: ${permission.target}\nDescription: ") + permission.description + Text.literal("\nDefault: ${permission.defaultValue}\nComponents: ${permission.permissions.joinToString()}")
                             )
                         }
                     }
