@@ -13,3 +13,23 @@ Please help improve our [wiki](https://enclosure.fandom.com/wiki/Enclosure_Wiki)
 - Use GUI to configure permissions
 - Sub-enclosure support
 - Fix some vanilla "features"(like breaking bedrock, it will not affect on any block in the protection of Enclosure)
+
+## Quick Start
+
+### Installation
+
+#### Client
+
+Just install it as a normal Fabric mod. **This mod does not work in single player mode**.
+
+#### Server
+
+<!-- TODO: Add a link to the latest release -->
+
+### Supported Versions
+
+| MC Version | Latest Enclosure Version | Status      |
+|------------|--------------------------|-------------|
+| 1.20       | 0.2-mc23w18a             | Developing  |
+| 1.19.4     | 0.1.1                    | Maintaining |
+| \< 1.19.4  | 0.1                      | Unsupported |
