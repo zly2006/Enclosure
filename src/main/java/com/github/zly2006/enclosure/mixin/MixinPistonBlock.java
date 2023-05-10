@@ -47,6 +47,7 @@ public class MixinPistonBlock extends FacingBlock {
     private boolean protectBlockEvent(World world, BlockPos pos, boolean move) {
         if (world instanceof ServerWorld serverWorld) {
             if (!ServerMain.INSTANCE.checkPermission(serverWorld, pos, null, Permission.BREAK_BLOCK) && !serverWorld.getBlockState(pos).isOf(Blocks.MOVING_PISTON)) {
+                serverWorld.getChunkManager().markForUpdate(pos);
                 return false;
             }
         }
