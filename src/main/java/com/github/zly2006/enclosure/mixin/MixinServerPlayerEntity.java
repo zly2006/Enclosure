@@ -4,7 +4,6 @@ import com.github.zly2006.enclosure.EnclosureArea;
 import com.github.zly2006.enclosure.ServerMain;
 import com.github.zly2006.enclosure.access.PlayerAccess;
 import com.github.zly2006.enclosure.utils.Permission;
-import com.github.zly2006.enclosure.utils.TrT;
 import com.github.zly2006.enclosure.utils.Utils;
 import com.mojang.authlib.GameProfile;
 import net.fabricmc.api.Environment;
@@ -91,22 +90,15 @@ public abstract class MixinServerPlayerEntity extends PlayerEntity implements Pl
         }
     }
 
-    @Inject(method = "dropItem", at = @At("HEAD"), cancellable = true)
+    @Inject(method = "dropItem", at = @At("RETURN"))
     private void protectDropItem(ItemStack stack, boolean throwRandomly, boolean retainOwnership, CallbackInfoReturnable<ItemEntity> cir) {
-        EnclosureArea area = ServerMain.INSTANCE.getAllEnclosures(getWorld()).getArea(getBlockPos());
+        EnclosureArea area = ServerMain.INSTANCE.getSmallestEnclosure(getWorld(), getBlockPos());
         if (area == null) {
             return;
         }
-        area = area.areaOf(getBlockPos());
         if (!area.hasPerm(networkHandler.player, Permission.DROP_ITEM)) {
-            if (!isDead() && getInventory().insertStack(stack)) {
-                this.sendMessageWithCD(DROP_ITEM::getNoPermissionMsg);
-                cir.setReturnValue(null);
-            }
-            else {
-                this.sendMessageWithCD(TrT.of("enclosure.message.warn_quit_items"));
-                drops.add(stack);
-            }
+            cir.getReturnValue().setOwner(getUuid());
+            this.sendMessageWithCD(DROP_ITEM::getNoPermissionMsg);
         }
     }
 

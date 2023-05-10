@@ -1,5 +1,6 @@
 package com.github.zly2006.enclosure.mixin;
 
+import com.github.zly2006.enclosure.command.EnclosureCommandKt;
 import com.github.zly2006.enclosure.mixinadatper.MixinHopperKt;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntity;
@@ -18,6 +19,8 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 
+import java.util.UUID;
+
 @Mixin(HopperBlockEntity.class)
 public class MixinHopperBlockEntity extends BlockEntity {
     public MixinHopperBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
@@ -31,11 +34,9 @@ public class MixinHopperBlockEntity extends BlockEntity {
     }
     @Inject(method = "extract(Lnet/minecraft/inventory/Inventory;Lnet/minecraft/entity/ItemEntity;)Z", at = @At("HEAD"), cancellable = true)
     private static void onExtract(Inventory inventory, ItemEntity itemEntity, CallbackInfoReturnable<Boolean> cir) {
-        /*
-        if (itemEntity.world.isClient) return;
-        EnclosureArea area = ServerMain.INSTANCE.getAllEnclosures((ServerWorld) itemEntity.world).getArea(itemEntity.getBlockPos());
-        if (area != null && !area.areaOf(itemEntity.getBlockPos()).hasPubPerm(Permission.PICKUP_ITEM)) {
+        UUID owner = itemEntity.owner;
+        if (owner != null && !owner.equals(EnclosureCommandKt.CONSOLE)) {
             cir.setReturnValue(false);
-        }*/
+        }
     }
 }
