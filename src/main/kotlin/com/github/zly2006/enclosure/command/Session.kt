@@ -9,6 +9,7 @@ import com.github.zly2006.enclosure.network.EnclosureInstalledC2SPacket
 import com.github.zly2006.enclosure.network.NetworkChannels
 import com.github.zly2006.enclosure.utils.TrT
 import com.github.zly2006.enclosure.utils.Utils
+import com.github.zly2006.enclosure.utils.component6
 import net.fabricmc.fabric.api.networking.v1.PacketByteBufs
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking
 import net.minecraft.server.network.ServerPlayerEntity
@@ -54,12 +55,7 @@ class Session(
     }
 
     fun intersect(list2check: EnclosureList): EnclosureArea? {
-        val minX = min(pos1.x, pos2.x)
-        val minY = min(pos1.y, pos2.y)
-        val minZ = min(pos1.z, pos2.z)
-        val maxX = max(pos1.x, pos2.x)
-        val maxY = max(pos1.y, pos2.y)
-        val maxZ = max(pos1.z, pos2.z)
+        val (minX, minY, minZ, maxX, maxY, maxZ) = ordered()
         for (area in list2check.areas) {
             if (area.intersect(minX, minY, minZ, maxX, maxY, maxZ)) {
                 return area

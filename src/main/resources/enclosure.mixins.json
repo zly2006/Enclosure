@@ -64,5 +64,8 @@
     "workaround.MixinServerPlayerInteractionManager",
     "workaround.MixinServerPlayNetworkHandler",
     "MixinAbstractSignBlock"
+  ],
+  "mixins": [
+    "MixinServerMetadata"
   ]
 }
