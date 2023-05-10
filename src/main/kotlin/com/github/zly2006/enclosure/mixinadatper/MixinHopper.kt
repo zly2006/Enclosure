@@ -5,29 +5,35 @@ import com.github.zly2006.enclosure.utils.contains
 import com.github.zly2006.enclosure.utils.getEnclosure
 import net.minecraft.block.entity.BlockEntity
 import net.minecraft.block.entity.Hopper
-import net.minecraft.entity.vehicle.AbstractMinecartEntity
+import net.minecraft.entity.Entity
 import net.minecraft.inventory.Inventory
 import net.minecraft.server.world.ServerWorld
 import net.minecraft.util.math.Box
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable
 
-fun onExtractFromInventory(
-    world: ServerWorld,
+fun canExtractFromInventory(
     hopper: Hopper,
-    inputInventory: Inventory,
-    cir: CallbackInfoReturnable<Boolean>,
-) {
-    if (inputInventory is BlockEntity) {
-        val area = world.getEnclosure(inputInventory.pos)
-        if (area?.hasPubPerm(Permission.CONTAINER) == false) { // null means no enclosure, allow access
-            val box = when (hopper) {
-                is BlockEntity -> Box(hopper.pos)
-                is AbstractMinecartEntity -> hopper.boundingBox
-                else -> return
-            }
-            if (!area.toBox().contains(box)) {
-                cir.returnValue = false
-            }
+    inputInventory: Inventory
+): Boolean {
+    val pos = when (inputInventory) {
+        is BlockEntity -> inputInventory.pos
+        is Entity -> inputInventory.blockPos
+        else -> return true
+    }
+    val world = when (inputInventory) {
+        is BlockEntity -> inputInventory.world
+        is Entity -> inputInventory.world
+        else -> return true
+    } as? ServerWorld ?: return true
+    val area = world.getEnclosure(pos)
+    if (area?.hasPubPerm(Permission.CONTAINER) == false) { // null means no enclosure, allow access
+        val box = when (hopper) {
+            is BlockEntity -> Box(hopper.pos)
+            is Entity -> hopper.boundingBox
+            else -> return true
+        }
+        if (!area.toBox().contains(box)) {
+            return false
         }
     }
+    return true
 }

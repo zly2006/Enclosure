@@ -26,7 +26,7 @@ Just install it as a normal Fabric mod. **This mod does not work in single playe
 
 <!-- TODO: Add a link to the latest release -->
 
-### Supported Versions
+## Supported Versions
 
 | MC Version | Latest Enclosure Version | Status      |
 |------------|--------------------------|-------------|

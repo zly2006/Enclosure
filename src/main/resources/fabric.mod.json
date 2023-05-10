@@ -46,11 +46,17 @@
   "depends": {
     "fabricloader": ">=0.13.0",
     "fabric-api": "*",
-    "minecraft": "~1.19.4",
+    "minecraft": "1.19.4",
     "fabric-language-kotlin": "*",
     "java": ">=17"
   },
   "suggests": {
     "luckperms": "*"
+  },
+  "custom": {
+    "modmanager": {
+      "modrinth": "mc1DjRvU",
+      "curseforge": 838195
+    }
   }
 }

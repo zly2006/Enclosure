@@ -21,6 +21,7 @@
     "MixinChorusFruitItem",
     "MixinCreeperEntity",
     "MixinCrossBowItem",
+    "MixinDispenserBlock",
     "MixinEndCrystalEntity",
     "MixinEnderDragonEntity",
     "MixinEnderPearl",
