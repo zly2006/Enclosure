@@ -115,7 +115,9 @@ class UpdateChecker {
                 }.maxByOrNull { it.versionNumber }
             if (latest != null) {
                 latestVersion = latest
-                LOGGER.info("Found latest version: ${latestVersion?.versionNumber}, url: ${latestVersion?.url}")
+                if (latest.versionNumber > MOD_VERSION) {
+                    LOGGER.info("Found new version: ${latest.versionNumber}, url: ${latest.url}")
+                }
             }
             lastCheckTime = System.currentTimeMillis()
         } catch (ignored: IOException) {

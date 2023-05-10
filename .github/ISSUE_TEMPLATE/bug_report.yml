@@ -51,9 +51,8 @@ body:
   - type: textarea
     attributes:
       label: Mod list
-      description: e.g.
       value: |
-        + fabric-api
+        + fabric-api 0.75.3+1.19.4
         + ...
     validations:
       required: true

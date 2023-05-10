@@ -19,6 +19,7 @@
     "MixinChestBlock",
     "MixinChestBoatEntity",
     "MixinChorusFruitItem",
+    "MixinCreeperEntity",
     "MixinCrossBowItem",
     "MixinEndCrystalEntity",
     "MixinEnderDragonEntity",
@@ -61,7 +62,9 @@
     "MixinWitherEntity",
     "MixinWitherSkullBlock",
     "workaround.MixinServerPlayerInteractionManager",
-    "workaround.MixinServerPlayNetworkHandler",
-    "MixinCreeperEntity"
+    "workaround.MixinServerPlayNetworkHandler"
+  ],
+  "mixins": [
+    "MixinServerMetadata"
   ]
 }
