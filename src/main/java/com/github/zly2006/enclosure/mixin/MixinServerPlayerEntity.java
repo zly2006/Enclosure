@@ -4,6 +4,7 @@ import com.github.zly2006.enclosure.EnclosureArea;
 import com.github.zly2006.enclosure.ServerMain;
 import com.github.zly2006.enclosure.access.PlayerAccess;
 import com.github.zly2006.enclosure.utils.Permission;
+import com.github.zly2006.enclosure.utils.TrT;
 import com.github.zly2006.enclosure.utils.Utils;
 import com.mojang.authlib.GameProfile;
 import net.fabricmc.api.Environment;
@@ -32,8 +33,6 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Optional;
 
 import static com.github.zly2006.enclosure.command.EnclosureCommandKt.CONSOLE;
@@ -43,11 +42,10 @@ import static net.fabricmc.api.EnvType.SERVER;
 @Environment(SERVER)
 @Mixin(ServerPlayerEntity.class)
 public abstract class MixinServerPlayerEntity extends PlayerEntity implements PlayerAccess {
+    @Shadow public ServerPlayNetworkHandler networkHandler;
     private long lastTeleportTime = 0;
     @Nullable private Vec3d lastPos = null;
     @Nullable private EnclosureArea lastArea = null;
-    @NotNull private final List<ItemStack> drops = new ArrayList<>();
-    @Shadow public ServerPlayNetworkHandler networkHandler;
     @Nullable private ServerWorld lastWorld;
     private long permissionDeniedMsgTime = 0;
 
@@ -77,12 +75,12 @@ public abstract class MixinServerPlayerEntity extends PlayerEntity implements Pl
     private void protectPVP(DamageSource source, float amount, CallbackInfoReturnable<Boolean> cir) {
         if (source.getAttacker() instanceof ServerPlayerEntity attacker) {
             //pvp
-            EnclosureArea area = ServerMain.INSTANCE.getAllEnclosures(this.getWorld()).getArea(getBlockPos());
-            EnclosureArea attackerArea = ServerMain.INSTANCE.getAllEnclosures(attacker.getWorld()).getArea(attacker.getBlockPos());
-            if (area != null && !area.areaOf(getBlockPos()).hasPubPerm(Permission.PVP)) {
+            EnclosureArea area = ServerMain.INSTANCE.getSmallestEnclosure(this.getWorld(), getBlockPos());
+            EnclosureArea attackerArea = ServerMain.INSTANCE.getSmallestEnclosure(attacker.getWorld(), attacker.getBlockPos());
+            if (area != null && !area.hasPubPerm(Permission.PVP)) {
                 cir.setReturnValue(false);
             }
-            if (attackerArea != null && !attackerArea.areaOf(attacker.getBlockPos()).hasPubPerm(Permission.PVP)
+            if (attackerArea != null && !attackerArea.hasPubPerm(Permission.PVP)
                     && !attacker.getCommandSource().hasPermissionLevel(4)) {
                 attacker.sendMessage(PVP.getNoPermissionMsg(attacker));
                 cir.setReturnValue(false);
@@ -90,15 +88,21 @@ public abstract class MixinServerPlayerEntity extends PlayerEntity implements Pl
         }
     }
 
-    @Inject(method = "dropItem", at = @At("RETURN"))
+    @Inject(method = "dropItem", at = @At("RETURN"), cancellable = true)
     private void protectDropItem(ItemStack stack, boolean throwRandomly, boolean retainOwnership, CallbackInfoReturnable<ItemEntity> cir) {
         EnclosureArea area = ServerMain.INSTANCE.getSmallestEnclosure(getWorld(), getBlockPos());
         if (area == null) {
             return;
         }
         if (!area.hasPerm(networkHandler.player, Permission.DROP_ITEM)) {
-            cir.getReturnValue().setOwner(getUuid());
-            this.sendMessageWithCD(DROP_ITEM::getNoPermissionMsg);
+            if (!isDead() && getInventory().insertStack(stack)) {
+                this.sendMessageWithCD(DROP_ITEM::getNoPermissionMsg);
+                cir.setReturnValue(null);
+            }
+            else {
+                this.sendMessageWithCD(TrT.of("enclosure.message.item_only_self_pickup"));
+                cir.getReturnValue().setOwner(getUuid());
+            }
         }
     }
 
@@ -150,9 +154,6 @@ public abstract class MixinServerPlayerEntity extends PlayerEntity implements Pl
     }
     @Inject(method = "tick", at = @At("HEAD"))
     private void onTick(CallbackInfo ci) {
-        if (!isDead() && !drops.isEmpty()) {
-            drops.removeIf(itemStack -> getInventory().insertStack(itemStack));
-        }
         if (server.getTicks() % 10 == 0) {
             ServerPlayerEntity player = (ServerPlayerEntity) (Object) this;
             EnclosureArea area = ServerMain.INSTANCE.getAllEnclosures(getWorld()).getArea(getBlockPos());
