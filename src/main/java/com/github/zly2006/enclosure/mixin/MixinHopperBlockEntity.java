@@ -1,5 +1,6 @@
 package com.github.zly2006.enclosure.mixin;
 
+import com.github.zly2006.enclosure.command.EnclosureCommandKt;
 import com.github.zly2006.enclosure.mixinadatper.MixinHopperKt;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntity;
@@ -8,15 +9,16 @@ import net.minecraft.block.entity.Hopper;
 import net.minecraft.block.entity.HopperBlockEntity;
 import net.minecraft.entity.ItemEntity;
 import net.minecraft.inventory.Inventory;
-import net.minecraft.server.world.ServerWorld;
+import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
-import net.minecraft.world.World;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
+
+import java.util.UUID;
 
 @Mixin(HopperBlockEntity.class)
 public class MixinHopperBlockEntity extends BlockEntity {
@@ -24,18 +26,17 @@ public class MixinHopperBlockEntity extends BlockEntity {
         super(type, pos, state);
     }
 
-    @Inject(method = "extract(Lnet/minecraft/world/World;Lnet/minecraft/block/entity/Hopper;)Z", at = @At(value = "INVOKE", target = "Lnet/minecraft/block/entity/HopperBlockEntity;getAvailableSlots(Lnet/minecraft/inventory/Inventory;Lnet/minecraft/util/math/Direction;)Ljava/util/stream/IntStream;"), locals = LocalCapture.CAPTURE_FAILSOFT, cancellable = true)
-    private static void onExtract(World world, Hopper hopper, CallbackInfoReturnable<Boolean> cir, Inventory inventory, Direction direction) {
-        if (world.isClient) return;
-        MixinHopperKt.onExtractFromInventory((ServerWorld) world, hopper, inventory, cir);
+    @Inject(method = "canExtract", at = @At("HEAD"), locals = LocalCapture.CAPTURE_FAILSOFT, cancellable = true)
+    private static void checkCanExtract(Inventory hopperInventory, Inventory fromInventory, ItemStack stack, int slot, Direction facing, CallbackInfoReturnable<Boolean> cir) {
+        if (!MixinHopperKt.canExtractFromInventory((Hopper) hopperInventory, fromInventory)) {
+            cir.setReturnValue(false);
+        }
     }
     @Inject(method = "extract(Lnet/minecraft/inventory/Inventory;Lnet/minecraft/entity/ItemEntity;)Z", at = @At("HEAD"), cancellable = true)
     private static void onExtract(Inventory inventory, ItemEntity itemEntity, CallbackInfoReturnable<Boolean> cir) {
-        /*
-        if (itemEntity.world.isClient) return;
-        EnclosureArea area = ServerMain.INSTANCE.getAllEnclosures((ServerWorld) itemEntity.world).getArea(itemEntity.getBlockPos());
-        if (area != null && !area.areaOf(itemEntity.getBlockPos()).hasPubPerm(Permission.PICKUP_ITEM)) {
+        UUID owner = itemEntity.owner;
+        if (owner != null && !owner.equals(EnclosureCommandKt.CONSOLE)) {
             cir.setReturnValue(false);
-        }*/
+        }
     }
 }

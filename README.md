@@ -26,10 +26,16 @@ Just install it as a normal Fabric mod. **This mod does not work in single playe
 
 <!-- TODO: Add a link to the latest release -->
 
-### Supported Versions
+## Supported Versions
 
 | MC Version | Latest Enclosure Version | Status      |
 |------------|--------------------------|-------------|
-| 1.20       | 0.2-mc23w18a             | Developing  |
+| 1.20       | 0.2-mc1.20pre1           | Developing  |
 | 1.19.4     | 0.1.1                    | Maintaining |
 | \< 1.19.4  | 0.1                      | Unsupported |
+
+## Our "Vanilla" Principle
+
+All features provided by this mod are designed to be as vanilla as possible.
+Thus, we will never change the vanilla behavior unless it is in a player's enclosure.
+Any contribution or suggestion that violates this principle will be rejected.

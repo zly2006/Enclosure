@@ -52,5 +52,11 @@
   },
   "suggests": {
     "luckperms": "*"
+  },
+  "custom": {
+    "modmanager": {
+      "modrinth": "mc1DjRvU",
+      "curseforge": 838195
+    }
   }
 }

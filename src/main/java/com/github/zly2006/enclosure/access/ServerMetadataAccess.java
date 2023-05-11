@@ -15,13 +15,13 @@ public interface ServerMetadataAccess {
 
     void setModName(String name);
 
-    static ServerMetadata newMetadata(Text text, Optional<ServerMetadata.Players> players, Optional<ServerMetadata.Version> version, Optional<ServerMetadata.Favicon> favicon, Boolean aBoolean, String s, String s1) {
-        ServerMetadata metadata = new ServerMetadata(text, players, version, favicon, aBoolean);
+    static ServerMetadata newMetadata(Text text, Optional<ServerMetadata.Players> players, Optional<ServerMetadata.Version> version, Optional<ServerMetadata.Favicon> favicon, Boolean onlineMode, String s, String s1) {
+        ServerMetadata metadata = new ServerMetadata(text, players, version, favicon, onlineMode);
         ((ServerMetadataAccess) metadata).setModName(s);
         try {
             ((ServerMetadataAccess) metadata).setModVersion(Version.parse(s1));
         } catch (VersionParsingException e) {
-            throw new RuntimeException(e);
+            ((ServerMetadataAccess) metadata).setModVersion(null);
         }
         return metadata;
     }

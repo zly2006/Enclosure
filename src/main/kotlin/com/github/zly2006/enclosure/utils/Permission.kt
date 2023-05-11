@@ -163,6 +163,7 @@ class Permission(
         @JvmField val ITEM_FRAME = Permission("item_frame", icon = Items.ITEM_FRAME).apply(::register)
         @JvmField val PRIME_TNT = Permission("prime_tnt", icon = Items.TNT).apply(::register)
         @JvmField val EDIT_SIGN = Permission("edit_sign", icon = Items.OAK_SIGN).apply(::register)
+        @JvmField val DISPENSER = Permission("dispenser", Target.Enclosure, icon = Items.DISPENSER).apply(::register)
 
         fun getValue(name: String): Permission? {
             return PERMISSIONS[name]
