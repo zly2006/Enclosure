@@ -24,6 +24,7 @@ import java.util.Optional;
 public class MixinServerPing {
     ServerInfo entry;
 
+    @SuppressWarnings({"rawtypes", "OptionalUsedAsFieldOrParameterType"})
     @Inject(
             method = "add",
             locals = LocalCapture.CAPTURE_FAILSOFT,

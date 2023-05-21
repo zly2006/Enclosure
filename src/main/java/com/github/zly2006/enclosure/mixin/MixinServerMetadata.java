@@ -26,7 +26,7 @@ public abstract class MixinServerMetadata implements ServerMetadataAccess {
 
     @Inject(method = "<clinit>", at = @At("RETURN"))
     private static void afterStaticInit(CallbackInfo ci) {
-        CODEC = RecordCodecBuilder.create((instance) -> instance.group(
+        CODEC = RecordCodecBuilder.create(instance -> instance.group(
                 Codecs.TEXT.optionalFieldOf("description", ScreenTexts.EMPTY)
                         .forGetter(ServerMetadata::description),
                 ServerMetadata.Players.CODEC.optionalFieldOf("players")

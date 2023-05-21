@@ -33,6 +33,7 @@
     "MixinFlowableFluid",
     "MixinHopperBlockEntity",
     "MixinHopperMinecartEntity",
+    "MixinHorses",
     "MixinItemEntity",
     "MixinItemFrameEntity",
     "MixinLanguage",
@@ -66,7 +67,6 @@
     "workaround.MixinServerPlayNetworkHandler"
   ],
   "mixins": [
-    "MixinHorses",
     "MixinServerMetadata"
   ]
 }

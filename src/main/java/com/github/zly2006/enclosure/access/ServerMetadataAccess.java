@@ -15,6 +15,7 @@ public interface ServerMetadataAccess {
 
     void setModName(String name);
 
+    @SuppressWarnings({"OptionalUsedAsFieldOrParameterType", "DataFlowIssue"})
     static ServerMetadata newMetadata(Text text, Optional<ServerMetadata.Players> players, Optional<ServerMetadata.Version> version, Optional<ServerMetadata.Favicon> favicon, Boolean onlineMode, String s, String s1) {
         ServerMetadata metadata = new ServerMetadata(text, players, version, favicon, onlineMode);
         ((ServerMetadataAccess) metadata).setModName(s);
