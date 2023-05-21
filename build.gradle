@@ -12,7 +12,7 @@ allprojects {
     repositories {
         mavenCentral()
         maven { url = "https://maven.fabricmc.net/" }
-        maven { url "https://maven.shedaniel.me" }
+        maven { url = "https://maven.shedaniel.me/" }
     }
 
     processResources {

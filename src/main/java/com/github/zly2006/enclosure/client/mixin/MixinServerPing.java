@@ -24,6 +24,7 @@ import java.util.Optional;
 public class MixinServerPing {
     ServerInfo entry;
 
+    @SuppressWarnings({"rawtypes", "OptionalUsedAsFieldOrParameterType"})
     @Inject(
             method = "add",
             locals = LocalCapture.CAPTURE_FAILSOFT,
@@ -32,8 +33,7 @@ public class MixinServerPing {
                     target = "Lnet/minecraft/network/ClientConnection;setPacketListener(Lnet/minecraft/network/listener/PacketListener;)V"
             )
     )
-    private void captureEntry(
-            ServerInfo entry, Runnable saver, CallbackInfo ci, ServerAddress serverAddress, Optional optional, InetSocketAddress inetSocketAddress, ClientConnection clientConnection) {
+    private void captureEntry(ServerInfo entry, Runnable saver, CallbackInfo ci, ServerAddress serverAddress, Optional optional, InetSocketAddress inetSocketAddress, ClientConnection clientConnection) {
         this.entry = entry;
     }
 

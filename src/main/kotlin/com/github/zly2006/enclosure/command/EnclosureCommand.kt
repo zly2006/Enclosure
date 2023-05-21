@@ -647,9 +647,9 @@ fun register(dispatcher: CommandDispatcher<ServerCommandSource>): LiteralCommand
                             val direction = Direction.getEntityFacingOrder(executor)[0]
                             session.action(direction, amount)
                             session.trySync()
-                            source.sendFeedback(
+                            source.sendMessage(
                                 TrT.of(key).append(amount.toString())
-                                    .append(TrT.of("enclosure.message.resized." + direction.getName())), false
+                                    .append(TrT.of("enclosure.message.resized." + direction.getName()))
                             )
                         }
                     }
@@ -672,7 +672,7 @@ fun register(dispatcher: CommandDispatcher<ServerCommandSource>): LiteralCommand
                         )
                     }
                     session.trySync()
-                    source.sendFeedback(TrT.of("enclosure.message.max_height"), false)
+                    source.sendMessage(TrT.of("enclosure.message.max_height"))
                 }
             }
             literal("max_square") {
@@ -719,9 +719,9 @@ fun register(dispatcher: CommandDispatcher<ServerCommandSource>): LiteralCommand
                     area.maxX = maxX
                     area.maxY = maxY
                     area.maxZ = maxZ
-                    source.sendFeedback(
+                    source.sendMessage(
                         TrT.of("enclosure.message.resized")
-                            .append(area.serialize(SerializationSettings.Name, source.player)), false
+                            .append(area.serialize(SerializationSettings.Name, source.player))
                     )
                 }
             }
@@ -848,7 +848,10 @@ fun register(dispatcher: CommandDispatcher<ServerCommandSource>): LiteralCommand
                 val uuid = getOfflineUUID(this)
                 if (source.hasPermissionLevel(4) || area.hasPerm(source.player!!, Permission.ADMIN)) {
                     area.setPermission(source, uuid, Permission.TRUSTED, true)
-                    source.sendFeedback(TrT.of("enclosure.message.added_user", Utils.getDisplayNameByUUID(uuid)), true)
+                    source.sendFeedback(
+                        { TrT.of("enclosure.message.added_user", Utils.getDisplayNameByUUID(uuid)) },
+                        true
+                    )
                 } else {
                     error(Permission.ADMIN.getNoPermissionMsg(source.player), this)
                 }
@@ -881,10 +884,12 @@ fun register(dispatcher: CommandDispatcher<ServerCommandSource>): LiteralCommand
                             res.owner = uuid
                             res.setPermission(source, uuid, Permission.ALL, true)
                             source.sendFeedback(
-                                TrT.of("enclosure.message.given.1")
-                                    .append(res.serialize(SerializationSettings.Name, source.player))
-                                    .append(TrT.of("enclosure.message.given.2"))
-                                    .append(Utils.getDisplayNameByUUID(uuid)), true
+                                {
+                                    TrT.of("enclosure.message.given.1")
+                                        .append(res.serialize(SerializationSettings.Name, source.player))
+                                        .append(TrT.of("enclosure.message.given.2"))
+                                        .append(Utils.getDisplayNameByUUID(uuid))
+                                }, true
                             )
                             target?.sendMessage(
                                 TrT.of("enclosure.message.received.1")
@@ -1037,13 +1042,15 @@ fun register(dispatcher: CommandDispatcher<ServerCommandSource>): LiteralCommand
                         area.setPermission(source, uuid, permission, value)
                         area.markDirty()
                         source.sendFeedback(
-                            TrT.of(
-                                "enclosure.message.set_permission",
-                                Utils.getDisplayNameByUUID(uuid),
-                                permission.serialize(SerializationSettings.Summarize, source.player),
-                                value?.toString() ?: "none",
-                                area.fullName
-                            ).formatted(Formatting.YELLOW), true
+                            {
+                                TrT.of(
+                                    "enclosure.message.set_permission",
+                                    Utils.getDisplayNameByUUID(uuid),
+                                    permission.serialize(SerializationSettings.Summarize, source.player),
+                                    value?.toString() ?: "none",
+                                    area.fullName
+                                ).formatted(Formatting.YELLOW)
+                            }, true
                         )
                     }
                     val warning = if (permission === Permission.ADMIN) {
@@ -1180,7 +1187,7 @@ fun register(dispatcher: CommandDispatcher<ServerCommandSource>): LiteralCommand
                         }
                         if (ServerMain.backupManager.backup(area, source)) {
                             source.sendFeedback(
-                                TrT.of("enclosure.message.backup", area.fullName).formatted(Formatting.YELLOW), true
+                                { TrT.of("enclosure.message.backup", area.fullName).formatted(Formatting.YELLOW) }, true
                             )
                         } else {
                             error(TrT.of("enclosure.message.backup_failed", area.fullName), this)
