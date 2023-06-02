@@ -2,6 +2,7 @@ package com.github.zly2006.enclosure.mixin;
 
 import com.github.zly2006.enclosure.ServerMain;
 import com.github.zly2006.enclosure.utils.Utils;
+import com.github.zly2006.enclosure.utils.UtilsKt;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.damage.DamageSource;
@@ -33,7 +34,7 @@ public abstract class MixinBoatEntity extends Entity {
     @Inject(method = "interact", at = @At("HEAD"), cancellable = true)
     private void onInteract(PlayerEntity player, Hand hand, CallbackInfoReturnable<ActionResult> cir) {
         if (!ServerMain.INSTANCE.checkPermission(getWorld(), getBlockPos(), player, VEHICLE)) {
-            player.sendMessage(VEHICLE.getNoPermissionMsg(player));
+            UtilsKt.sendMessage(player, VEHICLE.getNoPermissionMsg(player));
             cir.setReturnValue(ActionResult.FAIL);
         }
     }

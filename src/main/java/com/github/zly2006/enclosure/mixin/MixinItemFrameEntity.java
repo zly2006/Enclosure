@@ -4,6 +4,7 @@ import com.github.zly2006.enclosure.EnclosureArea;
 import com.github.zly2006.enclosure.ServerMain;
 import com.github.zly2006.enclosure.utils.Permission;
 import com.github.zly2006.enclosure.utils.Utils;
+import com.github.zly2006.enclosure.utils.UtilsKt;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.decoration.AbstractDecorationEntity;
@@ -29,7 +30,7 @@ public abstract class MixinItemFrameEntity extends AbstractDecorationEntity {
         if (player instanceof ServerPlayerEntity serverPlayer) {
             EnclosureArea area = ServerMain.INSTANCE.getSmallestEnclosure(serverPlayer.getWorld(), getBlockPos());
             if (area != null && !area.areaOf(getBlockPos()).hasPerm(serverPlayer, Permission.ITEM_FRAME)) {
-                player.sendMessage(Permission.ITEM_FRAME.getNoPermissionMsg(serverPlayer));
+                UtilsKt.sendMessage(player, Permission.ITEM_FRAME.getNoPermissionMsg(serverPlayer));
                 cir.setReturnValue(ActionResult.FAIL);
             }
         }

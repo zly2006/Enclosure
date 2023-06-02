@@ -5,10 +5,10 @@ import com.mojang.authlib.GameProfile;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtInt;
 import net.minecraft.nbt.NbtList;
-import net.minecraft.registry.RegistryKey;
 import net.minecraft.server.world.ServerWorld;
+import net.minecraft.text.LiteralText;
 import net.minecraft.text.MutableText;
-import net.minecraft.text.Text;
+import net.minecraft.util.registry.RegistryKey;
 import net.minecraft.world.World;
 import org.yaml.snakeyaml.Yaml;
 
@@ -190,13 +190,13 @@ public class Converter {
                     MutableText status = null;
                     for (EnclosureArea area : enclosureList.getAreas()) {
                         if (enclosure.equals(area)) {
-                            status = Text.literal(ServerMain.INSTANCE.getTranslation().get("enclosure.message.existed").getAsString());
+                            status = new LiteralText(ServerMain.INSTANCE.getTranslation().get("enclosure.message.existed").getAsString());
                         }
                         else if (enclosure.intersect(area)) {
-                            status = Text.literal(ServerMain.INSTANCE.getTranslation().get("enclosure.message.intersected").getAsString()).append(area.getFullName());
+                            status = new LiteralText(ServerMain.INSTANCE.getTranslation().get("enclosure.message.intersected").getAsString()).append(area.getFullName());
                         }
                         else if (enclosure.getName().equals(area.getName())) {
-                            status = Text.literal(ServerMain.INSTANCE.getTranslation().get("enclosure.message.name_in_use").getAsString());
+                            status = new LiteralText(ServerMain.INSTANCE.getTranslation().get("enclosure.message.name_in_use").getAsString());
                         }
                     }
                     if (status == null) {

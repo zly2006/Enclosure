@@ -3,6 +3,7 @@ package com.github.zly2006.enclosure.mixin;
 import com.github.zly2006.enclosure.ServerMain;
 import com.github.zly2006.enclosure.access.LecternInventoryAccess;
 import com.github.zly2006.enclosure.utils.Permission;
+import com.github.zly2006.enclosure.utils.UtilsKt;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.inventory.Inventory;
 import net.minecraft.screen.LecternScreenHandler;
@@ -32,7 +33,7 @@ public abstract class MixinLecternScreenHandler extends ScreenHandler {
                 if (id == 3) {
                     cir.setReturnValue(false);
                     serverPlayer.closeHandledScreen();
-                    serverPlayer.sendMessage(Permission.TAKE_BOOK.getNoPermissionMsg(serverPlayer));
+                    UtilsKt.sendMessage(serverPlayer, Permission.TAKE_BOOK.getNoPermissionMsg(serverPlayer));
                 }
             }
         }

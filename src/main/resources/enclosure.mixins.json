@@ -17,7 +17,6 @@
     "MixinBucketItem",
     "MixinCampfireBlock",
     "MixinChestBlock",
-    "MixinChestBoatEntity",
     "MixinChorusFruitItem",
     "MixinCreeperEntity",
     "MixinCrossBowItem",
@@ -50,23 +49,17 @@
     "MixinPlayerEntity",
     "MixinPotionEntity",
     "MixinPowderSnowBlock",
-    "MixinSculkCatalystBlock",
-    "MixinSculkCatalystBlockEntity",
-    "MixinSculkSpreadManagerCursor",
-    "MixinSculkVeinBlock",
     "MixinServerPlayerEntity",
     "MixinStorageMinecartEntity",
-    "MixinTadpoleEntity",
     "MixinTntBlock",
     "MixinTntMinecartEntity",
     "MixinTurtleEggBlock",
     "MixinUserCache",
     "MixinWitherEntity",
-    "MixinWitherSkullBlock",
-    "workaround.MixinServerPlayerInteractionManager",
-    "workaround.MixinServerPlayNetworkHandler"
+    "MixinWitherSkullBlock"
   ],
   "mixins": [
-    "MixinServerMetadata"
+    "MixinServerMetadata",
+    "MixinServerMetadataCodec"
   ]
 }

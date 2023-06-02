@@ -3,9 +3,10 @@ package com.github.zly2006.enclosure.mixin;
 import com.github.zly2006.enclosure.EnclosureArea;
 import com.github.zly2006.enclosure.ServerMain;
 import com.github.zly2006.enclosure.utils.Permission;
+import com.github.zly2006.enclosure.utils.UtilsKt;
 import net.minecraft.entity.EntityType;
-import net.minecraft.entity.passive.AbstractHorseEntity;
 import net.minecraft.entity.passive.AnimalEntity;
+import net.minecraft.entity.passive.HorseBaseEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
@@ -15,7 +16,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-@Mixin(AbstractHorseEntity.class)
+@Mixin(HorseBaseEntity.class)
 public abstract class MixinHorses extends AnimalEntity {
     protected MixinHorses(EntityType<? extends AnimalEntity> entityType, World world) {
         super(entityType, world);
@@ -26,7 +27,7 @@ public abstract class MixinHorses extends AnimalEntity {
         if (player instanceof ServerPlayerEntity serverPlayer) {
             EnclosureArea area = ServerMain.INSTANCE.getSmallestEnclosure((ServerWorld) this.getWorld(), getBlockPos());
             if (area != null && !area.hasPerm(serverPlayer, Permission.CONTAINER)) {
-                serverPlayer.sendMessage(Permission.CONTAINER.getNoPermissionMsg(serverPlayer));
+                UtilsKt.sendMessage(serverPlayer, Permission.CONTAINER.getNoPermissionMsg(serverPlayer));
                 ci.cancel();
             }
         }

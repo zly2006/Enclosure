@@ -14,7 +14,7 @@ import net.minecraft.network.PacketByteBuf;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayNetworkHandler;
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.Text;
+import net.minecraft.text.TranslatableText;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -70,7 +70,7 @@ public class EnclosureInstalledC2SPacket implements ServerPlayNetworking.PlayCha
                 compound.put("", new NbtCompound());
                 ServerPlayNetworking.send(player, NetworkChannels.SYNC_UUID, buf2);
             } else {
-                player.sendMessage(Text.translatable("enclosure.message.outdated", MOD_VERSION.getFriendlyString(), version.getFriendlyString()), false);
+                player.sendMessage(new TranslatableText("enclosure.message.outdated", MOD_VERSION.getFriendlyString(), version.getFriendlyString()), false);
             }
         } catch (VersionParsingException ignored) { }
     }

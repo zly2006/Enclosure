@@ -4,7 +4,6 @@ import com.github.zly2006.enclosure.EnclosureArea;
 import com.github.zly2006.enclosure.EnclosureList;
 import com.github.zly2006.enclosure.ServerMain;
 import com.github.zly2006.enclosure.utils.Permission;
-import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import net.minecraft.entity.Entity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
@@ -22,11 +21,9 @@ import java.util.List;
 public abstract class MixinExplosion {
     @Shadow
     @Final
-    private ObjectArrayList<BlockPos> affectedBlocks;
-
-    @Shadow
-    @Final
     private World world;
+
+    @Shadow @Final private List<BlockPos> affectedBlocks;
 
     @ModifyVariable(at = @At(value = "INVOKE", target = "Lnet/minecraft/util/math/Vec3d;<init>(DDD)V", ordinal = 1), method = "collectBlocksAndDamageEntities")
     private List<Entity> protectEntities(List<Entity> list) {

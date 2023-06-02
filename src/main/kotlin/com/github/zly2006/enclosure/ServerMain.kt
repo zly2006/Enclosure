@@ -13,6 +13,7 @@ import com.github.zly2006.enclosure.network.EnclosureInstalledC2SPacket
 import com.github.zly2006.enclosure.network.RequestOpenScreenC2SPPacket
 import com.github.zly2006.enclosure.utils.Permission
 import com.github.zly2006.enclosure.utils.ResourceLoader
+import com.github.zly2006.enclosure.utils.sendMessage
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import com.google.gson.JsonObject
@@ -42,14 +43,14 @@ import net.minecraft.entity.passive.*
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.item.*
 import net.minecraft.network.packet.s2c.play.EntityTrackerUpdateS2CPacket
-import net.minecraft.registry.RegistryKey
-import net.minecraft.registry.tag.BlockTags
 import net.minecraft.server.MinecraftServer
 import net.minecraft.server.command.CommandManager
 import net.minecraft.server.command.ServerCommandSource
 import net.minecraft.server.network.ServerPlayNetworkHandler
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.server.world.ServerWorld
+import net.minecraft.tag.BlockTags
+import net.minecraft.text.LiteralText
 import net.minecraft.text.Style
 import net.minecraft.text.Text
 import net.minecraft.text.TextColor
@@ -60,8 +61,10 @@ import net.minecraft.util.TypedActionResult
 import net.minecraft.util.hit.BlockHitResult
 import net.minecraft.util.hit.HitResult
 import net.minecraft.util.math.BlockPos
+import net.minecraft.util.registry.RegistryKey
 import net.minecraft.world.RaycastContext
 import net.minecraft.world.World
+import net.minecraft.world.explosion.Explosion
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.io.File
@@ -109,23 +112,23 @@ object ServerMain: DedicatedServerModInitializer {
         val item: Item,
         val entity: Entity?
     )
-    val HEADER: Text = Text.empty()
-        .append(Text.literal("[").styled { style: Style ->
+    val HEADER: Text = LiteralText("")
+        .append(LiteralText("[").styled { style: Style ->
             style.withColor(
                 TextColor.fromRgb(0x00FF00)
             )
         })
-        .append(Text.literal("Enclosure").styled { style: Style ->
+        .append(LiteralText("Enclosure").styled { style: Style ->
             style.withColor(
                 TextColor.fromRgb(0x00FFFF)
             )
         })
-        .append(Text.literal("]").styled { style: Style ->
+        .append(LiteralText("]").styled { style: Style ->
             style.withColor(
                 TextColor.fromRgb(0x00FF00)
             )
         })
-        .append(Text.literal(" ").formatted(Formatting.RESET))
+        .append(LiteralText(" ").formatted(Formatting.RESET))
     internal val enclosures: MutableMap<RegistryKey<World>, EnclosureList> = HashMap()
     var operationItem: Item? = null
     var playerSessions: MutableMap<UUID, Session> = HashMap()
@@ -249,12 +252,11 @@ object ServerMain: DedicatedServerModInitializer {
                 }
                 put(Permission.USE_JUKEBOX) { it.block === Blocks.JUKEBOX }
                 put(Permission.REDSTONE) {
-                    it.block is ButtonBlock || it.block === Blocks.LEVER || it.block === Blocks.DAYLIGHT_DETECTOR
+                    it.block is AbstractButtonBlock || it.block === Blocks.LEVER || it.block === Blocks.DAYLIGHT_DETECTOR
                             || it.block === Blocks.REPEATER || it.block === Blocks.COMPARATOR || it.block === Blocks.REDSTONE_WIRE
                 }
                 put(Permission.STRIP_LOG) { (it.state?.isIn(BlockTags.LOGS) ?: false) && it.item is AxeItem }
                 put(Permission.VEHICLE) { it.item is BoatItem || it.item is MinecartItem }
-                put(Permission.ALLAY) { it.entity is AllayEntity }
                 put(Permission.CAULDRON) { it.block is AbstractCauldronBlock }
                 put(Permission.COMMAND_TP) { it.entity is ItemFrameEntity }
                 put(Permission.PLACE_BLOCK) {
@@ -378,7 +380,7 @@ object ServerMain: DedicatedServerModInitializer {
             // warn the server ops that this server is running in development mode and not secure.
             if (minecraftServer.playerManager.isOperator(handler.player.gameProfile) && commonConfig.developMode) {
                 handler.player.sendMessage(
-                    Text.literal("This server is running in development environment, and this is dangerous! To turn this feature off, please modify the config file.")
+                    LiteralText("This server is running in development environment, and this is dangerous! To turn this feature off, please modify the config file.")
                         .formatted(Formatting.RED), false
                 )
             }
@@ -429,7 +431,7 @@ object ServerMain: DedicatedServerModInitializer {
                                             pos.y,
                                             pos.z,
                                             radius,
-                                            World.ExplosionSourceType.TNT
+                                            Explosion.DestructionType.DESTROY
                                         )
                                         0
                                     }
@@ -550,7 +552,7 @@ object ServerMain: DedicatedServerModInitializer {
                             player.currentScreenHandler.syncState()
                             player.sendMessage(permission.getNoPermissionMsg(player))
                             player.networkHandler.sendPacket(EntityTrackerUpdateS2CPacket(
-                                entity.id, entity.dataTracker.entries.map { it.value.toSerialized() }
+                                entity.id, entity.dataTracker, false
                             ))
                             ActionResult.FAIL
                         }

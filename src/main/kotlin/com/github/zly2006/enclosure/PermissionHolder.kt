@@ -56,7 +56,7 @@ interface PermissionHolder : Serializable2Text {
     fun hasPubPerm(perm: Permission): Boolean {
         if (!perm.target.fitEnclosure()) {
             throw PermissionTargetException(
-                TrT.of("enclosure.message.permission_target_error")+(Text.literal(perm.target.name))
+                TrT.of("enclosure.message.permission_target_error") + LiteralText(perm.target.name)
             )
         }
         return hasPerm(CONSOLE, perm)
@@ -85,12 +85,12 @@ interface PermissionHolder : Serializable2Text {
     val name: String
 
     fun serializePermission(map: MutableMap<String, Boolean>): Text {
-        val text = Text.literal("")
+        val text = LiteralText("")
         map.forEach { (key: String?, value: Boolean) ->
             if (value) {
-                text.append(Text.literal(key).setStyle(Style.EMPTY.withColor(Formatting.GREEN)))
+                text.append(LiteralText(key).setStyle(Style.EMPTY.withColor(Formatting.GREEN)))
             } else {
-                text.append(Text.literal(key).setStyle(Style.EMPTY.withColor(Formatting.RED)))
+                text.append(LiteralText(key).setStyle(Style.EMPTY.withColor(Formatting.RED)))
             }
             text.append(" ")
         }
@@ -99,7 +99,7 @@ interface PermissionHolder : Serializable2Text {
 
     fun getSetPermissionCommand(uuid: UUID): String
     override fun serialize(settings: SerializationSettings, player: ServerPlayerEntity?): MutableText {
-        if (settings != SerializationSettings.Full) return Text.literal(name)
+        if (settings != SerializationSettings.Full) return LiteralText(name)
         val text = TrT.of("enclosure.message.permissions_header")
         permissionsMap.entries.map { (key, value) ->
             var ordinal = -1
@@ -107,7 +107,7 @@ interface PermissionHolder : Serializable2Text {
                 .withClickEvent(ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, getSetPermissionCommand(key)))
                 .hoverText(
                     if (key == CONSOLE) serializePermission(value) else  // 不是默认的，就显示uuid
-                        Text.literal("UUID=$key: ").gold() + serializePermission(value)
+                        LiteralText("UUID=$key: ").gold() + serializePermission(value)
                 )
             var name: String? = null
             if (key == CONSOLE) {
@@ -128,7 +128,7 @@ interface PermissionHolder : Serializable2Text {
                 style = style.withColor(Formatting.RED)
                 ordinal = 3
             }
-            val item = Text.literal(name).setStyle(style).append(" ")
+            val item = LiteralText(name).setStyle(style).append(" ")
             Pair.of(item, ordinal)
         }.sortedBy { it.second }.forEach { text.append(it.first) }
         return text

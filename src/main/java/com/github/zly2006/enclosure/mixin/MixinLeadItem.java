@@ -1,6 +1,7 @@
 package com.github.zly2006.enclosure.mixin;
 
 import com.github.zly2006.enclosure.ServerMain;
+import com.github.zly2006.enclosure.utils.UtilsKt;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.LeadItem;
 import net.minecraft.util.ActionResult;
@@ -18,7 +19,7 @@ public class MixinLeadItem {
     @Inject(method = "attachHeldMobsToBlock", at = @At("HEAD"), cancellable = true)
     private static void onAttachHeldMobsToBlock(PlayerEntity player, World world, BlockPos pos, CallbackInfoReturnable<ActionResult> cir) {
         if (!ServerMain.INSTANCE.checkPermission(world, pos, player, PLACE_BLOCK)) {
-            player.sendMessage(PLACE_BLOCK.getNoPermissionMsg(player));
+            UtilsKt.sendMessage(player, PLACE_BLOCK.getNoPermissionMsg(player));
             cir.setReturnValue(ActionResult.PASS);
         }
     }

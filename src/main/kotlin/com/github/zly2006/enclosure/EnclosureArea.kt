@@ -15,9 +15,9 @@ import net.minecraft.server.command.ServerCommandSource
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.server.world.ServerWorld
 import net.minecraft.text.ClickEvent
+import net.minecraft.text.LiteralText
 import net.minecraft.text.MutableText
 import net.minecraft.text.Style
-import net.minecraft.text.Text
 import net.minecraft.util.Formatting
 import net.minecraft.util.math.BlockPos
 import net.minecraft.util.math.Box
@@ -285,7 +285,7 @@ open class EnclosureArea : PersistentState, ReadOnlyEnclosureArea {
     }
 
     fun distanceTo(pos: Vec3d): Vec3d {
-        if (isInner(BlockPos.ofFloored(pos))) {
+        if (isInner(BlockPos(pos))) {
             return Vec3d.ZERO
         }
         var x = 0.0
@@ -311,7 +311,7 @@ open class EnclosureArea : PersistentState, ReadOnlyEnclosureArea {
 
     override fun serialize(settings: SerializationSettings, player: ServerPlayerEntity?): MutableText {
         return when (settings) {
-            SerializationSettings.Name -> Text.literal(fullName)
+            SerializationSettings.Name -> LiteralText(fullName)
             SerializationSettings.Hover -> {
                 TrT.of("enclosure.message.select.from") +
                         literalText("[").darkGreen() +
@@ -343,13 +343,13 @@ open class EnclosureArea : PersistentState, ReadOnlyEnclosureArea {
                 }
                 text += TrT.of("enclosure.info.created_by").white()
                 val ownerName = Utils.getNameByUUID(owner)
-                text += (ownerName?.let { Text.literal(it).gold() } ?: TrT.of("enclosure.message.unknown_user").red())
-                    .hoverText(Text.literal("UUID: $owner"))
+                text += (ownerName?.let { LiteralText(it).gold() } ?: TrT.of("enclosure.message.unknown_user").red())
+                    .hoverText(LiteralText("UUID: $owner"))
                 text
             }
 
             SerializationSettings.Full -> {
-                val text = Text.empty()
+                val text = LiteralText("")
                 if (father != null) {
                     text += (TrT.of("enclosure.info.father_land").white())
                     text += father!!.serialize(SerializationSettings.Name, player).gold()
@@ -370,9 +370,9 @@ open class EnclosureArea : PersistentState, ReadOnlyEnclosureArea {
             }
 
             SerializationSettings.BarredFull -> {
-                val bar = Text.literal("------------------------------")
+                val bar = LiteralText("------------------------------")
                     .styled { style: Style -> style.withColor(Formatting.YELLOW).withBold(true) }
-                Text.empty()
+                LiteralText("")
                     .append(bar)
                     .append("\n")
                     .append(serialize(SerializationSettings.Full, player))

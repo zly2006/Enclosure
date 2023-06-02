@@ -35,7 +35,7 @@ public class MixinServerEntry {
                 if (mouseX > x + 24 && mouseX < x + 32 &&
                         mouseY > y + 24 && mouseY < y + 32) {
                     offset = 8;
-                    screen.setMultiplayerScreenTooltip(
+                    screen.setTooltip(
                             List.of(Text.of("This server has enclosure mod installed, version: " + access.getModVersion().getFriendlyString()))
                     );
                 }

@@ -4,20 +4,21 @@ import com.github.zly2006.enclosure.EnclosureArea;
 import com.github.zly2006.enclosure.ServerMain;
 import com.github.zly2006.enclosure.gui.EnclosureScreenHandler;
 import com.github.zly2006.enclosure.utils.TrT;
+import com.github.zly2006.enclosure.utils.UtilsKt;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
 import net.fabricmc.fabric.api.networking.v1.PacketSender;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.network.PacketByteBuf;
-import net.minecraft.registry.RegistryKey;
-import net.minecraft.registry.RegistryKeys;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayNetworkHandler;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.registry.Registry;
+import net.minecraft.util.registry.RegistryKey;
 
 import static com.github.zly2006.enclosure.ServerMainKt.minecraftServer;
 
@@ -50,14 +51,14 @@ public class RequestOpenScreenC2SPPacket implements ServerPlayNetworking.PlayCha
         EnclosureArea area;
         if (EnclosureInstalledC2SPacket.isInstalled(player)) {
             if (name.isEmpty()) {
-                ServerWorld world = minecraftServer.getWorld(RegistryKey.of(RegistryKeys.WORLD, dimId));
+                ServerWorld world = minecraftServer.getWorld(RegistryKey.of(Registry.WORLD_KEY, dimId));
                 if (world == null) {
-                    player.sendMessage(TrT.of("enclosure.message.no_enclosure"));
+                    UtilsKt.sendMessage(player, TrT.of("enclosure.message.no_enclosure"));
                     return;
                 }
                 area = ServerMain.INSTANCE.getAllEnclosures(world).getArea(blockPos);
                 if (area == null) {
-                    player.sendMessage(TrT.of("enclosure.message.no_enclosure"));
+                    UtilsKt.sendMessage(player, TrT.of("enclosure.message.no_enclosure"));
                     return;
                 }
                 area = area.areaOf(blockPos);
@@ -65,7 +66,7 @@ public class RequestOpenScreenC2SPPacket implements ServerPlayNetworking.PlayCha
             else {
                 area = ServerMain.INSTANCE.getEnclosure(name);
                 if (area == null) {
-                    player.sendMessage(TrT.of("enclosure.message.no_enclosure"));
+                    UtilsKt.sendMessage(player, TrT.of("enclosure.message.no_enclosure"));
                     return;
                 }
             }

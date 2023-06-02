@@ -3,6 +3,7 @@ package com.github.zly2006.enclosure.mixin;
 import com.github.zly2006.enclosure.EnclosureArea;
 import com.github.zly2006.enclosure.ServerMain;
 import com.github.zly2006.enclosure.utils.Permission;
+import com.github.zly2006.enclosure.utils.UtilsKt;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.TntBlock;
 import net.minecraft.entity.player.PlayerEntity;
@@ -27,7 +28,7 @@ public class MixinTntBlock {
         if (player instanceof ServerPlayerEntity serverPlayer) {
             EnclosureArea area = ServerMain.INSTANCE.getSmallestEnclosure((ServerWorld) world, pos);
             if (area != null && !area.hasPerm(serverPlayer, Permission.PRIME_TNT)) {
-                player.sendMessage(Permission.PRIME_TNT.getNoPermissionMsg(player));
+                UtilsKt.sendMessage(serverPlayer, Permission.PRIME_TNT.getNoPermissionMsg(serverPlayer));
                 cir.setReturnValue(ActionResult.FAIL);
             }
         }
@@ -37,7 +38,7 @@ public class MixinTntBlock {
         EnclosureArea area = ServerMain.INSTANCE.getSmallestEnclosure((ServerWorld) world, hit.getBlockPos());
         if (projectile.getOwner() instanceof ServerPlayerEntity player) {
             if (area != null && !area.hasPerm(player, Permission.PRIME_TNT)) {
-                player.sendMessage(Permission.PRIME_TNT.getNoPermissionMsg(player));
+                UtilsKt.sendMessage(player, Permission.PRIME_TNT.getNoPermissionMsg(player));
                 ci.cancel();
             }
         }

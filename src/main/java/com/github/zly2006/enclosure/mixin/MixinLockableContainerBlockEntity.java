@@ -2,6 +2,7 @@ package com.github.zly2006.enclosure.mixin;
 
 import com.github.zly2006.enclosure.EnclosureArea;
 import com.github.zly2006.enclosure.ServerMain;
+import com.github.zly2006.enclosure.utils.UtilsKt;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.BlockEntityType;
@@ -31,7 +32,7 @@ public class MixinLockableContainerBlockEntity extends BlockEntity {
             }
             EnclosureArea area = ServerMain.INSTANCE.getSmallestEnclosure(player.getWorld(), getPos());
             if (area != null && !area.hasPerm(player, CONTAINER)) {
-                player.sendMessage(CONTAINER.getNoPermissionMsg(player));
+                UtilsKt.sendMessage(player, CONTAINER.getNoPermissionMsg(player));
                 cir.setReturnValue(false);
             }
         }

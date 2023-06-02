@@ -7,6 +7,7 @@ import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
+import net.minecraft.text.TranslatableText;
 import net.minecraft.util.Identifier;
 import org.jetbrains.annotations.NotNull;
 
@@ -64,17 +65,17 @@ public class PermissionScreen extends Screen {
     public void render(MatrixStack matrices, int mouseX, int mouseY, float delta) {
         renderBackground(matrices);
         super.render(matrices, mouseX, mouseY, delta);
-        MutableText title = Text.translatable("enclosure.widget.set_permission").append(" ");
+        MutableText title = new TranslatableText("enclosure.widget.set_permission").append(" ");
         if (CONSOLE.equals(uuid)) {
-            title.append(Text.translatable("enclosure.widget.global"));
+            title.append(new TranslatableText("enclosure.widget.global"));
         }
         else {
-            title.append(Text.translatable("enclosure.widget.player"))
+            title.append(new TranslatableText("enclosure.widget.player"))
                     .append(" ")
                     .append(UUIDCacheS2CPacket.getName(uuid));
         }
         title.append(" ")
-                .append(Text.translatable("enclosure.widget.in_enclosure"))
+                .append(new TranslatableText("enclosure.widget.in_enclosure"))
                 .append(" ")
                 .append(fullName);
         textRenderer.draw(matrices, title, 10, 10, 0xffffff);
@@ -84,7 +85,7 @@ public class PermissionScreen extends Screen {
         assert client != null;
         client.execute(() -> client.setScreen(new ConfirmScreen(this, readString, () -> {
             assert client.player != null;
-            client.player.networkHandler.sendCommand("enclosure confirm");
+            client.player.sendChatMessage("/enclosure confirm");
         })));
     }
 

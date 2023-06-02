@@ -3,6 +3,7 @@ package com.github.zly2006.enclosure.mixin;
 import com.github.zly2006.enclosure.EnclosureArea;
 import com.github.zly2006.enclosure.ServerMain;
 import com.github.zly2006.enclosure.utils.Permission;
+import com.github.zly2006.enclosure.utils.UtilsKt;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.projectile.thrown.EnderPearlEntity;
 import net.minecraft.entity.projectile.thrown.ThrownItemEntity;
@@ -28,7 +29,7 @@ public abstract class MixinEnderPearl extends ThrownItemEntity {
             if (area == null)
                 return;
             if (!area.hasPerm(player, Permission.TELEPORT)) {
-                player.sendMessage(Permission.TELEPORT.getNoPermissionMsg(player));
+                UtilsKt.sendMessage(player, Permission.TELEPORT.getNoPermissionMsg(player));
                 ci.cancel();
                 discard();
             }

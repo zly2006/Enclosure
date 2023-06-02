@@ -2,6 +2,7 @@ package com.github.zly2006.enclosure.mixin;
 
 import com.github.zly2006.enclosure.ServerMain;
 import com.github.zly2006.enclosure.utils.Permission;
+import com.github.zly2006.enclosure.utils.UtilsKt;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.FarmlandBlock;
 import net.minecraft.entity.Entity;
@@ -19,7 +20,7 @@ public class MixinFarmlandBlock {
     private void onLandedUpon(World world, BlockState state, BlockPos pos, Entity entity, float fallDistance, CallbackInfo ci) {
         if (entity instanceof PlayerEntity player) {
             if (!ServerMain.INSTANCE.checkPermission(world, pos, player, Permission.FARMLAND_DESTROY)) {
-                entity.sendMessage(Permission.FARMLAND_DESTROY.getNoPermissionMsg(player));
+                UtilsKt.sendMessage(player, Permission.FARMLAND_DESTROY.getNoPermissionMsg(player));
                 ci.cancel();
             }
         }

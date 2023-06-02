@@ -2,6 +2,7 @@ package com.github.zly2006.enclosure.mixin;
 
 import com.github.zly2006.enclosure.ServerMain;
 import com.github.zly2006.enclosure.utils.Permission;
+import com.github.zly2006.enclosure.utils.UtilsKt;
 import net.minecraft.entity.Bucketable;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
@@ -30,7 +31,7 @@ public abstract class MixinMobEntity extends LivingEntity {
             if (!ServerMain.INSTANCE.checkPermission(getWorld(), getBlockPos(), player, Permission.FISH)) {
                 ServerPlayerEntity serverPlayer = (ServerPlayerEntity) player;
                 serverPlayer.networkHandler.sendPacket(createSpawnPacket());
-                serverPlayer.sendMessage(Permission.FISH.getNoPermissionMsg(player));
+                UtilsKt.sendMessage(player, Permission.FISH.getNoPermissionMsg(player));
                 serverPlayer.currentScreenHandler.syncState();
                 cir.setReturnValue(ActionResult.FAIL);
             }
@@ -42,7 +43,7 @@ public abstract class MixinMobEntity extends LivingEntity {
         if (!ServerMain.INSTANCE.checkPermission(getWorld(), getBlockPos(), player, Permission.LEASH)) {
             ServerPlayerEntity serverPlayer = (ServerPlayerEntity) player;
             serverPlayer.networkHandler.sendPacket(new EntityAttachS2CPacket(this, null));
-            serverPlayer.sendMessage(Permission.LEASH.getNoPermissionMsg(player));
+            UtilsKt.sendMessage(player, Permission.LEASH.getNoPermissionMsg(player));
             serverPlayer.currentScreenHandler.syncState();
             cir.setReturnValue(false);
         }

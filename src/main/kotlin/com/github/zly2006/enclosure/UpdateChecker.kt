@@ -5,7 +5,7 @@ import net.fabricmc.loader.api.Version
 import net.fabricmc.loader.api.VersionParsingException
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.text.ClickEvent
-import net.minecraft.text.Text
+import net.minecraft.text.LiteralText
 import net.minecraft.util.Formatting
 import java.io.IOException
 import java.net.URI
@@ -54,14 +54,14 @@ class UpdateChecker {
         if (latestVersion == null) {
             return
         }
-        serverPlayer.sendMessage(Text.literal("A new version of enclosure is available: ")
+        serverPlayer.sendMessage(LiteralText("A new version of enclosure is available: ")
             .styled {
                 it
                     .withColor(Formatting.YELLOW)
                     .withClickEvent(ClickEvent(ClickEvent.Action.OPEN_URL, latestVersion!!.url))
             }
-            .append(Text.literal(latestVersion!!.versionNumber.toString()).formatted(latestVersion!!.versionType.toColor()))
-            .append(Text.literal("\nClick here to download.").formatted(Formatting.AQUA)), false)
+            .append(LiteralText(latestVersion!!.versionNumber.toString()).formatted(latestVersion!!.versionType.toColor()))
+            .append(LiteralText("\nClick here to download.").formatted(Formatting.AQUA)), false)
     }
 
     fun check() {

@@ -5,6 +5,7 @@ import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.item.Item
 import net.minecraft.item.Items
 import net.minecraft.server.network.ServerPlayerEntity
+import net.minecraft.text.LiteralText
 import net.minecraft.text.MutableText
 import net.minecraft.text.Style
 import net.minecraft.text.Text
@@ -49,15 +50,15 @@ class Permission(
     }
 
     fun getNoPermissionMsg(player: PlayerEntity?): MutableText {
-        return TrT.of("enclosure.message.no_permission").formatted(Formatting.GOLD)
-            .append(serialize(SerializationSettings.Summarize, (player as? ServerPlayerEntity)!!)
+        return TrT.of("enclosure.message.no_permission", player as ServerPlayerEntity?).formatted(Formatting.GOLD)
+            .append(serialize(SerializationSettings.Summarize, player!!)
                 .styled { style: Style -> style.withColor(Formatting.RED) })
     }
 
     override fun serialize(settings: SerializationSettings, player: ServerPlayerEntity?): MutableText {
         return when (settings) {
-            SerializationSettings.Name -> Text.literal(name)
-            SerializationSettings.Full -> Text.literal(name)
+            SerializationSettings.Name -> LiteralText(name)
+            SerializationSettings.Full -> LiteralText(name)
                 .formatted(Formatting.YELLOW)
                 .hoverText(
                     TrT.of("enclosure.widget.default_value_is")
@@ -150,13 +151,11 @@ class Permission(
         @JvmField val DRAGON_DESTROY = Permission("dragon_destroy", Target.Enclosure, false, Items.DRAGON_HEAD).apply(::register)
         @JvmField val WITHER_DESTROY = Permission("wither_destroy", Target.Enclosure, false, Items.WITHER_SKELETON_SKULL).apply(::register)
         @JvmField val WITHER_ENTER = Permission("wither_enter", Target.Enclosure, true, Items.WITHER_SKELETON_SKULL).apply(::register)
-        @JvmField val SCULK_SPREAD = Permission("sculk_spread", Target.Enclosure, false, Items.SCULK_CATALYST).apply(::register)
         @JvmField val DROP_ITEM = Permission("drop_item", Target.Both, true, Items.DIRT).apply(::register)
         @JvmField val PICKUP_ITEM = Permission("pickup_item", Target.Both, true, Items.DIRT).apply(::register)
         @JvmField val FISH = Permission("fish", icon = Items.FISHING_ROD).apply(::register)
         @JvmField val FARMLAND_DESTROY = Permission("farmland_destroy", icon = Items.FARMLAND).apply(::register)
         @JvmField val ARMOR_STAND = Permission("armor_stand", icon = Items.ARMOR_STAND).apply(::register)
-        @JvmField val ALLAY = Permission("allay", icon = Items.ALLAY_SPAWN_EGG).apply(::register)
         @JvmField val CONSUMPTIVELY_EXTINGUISH = Permission("consumptively_extinguish", Target.Enclosure, false, Items.POWDER_SNOW_BUCKET).apply(::register)
         @JvmField val CAULDRON = Permission("cauldron", icon = Items.CAULDRON).apply(::register)
         @JvmField val BREAK_TURTLE_EGG = Permission("break_turtle_egg", Target.Both, true, Items.TURTLE_EGG).apply(::register)

@@ -7,9 +7,9 @@ import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.render.*
 import net.minecraft.client.util.math.MatrixStack
+import net.minecraft.util.math.Matrix3f
+import net.minecraft.util.math.Matrix4f
 import net.minecraft.util.math.Vec3d
-import org.joml.Matrix3f
-import org.joml.Matrix4f
 import kotlin.math.max
 import kotlin.math.min
 
@@ -106,7 +106,7 @@ object EnclosureWorldRenderer {
         matrices.push()
         RenderSystem.disableCull()
         val bufferBuilder = Tessellator.getInstance().buffer
-        RenderSystem.setShader { GameRenderer.getPositionColorProgram() }
+        RenderSystem.setShader(GameRenderer::getPositionColorShader)
         fun drawFace(x1: Float, y1: Float, z1: Float, x2: Float, y2: Float, z2: Float, x3: Float, y3: Float, z3: Float, x4: Float, y4: Float, z4: Float, red: Float, green: Float, blue: Float, alpha: Float) {
             bufferBuilder.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_COLOR)
             bufferBuilder.vertex(matrix4f, x1, y1, z1).color(red, green, blue, alpha).next()

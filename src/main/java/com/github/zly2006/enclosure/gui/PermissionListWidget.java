@@ -15,14 +15,13 @@ import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.item.ItemStack;
 import net.minecraft.text.Style;
 import net.minecraft.text.Text;
-import net.minecraft.text.TranslatableTextContent;
+import net.minecraft.text.TranslatableText;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Language;
 import org.jetbrains.annotations.Nullable;
 import org.lwjgl.glfw.GLFW;
 
 import java.util.*;
-import java.util.function.Supplier;
 
 import static com.github.zly2006.enclosure.command.EnclosureCommandKt.CONSOLE;
 
@@ -75,9 +74,9 @@ public class PermissionListWidget extends ElementListWidget<PermissionListWidget
         final Permission permission;
 
         private Text value(Boolean value) {
-            return value == null ? Text.translatable("enclosure.widget.none").setStyle(Style.EMPTY.withColor(Formatting.DARK_AQUA))
-                    : value ? Text.translatable("enclosure.widget.true").setStyle(Style.EMPTY.withColor(Formatting.GREEN))
-                            : Text.translatable("enclosure.widget.false").setStyle(Style.EMPTY.withColor(Formatting.RED));
+            return value == null ? new TranslatableText("enclosure.widget.none").setStyle(Style.EMPTY.withColor(Formatting.DARK_AQUA))
+                    : value ? new TranslatableText("enclosure.widget.true").setStyle(Style.EMPTY.withColor(Formatting.GREEN))
+                            : new TranslatableText("enclosure.widget.false").setStyle(Style.EMPTY.withColor(Formatting.RED));
         }
         private Text value() {
             return value(getValue());
@@ -95,29 +94,29 @@ public class PermissionListWidget extends ElementListWidget<PermissionListWidget
 
         public PermissionEntry(Permission permission) {
             this.permission = permission;
-            buttonWidget = new SetButtonWidget(0, 0, 40, 20, value(), buttonWidget -> {}, Supplier::get);
+            buttonWidget = new SetButtonWidget(0, 0, 40, 20, value(), buttonWidget -> {});
         }
 
         @Override
         public void render(MatrixStack matrices, int index, int y, int x, int entryWidth, int entryHeight, int mouseX, int mouseY, boolean hovered, float tickDelta) {
-            buttonWidget.setY(y);
-            buttonWidget.setX(x + entryWidth - 40);
+            buttonWidget.y = y;
+            buttonWidget.x = x + entryWidth - 40;
             buttonWidget.setMessage(value());
             buttonWidget.render(matrices, mouseX, mouseY, tickDelta);
             client.textRenderer.draw(matrices, permission.getName(), x + 20, y + 3, 0xFFFFFF);
             client.textRenderer.draw(matrices, permission.getDescription(), x + 140, y + 3, 0x999999);
             permission.getIcon();
-            client.getItemRenderer().renderInGui(matrices, new ItemStack(permission.getIcon()), x, y);
+            client.getItemRenderer().renderInGui(new ItemStack(permission.getIcon()), x, y);
             if (buttonWidget.isHovered()) {
                 parent.renderTooltip(matrices, List.of(
-                    Text.translatable("enclosure.widget.click.left").styled(style -> style.withColor(Formatting.GREEN)),
-                    Text.translatable("enclosure.widget.click.right").styled(style -> style.withColor(Formatting.RED))
+                    new TranslatableText("enclosure.widget.click.left").styled(style -> style.withColor(Formatting.GREEN)),
+                    new TranslatableText("enclosure.widget.click.right").styled(style -> style.withColor(Formatting.RED))
                 ), mouseX, mouseY);
             }
             else if (hovered) {
                 parent.renderTooltip(matrices,
                     List.of(permission.getDescription(),
-                        Text.translatable("enclosure.widget.default_value_is").setStyle(Style.EMPTY.withColor(Formatting.GOLD))
+                        new TranslatableText("enclosure.widget.default_value_is").setStyle(Style.EMPTY.withColor(Formatting.GOLD))
                             .append(" ").append(value(permission.getDefaultValue()))),
                     mouseX, mouseY);
             }
@@ -133,8 +132,8 @@ public class PermissionListWidget extends ElementListWidget<PermissionListWidget
             return List.of(buttonWidget);
         }
         public class SetButtonWidget extends ButtonWidget {
-            public SetButtonWidget(int x, int y, int width, int height, Text message, PressAction onPress, NarrationSupplier narrationSupplier) {
-                super(x, y, width, height, message, onPress, narrationSupplier);
+            public SetButtonWidget(int x, int y, int width, int height, Text message, PressAction onPress) {
+                super(x, y, width, height, message, onPress);
             }
 
             @Override
@@ -148,7 +147,7 @@ public class PermissionListWidget extends ElementListWidget<PermissionListWidget
                     if (value == null) setValue(true);
                     else setValue(null);
 
-                    client.player.networkHandler.sendChatCommand("enclosure set " + fullName + " uuid " +
+                    client.player.sendChatMessage("/enclosure set " + fullName + " uuid " +
                         uuid.toString() + " " +
                         permission.getName() + " " +
                         Optional.ofNullable(getValue()).map(String::valueOf).orElse("none"));
@@ -159,7 +158,7 @@ public class PermissionListWidget extends ElementListWidget<PermissionListWidget
                     Boolean value = getValue();
                     if (value == null) setValue(false);
                     else setValue(null);
-                    client.player.networkHandler.sendChatCommand("enclosure set " + fullName + " uuid " +
+                    client.player.sendChatMessage("/enclosure set " + fullName + " uuid " +
                         uuid.toString() + " " +
                         permission.getName() + " " +
                         Optional.ofNullable(getValue()).map(String::valueOf).orElse("none"));
@@ -186,7 +185,7 @@ public class PermissionListWidget extends ElementListWidget<PermissionListWidget
                         .filter(permission -> {
                             if (permission.getName().contains(s))
                                 return true;
-                            if (permission.getDescription().getContent() instanceof TranslatableTextContent content) {
+                            if (permission.getDescription() instanceof TranslatableText content) {
                                 return Language.getInstance().hasTranslation(content.getKey()) &&
                                         Language.getInstance().get(content.getKey()).contains(s);
                             }
@@ -199,11 +198,11 @@ public class PermissionListWidget extends ElementListWidget<PermissionListWidget
 
         @Override
         public void render(MatrixStack matrices, int index, int y, int x, int entryWidth, int entryHeight, int mouseX, int mouseY, boolean hovered, float tickDelta) {
-            searchWidget.setY(y);
+            searchWidget.y = y;
             searchWidget.setX(x + 70);
             searchWidget.setWidth(entryWidth - 70 - 2);
             searchWidget.render(matrices, mouseX, mouseY, tickDelta);
-            client.textRenderer.draw(matrices, Text.translatable("enclosure.widget.search"), x, y + 3, 0xFFFFFF);
+            client.textRenderer.draw(matrices, new TranslatableText("enclosure.widget.search"), x, y + 3, 0xFFFFFF);
         }
 
         @Override

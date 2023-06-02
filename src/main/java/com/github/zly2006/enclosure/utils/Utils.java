@@ -29,8 +29,7 @@ public class Utils {
     public static boolean isAnimal(Entity entity) {
         return entity instanceof PassiveEntity
                 || entity instanceof IronGolemEntity
-                || entity instanceof SnowGolemEntity
-                || entity instanceof AllayEntity;
+                || entity instanceof SnowGolemEntity;
     }
 
     public static boolean isMonster(Entity entity) {
@@ -130,7 +129,7 @@ public class Utils {
         }
         if (source.getAttacker() instanceof ServerPlayerEntity attacker) {
             if (area != null && !area.hasPerm(attacker, permission)) {
-                attacker.sendMessage(permission.getNoPermissionMsg(attacker));
+                UtilsKt.sendMessage(attacker, permission.getNoPermissionMsg(attacker));
                 return false;
             }
         }
@@ -145,7 +144,7 @@ public class Utils {
         if (area == null) return true;
         if (source.getAttacker() instanceof ServerPlayerEntity attacker) {
             if (!area.hasPerm(attacker, permission)) {
-                attacker.sendMessage(permission.getNoPermissionMsg(attacker));
+                UtilsKt.sendMessage(attacker, permission.getNoPermissionMsg(attacker));
                 return false;
             }
         } else {
@@ -179,13 +178,13 @@ public class Utils {
             return player.getDisplayName().copy();
         }
         if (uuid.equals(EnclosureCommandKt.CONSOLE)) {
-            return Text.literal(serverName);
+            return new LiteralText(serverName);
         }
         String name = getNameByUUID(uuid);
         if (name != null) {
-            return Text.literal(name);
+            return new LiteralText(name);
         }
-        return Text.literal(uuid.toString());
+        return new LiteralText(uuid.toString());
     }
 
     public static BlockPos toBlockPos(Vec3d vec3d) {

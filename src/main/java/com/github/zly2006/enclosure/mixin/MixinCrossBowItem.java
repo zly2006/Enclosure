@@ -1,6 +1,7 @@
 package com.github.zly2006.enclosure.mixin;
 
 import com.github.zly2006.enclosure.ServerMain;
+import com.github.zly2006.enclosure.utils.UtilsKt;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.CrossbowItem;
 import net.minecraft.item.ItemStack;
@@ -22,7 +23,7 @@ public class MixinCrossBowItem {
     private void onShoot(World world, PlayerEntity user, Hand hand, CallbackInfoReturnable<TypedActionResult<ItemStack>> cir, ItemStack itemStack) {
         if (user instanceof ServerPlayerEntity player) {
             if (!ServerMain.INSTANCE.checkPermission(player, SHOOT, player.getBlockPos())) {
-                player.sendMessage(SHOOT.getNoPermissionMsg(player));
+                UtilsKt.sendMessage(player, SHOOT.getNoPermissionMsg(player));
                 player.currentScreenHandler.syncState();  // update player's inventory
                 cir.setReturnValue(TypedActionResult.fail(itemStack));
             }

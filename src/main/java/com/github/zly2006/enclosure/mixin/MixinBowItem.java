@@ -1,6 +1,7 @@
 package com.github.zly2006.enclosure.mixin;
 
 import com.github.zly2006.enclosure.ServerMain;
+import com.github.zly2006.enclosure.utils.UtilsKt;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.item.BowItem;
 import net.minecraft.item.ItemStack;
@@ -19,7 +20,7 @@ public class MixinBowItem {
     public void checkBowPermission(ItemStack stack, World world, LivingEntity user, int remainingUseTicks, CallbackInfo ci) {
         if (user instanceof ServerPlayerEntity player) {
             if (!ServerMain.INSTANCE.checkPermission(player, SHOOT, player.getBlockPos())) {
-                player.sendMessage(SHOOT.getNoPermissionMsg(player));
+                UtilsKt.sendMessage(player, SHOOT.getNoPermissionMsg(player));
                 player.currentScreenHandler.syncState();  // update player's inventory
                 ci.cancel();
             }

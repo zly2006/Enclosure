@@ -6,6 +6,7 @@ import com.github.zly2006.enclosure.access.PlayerAccess;
 import com.github.zly2006.enclosure.utils.Permission;
 import com.github.zly2006.enclosure.utils.TrT;
 import com.github.zly2006.enclosure.utils.Utils;
+import com.github.zly2006.enclosure.utils.UtilsKt;
 import com.mojang.authlib.GameProfile;
 import net.fabricmc.api.Environment;
 import net.minecraft.entity.ItemEntity;
@@ -59,8 +60,6 @@ public abstract class MixinServerPlayerEntity extends PlayerEntity implements Pl
         this.permissionDeniedMsgTime = permissionDeniedMsgTime;
     }
 
-    @Shadow public abstract void sendMessage(Text message);
-
     @Shadow public abstract ServerWorld getWorld();
 
     @Shadow public abstract void sendMessage(Text message, boolean overlay);
@@ -82,7 +81,7 @@ public abstract class MixinServerPlayerEntity extends PlayerEntity implements Pl
             }
             if (attackerArea != null && !attackerArea.hasPubPerm(Permission.PVP)
                     && !attacker.getCommandSource().hasPermissionLevel(4)) {
-                attacker.sendMessage(PVP.getNoPermissionMsg(attacker));
+                UtilsKt.sendMessage(attacker, PVP.getNoPermissionMsg(attacker));
                 cir.setReturnValue(false);
             }
         }
@@ -150,7 +149,7 @@ public abstract class MixinServerPlayerEntity extends PlayerEntity implements Pl
                 text.append(formatMessage(area.getLeaveMessage(), area, player));
             }
         }
-        player.sendMessage(text);
+        UtilsKt.sendMessage(player, text);
     }
     @Inject(method = "tick", at = @At("HEAD"))
     private void onTick(CallbackInfo ci) {
@@ -167,7 +166,7 @@ public abstract class MixinServerPlayerEntity extends PlayerEntity implements Pl
             }
             if (area != null) {
                 if (!area.hasPerm(player, MOVE)) {
-                    player.sendMessage(MOVE.getNoPermissionMsg(player));
+                    UtilsKt.sendMessage(player, MOVE.getNoPermissionMsg(player));
                     if (area != lastArea && lastWorld != null && lastPos != null) {
                         // teleport back
                         player.teleport(lastWorld, lastPos.x, lastPos.y, lastPos.z, 0, 0);

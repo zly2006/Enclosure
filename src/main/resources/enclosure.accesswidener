@@ -8,3 +8,5 @@ accessible method net/minecraft/client/gui/screen/Screen remove (Lnet/minecraft/
 accessible field net/minecraft/entity/data/DataTracker entries Lit/unimi/dsi/fastutil/ints/Int2ObjectMap;
 accessible method net/minecraft/item/Item raycast (Lnet/minecraft/world/World;Lnet/minecraft/entity/player/PlayerEntity;Lnet/minecraft/world/RaycastContext$FluidHandling;)Lnet/minecraft/util/hit/BlockHitResult;
 accessible field net/minecraft/entity/ItemEntity owner Ljava/util/UUID;
+accessible method net/minecraft/entity/projectile/ProjectileEntity <init> (Lnet/minecraft/entity/EntityType;Lnet/minecraft/world/World;)V
+accessible field net/minecraft/network/packet/s2c/query/QueryResponseS2CPacket metadata Lnet/minecraft/server/ServerMetadata;

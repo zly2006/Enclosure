@@ -2,6 +2,7 @@ package com.github.zly2006.enclosure.mixin;
 
 import com.github.zly2006.enclosure.EnclosureArea;
 import com.github.zly2006.enclosure.ServerMain;
+import com.github.zly2006.enclosure.utils.UtilsKt;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.passive.AnimalEntity;
 import net.minecraft.entity.passive.ParrotEntity;
@@ -38,7 +39,7 @@ public abstract class MixinParrotEntity extends AnimalEntity {
                 EnclosureArea area = ServerMain.INSTANCE.getAllEnclosures((ServerWorld) getWorld()).getArea(getBlockPos());
 
                 if (area != null && !area.areaOf(getBlockPos()).hasPerm(player, PARROT_COOKIE)) {
-                    player.sendMessage(PARROT_COOKIE.getNoPermissionMsg(player));
+                    UtilsKt.sendMessage(player, PARROT_COOKIE.getNoPermissionMsg(player));
                     cir.setReturnValue(ActionResult.FAIL);
                 }
             }

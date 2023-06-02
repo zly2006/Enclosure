@@ -42,6 +42,9 @@ import kotlin.properties.ReadWriteProperty
 
 typealias argT = ArgumentBuilder<ServerCommandSource, *>
 
+private val ServerCommandSource.isExecutedByPlayer: Boolean
+    get() = this.entity is ServerPlayerEntity
+
 @JvmField
 val CONSOLE = UUID(0, 0)
 
@@ -150,7 +153,7 @@ class BuilderScope<T: argT>(var parent: T) {
                     val enclosure = getEnclosure(this)
                     action(enclosure)
                 } else {
-                    val blockPos = BlockPos.ofFloored(source.position)
+                    val blockPos = BlockPos(source.position)
                     ServerMain.getAllEnclosures(source.world).getArea(
                         blockPos
                     )?.areaOf(blockPos)?.let { action(it) }
@@ -176,7 +179,7 @@ class BuilderScope<T: argT>(var parent: T) {
             }
             BuilderScope(parent).apply {
                 builder(t, Command {
-                    val blockPos = BlockPos.ofFloored(it.source.position)
+                    val blockPos = BlockPos(it.source.position)
                     ServerMain.getAllEnclosures(it.source.world).getArea(blockPos)
                         ?.areaOf(blockPos)?.let { area -> action(it, area, t) }
                         ?: error(TrT.of("enclosure.message.no_enclosure"), it)
@@ -315,7 +318,7 @@ private fun createEnclosure(context: CommandContext<ServerCommandSource>) {
             if (count >= limits.maxLands) {
                 error(
                     TrT.of("enclosure.message.rcle.self")
-                        .append(Text.literal(limits.maxLands.toString())), context
+                        .append(LiteralText(limits.maxLands.toString())), context
                 )
             }
         }
@@ -369,19 +372,19 @@ fun register(dispatcher: CommandDispatcher<ServerCommandSource>): LiteralCommand
                     executes {
                         ServerMain.reloadCommon()
                         ServerMain.reloadLimits()
-                        source.sendMessage(Text.literal("Reloaded"))
+                        source.sendMessage(LiteralText("Reloaded"))
                     }
                 }
                 literal("common") {
                     executes {
                         ServerMain.reloadCommon()
-                        source.sendMessage(Text.literal("Reloaded"))
+                        source.sendMessage(LiteralText("Reloaded"))
                     }
                 }
                 literal("limits") {
                     executes {
                         ServerMain.reloadLimits()
-                        source.sendMessage(Text.literal("Reloaded"))
+                        source.sendMessage(LiteralText("Reloaded"))
                     }
                 }
             }
@@ -397,7 +400,7 @@ fun register(dispatcher: CommandDispatcher<ServerCommandSource>): LiteralCommand
                             it to session.isValid(ServerMain.limits)
                         }.filter { it.second != null }.forEach { (area, text) ->
                             source.sendMessage(
-                                Text.literal("Enclosure ")
+                                LiteralText("Enclosure ")
                                     .append(area.serialize(SerializationSettings.Name, source.player))
                                     .append(" is too large: ")
                                     .append(text)
@@ -412,7 +415,7 @@ fun register(dispatcher: CommandDispatcher<ServerCommandSource>): LiteralCommand
                         }.forEach { (owner, enclosures) ->
                             if (enclosures.size > ServerMain.limits.maxLands) {
                                 source.sendMessage(
-                                    Text.literal("Player ") +
+                                    LiteralText("Player ") +
                                             Utils.getDisplayNameByUUID(owner) +
                                             " has too many enclosures: " +
                                             enclosures.size.toString()
@@ -428,10 +431,10 @@ fun register(dispatcher: CommandDispatcher<ServerCommandSource>): LiteralCommand
                                 it.distanceTo(source.position).horizontalLength()
                             }
                         if (enclosure == null) {
-                            source.sendMessage(Text.literal("No enclosure found"))
+                            source.sendMessage(LiteralText("No enclosure found"))
                         } else {
                             source.sendMessage(
-                                Text.literal("Closest enclosure: " + enclosure.fullName + ", click to show info")
+                                LiteralText("Closest enclosure: " + enclosure.fullName + ", click to show info")
                                     .styled {
                                         it.withClickEvent(
                                             ClickEvent(
@@ -449,7 +452,7 @@ fun register(dispatcher: CommandDispatcher<ServerCommandSource>): LiteralCommand
                             val permission = Permission.getValue(StringArgumentType.getString(this, "permission"))
                                 ?: error(TrT.of("enclosure.message.invalid_permission"), this)
                             source.sendMessage(
-                                Text.literal("Name: ${permission.name} Target: ${permission.target}\nDescription: ") + permission.description + Text.literal("\nDefault: ${permission.defaultValue}\nComponents: ${permission.permissions.joinToString()}")
+                                LiteralText("Name: ${permission.name} Target: ${permission.target}\nDescription: ") + permission.description + LiteralText("\nDefault: ${permission.defaultValue}\nComponents: ${permission.permissions.joinToString()}")
                             )
                         }
                     }
@@ -457,7 +460,7 @@ fun register(dispatcher: CommandDispatcher<ServerCommandSource>): LiteralCommand
                 literal("clients") {
                     executes {
                         EnclosureInstalledC2SPacket.installedClientMod.forEach {
-                            source.sendMessage(Text.literal(it.key.entityName + ": " + it.value.friendlyString))
+                            source.sendMessage(LiteralText(it.key.entityName + ": " + it.value.friendlyString))
                         }
                     }
                 }
@@ -476,7 +479,7 @@ fun register(dispatcher: CommandDispatcher<ServerCommandSource>): LiteralCommand
                 val translatable = TrT.of("enclosure.message.limit.header")
                 limits.javaClass.fields.mapNotNull { field ->
                     try {
-                        Text.literal("\n")
+                        LiteralText("\n")
                             .append(TrT.limit(field).append(": ").gold())
                             .append(field[limits].toString())
                     } catch (ignored: IllegalAccessException) {
@@ -532,7 +535,7 @@ fun register(dispatcher: CommandDispatcher<ServerCommandSource>): LiteralCommand
             executes {
                 source.sendMessage(TrT.of("enclosure.help.header"))
                 dispatcher.getSmartUsage(dispatcher.root.getChild("enclosure"), source).forEach { (name, s) ->
-                    source.sendMessage(Text.literal("/enclosure $s").gold()
+                    source.sendMessage(LiteralText("/enclosure $s").gold()
                         .append(": ")
                         .append(TrT.of("enclosure.help." + name.name).white())
                     )
@@ -546,7 +549,7 @@ fun register(dispatcher: CommandDispatcher<ServerCommandSource>): LiteralCommand
                         source.sendMessage(TrT.of("enclosure.help.no_child", name))
                     } else {
                         source.sendMessage(
-                            Text.literal("/enclosure $name").gold()
+                            LiteralText("/enclosure $name").gold()
                                 .append(": ")
                                 .append(TrT.of("enclosure.help.$name").white())
                         )
@@ -557,7 +560,7 @@ fun register(dispatcher: CommandDispatcher<ServerCommandSource>): LiteralCommand
         literal("auto") {
             argument("name", StringArgumentType.word()) {
                 executes {
-                    val pos = BlockPos.ofFloored(source.position)
+                    val pos = BlockPos(source.position)
                     val limits = ServerMain.limits
                     val session = sessionOf(source)
                     val expandX = (limits.maxXRange - 1) / 2
@@ -740,9 +743,9 @@ fun register(dispatcher: CommandDispatcher<ServerCommandSource>): LiteralCommand
                 val text = area.serialize(SerializationSettings.BarredFull, source.player)
                 if (EnclosureInstalledC2SPacket.isInstalled(source.player)) {
                     text.append(
-                        Text.literal("\n(*)").setStyle(
+                        LiteralText("\n(*)").setStyle(
                             Style.EMPTY.withColor(Formatting.AQUA)
-                                .hoverText(Text.translatable("enclosure.message.suggest_gui"))
+                                .hoverText(TranslatableText("enclosure.message.suggest_gui"))
                                 .clickRun("/enclosure gui ${area.fullName}")
                         )
                     )
@@ -902,7 +905,7 @@ fun register(dispatcher: CommandDispatcher<ServerCommandSource>): LiteralCommand
                 if (!source.hasPermissionLevel(4) && !area.hasPerm(source.player!!, Permission.ADMIN)) {
                     error(Permission.ADMIN.getNoPermissionMsg(source.player), this)
                 }
-                if (!area.isInner(BlockPos.ofFloored(source.position))) {
+                if (!area.isInner(BlockPos(source.position))) {
                     error(TrT.of("enclosure.message.res_settp_pos_error"), this)
                 }
                 area.setTeleportPos(source.position, source.rotation.y, source.rotation.x)
@@ -955,7 +958,7 @@ fun register(dispatcher: CommandDispatcher<ServerCommandSource>): LiteralCommand
                         val count = enclosure.subEnclosures.areas.size.toLong()
                         if (count > limits.maxSubLands) {
                             error(
-                                TrT.of("enclosure.message.scle").append(Text.literal(limits.maxSubLands.toString())),
+                                TrT.of("enclosure.message.scle").append(LiteralText(limits.maxSubLands.toString())),
                                 this
                             )
                         }
@@ -1068,8 +1071,8 @@ fun register(dispatcher: CommandDispatcher<ServerCommandSource>): LiteralCommand
             }
             literal("check") {
                 tupa { area, uuid, permission ->
-                    val textTrue = Text.literal("true").formatted(Formatting.GREEN)
-                    val textFalse = Text.literal("false").formatted(Formatting.RED)
+                    val textTrue = LiteralText("true").formatted(Formatting.GREEN)
+                    val textFalse = LiteralText("false").formatted(Formatting.RED)
                     area.hasPerm(uuid, permission)
                     source.sendMessage(
                         TrT.of(
@@ -1121,7 +1124,7 @@ fun register(dispatcher: CommandDispatcher<ServerCommandSource>): LiteralCommand
                     } else {
                         source
                             .sendMessage(
-                                Text.literal(msg).append(" ").append(ctp).setStyle(
+                                LiteralText(msg).append(" ").append(ctp).setStyle(
                                     Style.EMPTY.hoverText(ctp)
                                         .withClickEvent(ClickEvent(ClickEvent.Action.COPY_TO_CLIPBOARD, msg))
                                 )

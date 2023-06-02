@@ -52,7 +52,7 @@ public class MixinServerPing {
             @Override
             public void onResponse(QueryResponseS2CPacket packet) {
                 listener.onResponse(packet);
-                ServerMetadataAccess metadata = (ServerMetadataAccess) packet.metadata();
+                ServerMetadataAccess metadata = (ServerMetadataAccess) packet.metadata;
                 ServerMetadataAccess info = (ServerMetadataAccess) finalEntry;
                 info.setModName(metadata.getModName());
                 info.setModVersion(metadata.getModVersion());
@@ -69,8 +69,8 @@ public class MixinServerPing {
             }
 
             @Override
-            public boolean isConnectionOpen() {
-                return listener.isConnectionOpen();
+            public ClientConnection getConnection() {
+                return listener.getConnection();
             }
         };
     }

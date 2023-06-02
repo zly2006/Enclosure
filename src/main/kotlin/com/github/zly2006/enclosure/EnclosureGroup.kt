@@ -8,8 +8,8 @@ import net.minecraft.nbt.NbtList
 import net.minecraft.nbt.NbtString
 import net.minecraft.server.command.ServerCommandSource
 import net.minecraft.server.network.ServerPlayerEntity
+import net.minecraft.text.LiteralText
 import net.minecraft.text.MutableText
-import net.minecraft.text.Text
 import net.minecraft.util.Formatting
 import net.minecraft.world.PersistentState
 import java.util.*
@@ -26,27 +26,27 @@ class EnclosureGroup : PermissionHolder {
 
     override fun serialize(settings: SerializationSettings, player: ServerPlayerEntity?): MutableText {
         return when (settings) {
-            SerializationSettings.Name -> Text.literal(name)
+            SerializationSettings.Name -> LiteralText(name)
             SerializationSettings.Summarize -> serialize(SerializationSettings.Name, player).hoverText(
                 serialize(SerializationSettings.Hover, player)
             )
 
             SerializationSettings.Full -> {
-                val text = Text.empty()
+                val text = LiteralText("")
                 for (enclosure in enclosures) {
                     text.append(
                         ServerMain.getEnclosure(enclosure)!!
                             .serialize(SerializationSettings.Summarize, player)
                     ).append(", ")
                 }
-                Text.literal("Group: ").append(serialize(SerializationSettings.Name, player))
+                LiteralText("Group: ").append(serialize(SerializationSettings.Name, player))
                     .append("\nOwner: ").append(Utils.getDisplayNameByUUID(owner))
                     .append("\nEnclosures: ").append(text)
                     .append("\n").append(super.serialize(SerializationSettings.Full, player))
             }
 
-            SerializationSettings.Hover -> Text.literal("Owner: ").append(Utils.getDisplayNameByUUID(owner))
-            else -> Text.literal("Unknown serialization settings").formatted(Formatting.RED)
+            SerializationSettings.Hover -> LiteralText("Owner: ").append(Utils.getDisplayNameByUUID(owner))
+            else -> LiteralText("Unknown serialization settings").formatted(Formatting.RED)
         }
     }
 

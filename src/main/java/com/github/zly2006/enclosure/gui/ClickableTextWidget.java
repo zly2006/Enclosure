@@ -75,16 +75,6 @@ public class ClickableTextWidget implements Element, Drawable, Selectable {
     }
 
     @Override
-    public void setFocused(boolean focused) {
-        selected = focused;
-    }
-
-    @Override
-    public boolean isFocused() {
-        return selected;
-    }
-
-    @Override
     public void render(MatrixStack matrices, int mouseX, int mouseY, float delta) {
         if (mouseX >= x && mouseX <= x + renderedWidth) {
             if (mouseY >= y && mouseY <= y + height) {

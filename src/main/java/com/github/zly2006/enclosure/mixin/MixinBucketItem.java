@@ -2,6 +2,7 @@ package com.github.zly2006.enclosure.mixin;
 
 import com.github.zly2006.enclosure.ServerMain;
 import com.github.zly2006.enclosure.utils.Permission;
+import com.github.zly2006.enclosure.utils.UtilsKt;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.fluid.Fluid;
 import net.minecraft.fluid.Fluids;
@@ -33,7 +34,7 @@ public class MixinBucketItem {
             if (!ServerMain.INSTANCE.checkPermission(world, blockPos, player, permission) ||
                     !ServerMain.INSTANCE.checkPermission(world, blockPos2, player, permission)) {
                 player.currentScreenHandler.syncState();
-                player.sendMessage(permission.getNoPermissionMsg(player));
+                UtilsKt.sendMessage(player, permission.getNoPermissionMsg(player));
                 cir.setReturnValue(TypedActionResult.fail(itemStack));
             }
         }

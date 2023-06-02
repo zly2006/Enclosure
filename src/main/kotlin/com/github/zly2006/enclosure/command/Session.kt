@@ -14,6 +14,7 @@ import net.fabricmc.fabric.api.networking.v1.PacketByteBufs
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.server.world.ServerWorld
+import net.minecraft.text.LiteralText
 import net.minecraft.text.Text
 import net.minecraft.util.math.BlockPos
 import net.minecraft.util.math.Direction
@@ -80,13 +81,13 @@ class Session(
                 .append(TrT.of("enclosure.message.limit_exceeded.0"))
                 .append(limit.toString())
                 .append(TrT.of("enclosure.message.limit_exceeded.1"))
-                .append(Text.literal(value.toString()))
+                .append(LiteralText(value.toString()))
         } else {
             TrT.of("enclosure.limit." + Utils.camelCaseToSnakeCase(name))
                 .append(TrT.of("enclosure.message.limit_exceeded.2"))
                 .append(limit.toString())
                 .append(TrT.of("enclosure.message.limit_exceeded.1"))
-                .append(Text.literal(value.toString()))
+                .append(LiteralText(value.toString()))
         }
     }
 

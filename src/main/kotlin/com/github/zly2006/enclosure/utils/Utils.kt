@@ -3,7 +3,9 @@ package com.github.zly2006.enclosure.utils
 import com.github.zly2006.enclosure.EnclosureArea
 import com.github.zly2006.enclosure.ServerMain
 import net.minecraft.entity.Entity
+import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.entity.vehicle.HopperMinecartEntity
+import net.minecraft.server.command.ServerCommandSource
 import net.minecraft.server.world.ServerWorld
 import net.minecraft.text.*
 import net.minecraft.util.Formatting
@@ -57,8 +59,8 @@ fun MutableText.white(): MutableText {
 fun literalText(text: Any): MutableText {
     return when (text) {
         is Text -> text.copy()
-        is String -> Text.literal(text)
-        else -> Text.literal(text.toString())
+        is String -> LiteralText(text)
+        else -> LiteralText(text.toString())
     }
 }
 
@@ -87,3 +89,14 @@ operator fun <E> List<E>.component4(): E = this[3]
 operator fun <E> List<E>.component5(): E = this[4]
 operator fun <E> List<E>.component6(): E = this[5]
 
+fun PlayerEntity.sendMessage(msg: TrT.ServerSideTranslatable) {
+    this.sendMessage(msg.get(this))
+}
+
+fun PlayerEntity.sendMessage(msg: Text) {
+    this.sendMessage(msg, false)
+}
+
+fun ServerCommandSource.sendMessage(msg: Text) {
+    this.sendFeedback(msg, false)
+}
