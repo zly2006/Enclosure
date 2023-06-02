@@ -180,6 +180,7 @@ public class EnclosureScreen extends HandledScreen<EnclosureScreenHandler> {
         globalWidget.y = renderBottom;
         playerWidget.y = renderBottom;
         unlistedWidget.y = renderBottom;
+        aboutWidget.y = renderBottom;
         permissionTargetListWidget.setTop(renderBottom + 25);
         super.render(matrices, mouseX, mouseY, delta);
         for (ClickableTextWidget textWidget : textWidgets) {
