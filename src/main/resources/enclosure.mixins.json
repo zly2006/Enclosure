@@ -33,6 +33,7 @@
     "MixinFlowableFluid",
     "MixinHopperBlockEntity",
     "MixinHopperMinecartEntity",
+    "MixinHorses",
     "MixinItemEntity",
     "MixinItemFrameEntity",
     "MixinLanguage",

@@ -28,11 +28,11 @@ Just install it as a normal Fabric mod. **This mod does not work in single playe
 
 ## Supported Versions
 
-| MC Version | Latest Enclosure Version | Status      |
-|------------|--------------------------|-------------|
-| 1.20       | 0.2-mc1.20pre1           | Developing  |
-| 1.19.4     | 0.1.1                    | Maintaining |
-| \< 1.19.4  | 0.1                      | Unsupported |
+| MC Version            | Latest Enclosure Version | Status      |
+|-----------------------|--------------------------|-------------|
+| 1.20                  | 0.2-mc23w18a             | Developing  |
+| 1.19.4, 1.18.2        | 0.1.1                    | Maintaining |
+| 1.19-1.19.3, \<1.18.2 | N/A                      | Unsupported |
 
 ## Our "Vanilla" Principle
 

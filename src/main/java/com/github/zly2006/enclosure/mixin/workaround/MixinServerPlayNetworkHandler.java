@@ -22,7 +22,18 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public class MixinServerPlayNetworkHandler {
     @Shadow public ServerPlayerEntity player;
 
-    @Inject(method = "onPlayerAction", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/network/ServerPlayNetworkHandler;updateSequence(I)V", shift = At.Shift.AFTER))
+    public MixinServerPlayNetworkHandler(ServerPlayerEntity player) {
+        this.player = player;
+    }
+
+    @Inject(
+            method = "onPlayerAction",
+            at = @At(
+                    value = "INVOKE",
+                    target = "Lnet/minecraft/server/network/ServerPlayNetworkHandler;updateSequence(I)V",
+                    shift = At.Shift.AFTER
+            )
+    )
     private void onPlayerAction(PlayerActionC2SPacket packet, CallbackInfo ci) {
         switch (packet.getAction()) {
             case START_DESTROY_BLOCK, STOP_DESTROY_BLOCK, ABORT_DESTROY_BLOCK -> {

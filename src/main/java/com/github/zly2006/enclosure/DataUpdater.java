@@ -12,8 +12,8 @@ public class DataUpdater {
     private interface Updater {
         NbtCompound update(NbtCompound data);
     }
-    static final Map<Integer, Updater> updaters = new HashMap<>() {
-        private NbtCompound update1(NbtCompound compound) {
+    static final Map<Integer, Updater> updaters = new HashMap<>() {{
+        put(1, (NbtCompound compound) -> {
             if (compound.contains("tp_pos") && !compound.contains("yaw")) {
                 NbtList nbtList = (NbtList) compound.get("tp_pos");
                 assert nbtList != null;
@@ -29,10 +29,7 @@ public class DataUpdater {
                 compound.put("pitch", NbtFloat.of(0));
             }
             return compound;
-        }
-
-        {
-        put(1, this::update1);
+        });
     }};
     public static NbtCompound update(int versionBefore, NbtCompound compound) {
         if (versionBefore == 0) {
