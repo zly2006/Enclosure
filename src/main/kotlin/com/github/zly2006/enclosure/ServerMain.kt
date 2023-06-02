@@ -22,7 +22,7 @@ import com.mojang.brigadier.arguments.FloatArgumentType
 import net.fabricmc.api.DedicatedServerModInitializer
 import net.fabricmc.api.EnvType
 import net.fabricmc.api.Environment
-import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback
+import net.fabricmc.fabric.api.command.v1.CommandRegistrationCallback
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents.ServerStarting
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerWorldEvents
@@ -390,7 +390,7 @@ object ServerMain: DedicatedServerModInitializer {
             }
         })
 
-        CommandRegistrationCallback.EVENT.register(CommandRegistrationCallback { dispatcher: CommandDispatcher<ServerCommandSource>, _, _ ->
+        CommandRegistrationCallback.EVENT.register { dispatcher: CommandDispatcher<ServerCommandSource>, _ ->
             val node = register(dispatcher)
             if (commonConfig.developMode) {
                 dispatcher.register(
@@ -444,7 +444,7 @@ object ServerMain: DedicatedServerModInitializer {
                     CommandManager.literal(alias).redirect(node)
                 )
             })
-        })
+        }
         ServerLifecycleEvents.SERVER_STARTING.register(ServerStarting { server: MinecraftServer? ->
             minecraftServer = server!!
         })

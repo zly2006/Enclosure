@@ -26,9 +26,9 @@ public class MixinHopperBlockEntity extends BlockEntity {
         super(type, pos, state);
     }
 
-    @Inject(method = "canExtract", at = @At("HEAD"), locals = LocalCapture.CAPTURE_FAILSOFT, cancellable = true)
-    private static void checkCanExtract(Inventory hopperInventory, Inventory fromInventory, ItemStack stack, int slot, Direction facing, CallbackInfoReturnable<Boolean> cir) {
-        if (!MixinHopperKt.canExtractFromInventory((Hopper) hopperInventory, fromInventory)) {
+    @Inject(method = "extract(Lnet/minecraft/block/entity/Hopper;Lnet/minecraft/inventory/Inventory;ILnet/minecraft/util/math/Direction;)Z", at = @At(value = "INVOKE", target = "Lnet/minecraft/block/entity/HopperBlockEntity;canExtract(Lnet/minecraft/inventory/Inventory;Lnet/minecraft/item/ItemStack;ILnet/minecraft/util/math/Direction;)Z"), locals = LocalCapture.CAPTURE_FAILSOFT, cancellable = true)
+    private static void checkCanExtract(Hopper hopper, Inventory inventory, int slot, Direction side, CallbackInfoReturnable<Boolean> cir, ItemStack itemStack) {
+        if (!MixinHopperKt.canExtractFromInventory(hopper, inventory)) {
             cir.setReturnValue(false);
         }
     }
