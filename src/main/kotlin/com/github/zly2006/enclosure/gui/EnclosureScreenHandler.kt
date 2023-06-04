@@ -10,15 +10,13 @@ import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerFactory
 import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerType
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.entity.player.PlayerInventory
-import net.minecraft.item.ItemStack
 import net.minecraft.nbt.NbtCompound
 import net.minecraft.network.PacketByteBuf
-import net.minecraft.registry.Registries
-import net.minecraft.registry.Registry
 import net.minecraft.screen.ScreenHandler
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.text.Text
 import net.minecraft.util.Identifier
+import net.minecraft.util.registry.Registry
 
 class EnclosureScreenHandler private constructor(
     syncId: Int,
@@ -28,8 +26,6 @@ class EnclosureScreenHandler private constructor(
     val worldId: Identifier,
     val subAreaNames: List<String>
 ) : ScreenHandler(ENCLOSURE_SCREEN_HANDLER, syncId) {
-    override fun quickMove(player: PlayerEntity, slot: Int): ItemStack = ItemStack.EMPTY
-
     override fun canUse(player: PlayerEntity) = true
 
     companion object {
@@ -51,7 +47,7 @@ class EnclosureScreenHandler private constructor(
 
         @JvmStatic
         fun register() {
-            Registry.register(Registries.SCREEN_HANDLER, ENCLOSURE_SCREEN_ID, ENCLOSURE_SCREEN_HANDLER)
+            Registry.register(Registry.SCREEN_HANDLER, ENCLOSURE_SCREEN_ID, ENCLOSURE_SCREEN_HANDLER)
         }
 
         @JvmStatic

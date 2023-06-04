@@ -16,7 +16,7 @@ import net.minecraft.client.util.math.MatrixStack
 import net.minecraft.item.ItemStack
 import net.minecraft.text.Style
 import net.minecraft.text.Text
-import net.minecraft.text.TranslatableTextContent
+import net.minecraft.text.TranslatableText
 import net.minecraft.util.Formatting
 import net.minecraft.util.Language
 import org.lwjgl.glfw.GLFW
@@ -64,15 +64,15 @@ class PermissionListWidget(
     inner class PermissionEntry(val permission: Permission) : Entry() {
         val buttonWidget = SetButtonWidget(0, 0, 40, 20, value()) { }
         private fun value(value: Boolean? = this.value): Text {
-            return if (value == null) Text.translatable("enclosure.widget.none").setStyle(
+            return if (value == null) TranslatableText("enclosure.widget.none").setStyle(
                 Style.EMPTY.withColor(
                     Formatting.DARK_AQUA
                 )
-            ) else if (value) Text.translatable("enclosure.widget.true").setStyle(
+            ) else if (value) TranslatableText("enclosure.widget.true").setStyle(
                 Style.EMPTY.withColor(
                     Formatting.GREEN
                 )
-            ) else Text.translatable("enclosure.widget.false").setStyle(
+            ) else TranslatableText("enclosure.widget.false").setStyle(
                 Style.EMPTY.withColor(
                     Formatting.RED
                 )
@@ -106,12 +106,12 @@ class PermissionListWidget(
             client.textRenderer.draw(matrices, permission.name, (x + 20).toFloat(), (y + 3).toFloat(), 0xFFFFFF)
             client.textRenderer.draw(matrices, permission.description, (x + 140).toFloat(), (y + 3).toFloat(), 0x999999)
             permission.icon
-            client.itemRenderer.renderInGui(matrices, ItemStack(permission.icon), x, y)
+            client.itemRenderer.renderInGui(ItemStack(permission.icon), x, y)
             if (buttonWidget.isHovered) {
                 parent.renderTooltip(matrices, listOf<Text>(
-                    Text.translatable("enclosure.widget.click.left")
+                    TranslatableText("enclosure.widget.click.left")
                         .formatted(Formatting.GREEN),
-                    Text.translatable("enclosure.widget.click.right")
+                    TranslatableText("enclosure.widget.click.right")
                         .formatted(Formatting.RED)
                 ), mouseX, mouseY)
             } else if (hovered) {
@@ -119,7 +119,7 @@ class PermissionListWidget(
                     matrices,
                     listOf(
                         permission.description,
-                        Text.translatable("enclosure.widget.default_value_is")
+                        TranslatableText("enclosure.widget.default_value_is")
                             .setStyle(Style.EMPTY.withColor(Formatting.GOLD))
                             .append(" ").append(value(permission.defaultValue))
                     ),
@@ -138,27 +138,22 @@ class PermissionListWidget(
             height: Int,
             message: Text?,
             onPress: PressAction?
-        ) : ButtonWidget(x, y, width, height, message, onPress, { it.get() }) {
+        ) : ButtonWidget(x, y, width, height, message, onPress) {
             override fun mouseClicked(mouseX: Double, mouseY: Double, button: Int): Boolean {
                 assert(client.player != null)
                 if (!visible || !active) {
                     return false
                 } else if (button == GLFW.GLFW_MOUSE_BUTTON_LEFT) {
                     value = if (value == null) true else null
-                    client.player!!.networkHandler.sendChatCommand(
-                        "enclosure set " + fullName + " uuid " +
-                                uuid.toString() + " " +
-                                permission.name + " " +
-                                (value?.toString() ?: "none")
+                    client.player!!.sendChatMessage(
+                        "/enclosure set $fullName uuid $uuid ${permission.name} ${value?.toString() ?: "none"}"
                     )
                     buttonWidget.message = value()
                     return true
                 } else if (button == GLFW.GLFW_MOUSE_BUTTON_RIGHT) {
                     value = if (value == null) false else null
-                    client.player!!.networkHandler.sendChatCommand("enclosure set " + fullName + " uuid " +
-                            uuid.toString() + " " +
-                            permission.name + " " +
-                            (value?.toString() ?: "none")
+                    client.player!!.sendChatMessage(
+                        "/enclosure set $fullName uuid $uuid ${permission.name} ${value?.toString() ?: "none"}"
                     )
                     buttonWidget.message = value()
                     return true
@@ -181,10 +176,9 @@ class PermissionListWidget(
                     .filter { it.target.fitPlayer() && target.fitPlayer() || it.target.fitEnclosure() && target.fitEnclosure() }
                     .filter { permission ->
                         if (permission.name.contains(s!!)) return@filter true
-                        val content = permission.description.content
-                        if (content is TranslatableTextContent) {
-                            return@filter Language.getInstance().hasTranslation(content.key) &&
-                                    Language.getInstance()[content.key].contains(s)
+                        if (permission.description is TranslatableText) {
+                            return@filter Language.getInstance().hasTranslation(permission.description.key) &&
+                                    Language.getInstance()[permission.description.key].contains(s)
                         }
                         false
                     }
@@ -211,7 +205,7 @@ class PermissionListWidget(
             searchWidget.render(matrices, mouseX, mouseY, tickDelta)
             client.textRenderer.draw(
                 matrices,
-                Text.translatable("enclosure.widget.search"),
+                TranslatableText("enclosure.widget.search"),
                 x.toFloat(),
                 (y + 3).toFloat(),
                 0xFFFFFF

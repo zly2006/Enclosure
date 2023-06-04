@@ -9,8 +9,10 @@ import net.minecraft.client.gui.screen.ingame.HandledScreen
 import net.minecraft.client.gui.widget.ButtonWidget
 import net.minecraft.client.util.math.MatrixStack
 import net.minecraft.entity.player.PlayerInventory
+import net.minecraft.text.LiteralText
 import net.minecraft.text.Style
 import net.minecraft.text.Text
+import net.minecraft.text.TranslatableText
 import net.minecraft.util.Formatting
 import java.text.SimpleDateFormat
 import java.util.*
@@ -49,7 +51,7 @@ class EnclosureScreen(handler: EnclosureScreenHandler, inventory: PlayerInventor
             )
         )
         globalWidget =
-            addDrawableChild(ButtonWidget.builder(Text.translatable("enclosure.widget.global")) { button: ButtonWidget? ->
+            addDrawableChild(ButtonWidgetBuilder(TranslatableText("enclosure.widget.global")) { button: ButtonWidget? ->
                 assert(client != null)
                 client!!.setScreen(PermissionScreen(area, UUID(0, 0), handler!!.fullName, this))
             }
@@ -57,7 +59,7 @@ class EnclosureScreen(handler: EnclosureScreenHandler, inventory: PlayerInventor
                 .position(5, 35)
                 .build())
         playerWidget =
-            addDrawableChild(ButtonWidget.builder(Text.translatable("enclosure.widget.player")) { button: ButtonWidget ->
+            addDrawableChild(ButtonWidgetBuilder(TranslatableText("enclosure.widget.player")) { button: ButtonWidget ->
                 assert(client != null)
                 button.active = false
                 unlistedWidget.active = true
@@ -67,7 +69,7 @@ class EnclosureScreen(handler: EnclosureScreenHandler, inventory: PlayerInventor
                 .position(110, 35)
                 .build())
         unlistedWidget =
-            addDrawableChild(ButtonWidget.builder(Text.translatable("enclosure.widget.unspecified_player")) { button: ButtonWidget ->
+            addDrawableChild(ButtonWidgetBuilder(TranslatableText("enclosure.widget.unspecified_player")) { button: ButtonWidget ->
                 assert(client != null)
                 button.active = false
                 playerWidget.active = true
@@ -77,7 +79,7 @@ class EnclosureScreen(handler: EnclosureScreenHandler, inventory: PlayerInventor
                 .position(215, 35)
                 .build())
         aboutWidget =
-            addDrawableChild(ButtonWidget.builder(Text.translatable("enclosure.widget.about")) { button: ButtonWidget? ->
+            addDrawableChild(ButtonWidgetBuilder(TranslatableText("enclosure.widget.about")) {
                 assert(client != null)
                 client!!.setScreen(AboutScreen(this))
             }
@@ -88,33 +90,33 @@ class EnclosureScreen(handler: EnclosureScreenHandler, inventory: PlayerInventor
         assert(client != null)
         if (handler!!.fatherFullName.isNotEmpty()) {
             textWidgets.add(ClickableTextWidget(
-                client!!, this, Text.literal("<<< ")
+                client!!, this, LiteralText("<<< ")
                     .styled { style: Style -> style.withColor(Formatting.DARK_GREEN) }
-                    .append(Text.literal(handler!!.fatherFullName).formatted(Formatting.GOLD)),
-                Text.translatable("enclosure.widget.father_land.hover"),
+                    .append(LiteralText(handler!!.fatherFullName).formatted(Formatting.GOLD)),
+                TranslatableText("enclosure.widget.father_land.hover"),
                 {
                     assert(client!!.player != null)
                     close()
-                    client!!.player!!.networkHandler.sendChatCommand("enclosure gui " + handler!!.fatherFullName)
+                    client!!.player!!.sendChatMessage("/enclosure gui " + handler!!.fatherFullName)
                 }, 5, 5, width - 10
             )
             )
         }
         textWidgets.add(ClickableTextWidget(
-            client!!, this, Text.empty()
-                .append(Text.literal(area.fullName).styled { style: Style -> style.withColor(Formatting.GOLD) })
+            client!!, this, LiteralText("")
+                .append(LiteralText(area.fullName).styled { style: Style -> style.withColor(Formatting.GOLD) })
                 .append(" ")
-                .append(Text.translatable("enclosure.info.created_by"))
+                .append(TranslatableText("enclosure.info.created_by"))
                 .append(" ")
                 .append(
-                    if (owner == null) Text.translatable("enclosure.message.unknown_user").styled { style: Style ->
+                    if (owner == null) TranslatableText("enclosure.message.unknown_user").styled { style: Style ->
                         style.withColor(
                             Formatting.RED
                         )
-                    } else Text.literal(owner).styled { style: Style -> style.withColor(Formatting.GOLD) })
+                    } else LiteralText(owner).styled { style: Style -> style.withColor(Formatting.GOLD) })
                 .append(", ")
-                .append(Text.translatable("enclosure.info.created_on"))
-                .append(Text.literal(SimpleDateFormat().format(area.createdOn)).styled { style: Style ->
+                .append(TranslatableText("enclosure.info.created_on"))
+                .append(LiteralText(SimpleDateFormat().format(area.createdOn)).styled { style: Style ->
                     style.withColor(
                         Formatting.GOLD
                     )
@@ -127,28 +129,25 @@ class EnclosureScreen(handler: EnclosureScreenHandler, inventory: PlayerInventor
             ClickableTextWidget(
                 client!!, this,
                 formatSelection(handler!!.worldId, area.minX, area.minY, area.minZ, area.maxX, area.maxY, area.maxZ),
-                Text.translatable("enclosure.widget.selection_render.hover"),
+                TranslatableText("enclosure.widget.selection_render.hover"),
                 {
                     assert(client!!.player != null)
-                    client!!.player!!.networkHandler.sendChatCommand("enclosure select land " + handler!!.fullName)
+                    client!!.player!!.sendChatMessage("/enclosure select land " + handler!!.fullName)
                     close()
                 }, 5, 20, width - 10
             )
         )
         for (name in handler!!.subAreaNames) {
             subLandWidgets.add(ClickableTextWidget(
-                client!!, this, Text.literal(">>> ")
+                client!!, this, LiteralText(">>> ")
                     .styled { style: Style -> style.withColor(Formatting.DARK_GREEN) }
-                    .append(Text.literal(name).formatted(Formatting.GOLD)),
-                Text.translatable("enclosure.widget.sub_land.hover"),
+                    .append(LiteralText(name).formatted(Formatting.GOLD)),
+                TranslatableText("enclosure.widget.sub_land.hover"),
                 {
                     assert(client!!.player != null)
                     close()
-                    client!!.player!!.networkHandler.sendChatCommand(
-                        "enclosure gui %s.%s".formatted(
-                            handler!!.fullName,
-                            name
-                        )
+                    client!!.player!!.sendChatMessage(
+                        "/enclosure gui ${handler!!.fullName}.$name"
                     )
                 }, 5, 5, 0
             )
@@ -213,7 +212,7 @@ class EnclosureScreen(handler: EnclosureScreenHandler, inventory: PlayerInventor
         client!!.execute {
             client!!.setScreen(ConfirmScreen(this, message!!) {
                 assert(client!!.player != null)
-                client!!.player!!.networkHandler.sendCommand("enclosure confirm")
+                client!!.player!!.sendChatMessage("/enclosure confirm")
             })
         }
     }

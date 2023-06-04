@@ -5,11 +5,12 @@ import net.minecraft.client.gui.screen.Screen
 import net.minecraft.client.gui.widget.ButtonWidget
 import net.minecraft.client.util.math.MatrixStack
 import net.minecraft.text.Text
+import net.minecraft.text.TranslatableText
 import net.minecraft.util.Identifier
 
 class ConfirmScreen(private val parent: Screen, val message: Text, val action: Runnable) : Screen(Text.of("Confirm")) {
     private val yesButton: ButtonWidget =
-        ButtonWidget.builder(Text.translatable("enclosure.widget.yes")) { button: ButtonWidget? ->
+        ButtonWidgetBuilder(TranslatableText("enclosure.widget.yes")) { button: ButtonWidget? ->
             action.run()
             assert(client != null)
             client!!.setScreen(parent)
@@ -18,7 +19,7 @@ class ConfirmScreen(private val parent: Screen, val message: Text, val action: R
             .size(90, 20)
             .build()
     private val noButton: ButtonWidget =
-        ButtonWidget.builder(Text.translatable("enclosure.widget.no")) { button: ButtonWidget? ->
+        ButtonWidgetBuilder(TranslatableText("enclosure.widget.no")) { button: ButtonWidget? ->
             assert(client != null)
             client!!.setScreen(parent)
         }

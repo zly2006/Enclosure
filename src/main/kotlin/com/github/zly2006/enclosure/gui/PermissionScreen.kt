@@ -7,6 +7,7 @@ import net.minecraft.client.gui.screen.Screen
 import net.minecraft.client.util.math.MatrixStack
 import net.minecraft.nbt.NbtCompound
 import net.minecraft.text.Text
+import net.minecraft.text.TranslatableText
 import net.minecraft.util.Identifier
 import java.util.*
 
@@ -46,16 +47,16 @@ class PermissionScreen(
     override fun render(matrices: MatrixStack, mouseX: Int, mouseY: Int, delta: Float) {
         renderBackground(matrices)
         super.render(matrices, mouseX, mouseY, delta)
-        val title = Text.translatable("enclosure.widget.set_permission").append(" ")
+        val title = TranslatableText("enclosure.widget.set_permission").append(" ")
         if (CONSOLE == uuid) {
-            title.append(Text.translatable("enclosure.widget.global"))
+            title.append(TranslatableText("enclosure.widget.global"))
         } else {
-            title.append(Text.translatable("enclosure.widget.player"))
+            title.append(TranslatableText("enclosure.widget.player"))
                 .append(" ")
                 .append(UUIDCacheS2CPacket.getName(uuid))
         }
         title.append(" ")
-            .append(Text.translatable("enclosure.widget.in_enclosure"))
+            .append(TranslatableText("enclosure.widget.in_enclosure"))
             .append(" ")
             .append(fullName)
         textRenderer.draw(matrices, title, 10f, 10f, 0xffffff)
@@ -66,7 +67,7 @@ class PermissionScreen(
         client!!.execute {
             client!!.setScreen(ConfirmScreen(this, readString!!) {
                 assert(client!!.player != null)
-                client!!.player!!.networkHandler.sendCommand("enclosure confirm")
+                client!!.player!!.sendChatMessage("/enclosure confirm")
             })
         }
     }

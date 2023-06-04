@@ -8,14 +8,14 @@ import net.fabricmc.api.EnvType
 import net.fabricmc.api.Environment
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.Element
-import net.minecraft.client.gui.PlayerSkinDrawer
 import net.minecraft.client.gui.Selectable
 import net.minecraft.client.gui.screen.Screen
-import net.minecraft.client.gui.widget.ButtonWidget
 import net.minecraft.client.gui.widget.ElementListWidget
 import net.minecraft.client.gui.widget.TextFieldWidget
 import net.minecraft.client.util.math.MatrixStack
+import net.minecraft.text.LiteralText
 import net.minecraft.text.Text
+import net.minecraft.text.TranslatableText
 import java.util.*
 
 class PermissionTargetListWidget(
@@ -77,7 +77,7 @@ class PermissionTargetListWidget(
 
     abstract class Entry : ElementListWidget.Entry<Entry>()
     internal inner class PlayerEntry(val name: Text, val uuid: UUID) : Entry() {
-        private val setButton = ButtonWidget.builder(Text.translatable("enclosure.widget.set")) {
+        private val setButton = ButtonWidgetBuilder(TranslatableText("enclosure.widget.set")) {
             client.setScreen(screenCache)
         }.size(40, 20).build()
         private val screenCache: PermissionScreen by lazy {
@@ -110,7 +110,7 @@ class PermissionTargetListWidget(
             setButton.render(matrices, mouseX, mouseY, tickDelta)
             client.player!!.networkHandler.getPlayerListEntry(uuid)?.skinTexture?.let {
                 RenderSystem.setShaderTexture(0, it)
-                PlayerSkinDrawer.draw(matrices, x, y, 16)
+                drawTexture(matrices, x, y, 16, 16, 8.0f, 8.0f, 8, 8, 64, 64)
             }
         }
     }
@@ -127,12 +127,12 @@ class PermissionTargetListWidget(
                     Mode.Players -> area.permissionsMap.keys
                         .filter { it != CONSOLE }
                         .map { uuid ->
-                            PlayerEntry(Text.literal(UUIDCacheS2CPacket.getName(uuid)), uuid)
+                            PlayerEntry(LiteralText(UUIDCacheS2CPacket.getName(uuid)), uuid)
                         }
 
                     Mode.Unspecified -> UUIDCacheS2CPacket.uuid2name.keys
                         .map { uuid ->
-                            PlayerEntry(Text.literal(UUIDCacheS2CPacket.getName(uuid)), uuid)
+                            PlayerEntry(LiteralText(UUIDCacheS2CPacket.getName(uuid)), uuid)
                         }
                 }.filter { it.name.string.contains(s!!) }
                     .sortedBy { it.name.string }
@@ -158,7 +158,7 @@ class PermissionTargetListWidget(
             searchWidget.render(matrices, mouseX, mouseY, tickDelta)
             client.textRenderer.draw(
                 matrices,
-                Text.translatable("enclosure.widget.search"),
+                TranslatableText("enclosure.widget.search"),
                 x.toFloat(),
                 (y + 3).toFloat(),
                 0xFFFFFF

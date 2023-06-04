@@ -59,14 +59,6 @@ class ClickableTextWidget(
         return false
     }
 
-    override fun setFocused(focused: Boolean) {
-        selected = focused
-    }
-
-    override fun isFocused(): Boolean {
-        return selected
-    }
-
     override fun render(matrices: MatrixStack, mouseX: Int, mouseY: Int, delta: Float) {
         if (mouseX >= x && mouseX <= x + renderedWidth) {
             if (mouseY >= y && mouseY <= y + height) {
