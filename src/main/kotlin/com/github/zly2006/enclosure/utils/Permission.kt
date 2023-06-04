@@ -146,7 +146,15 @@ class Permission(
         @JvmField val FLUID = Permission("fluid", Target.Enclosure, false, Items.WATER_BUCKET).apply(::register)
         @JvmField val FALLING_BLOCK = Permission("falling_block", Target.Enclosure, false, Items.SAND).apply(::register)
         @JvmField val PISTON = Permission("piston", Target.Enclosure, false, Items.PISTON).apply(::register)
-        @JvmField val GLOWING = Permission("glowing", Target.Enclosure, setOf("glowing"), false, false, TrT.of("enclosure.permission.glowing"), Items.SPECTRAL_ARROW).apply(::register)
+        @JvmField val GLOWING = Permission(
+            name = "glowing",
+            target = Target.Enclosure,
+            permissions = setOf("glowing"),
+            defaultValue = false,
+            isIgnoreOp = false,
+            description = TrT.of("enclosure.permission.glowing"),
+            icon = Items.SPECTRAL_ARROW
+        ).apply(::register)
         @JvmField val FIRE_SPREADING = Permission("fire_spreading", Target.Enclosure, false, Items.FLINT_AND_STEEL).apply(::register)
         @JvmField val DRAGON_DESTROY = Permission("dragon_destroy", Target.Enclosure, false, Items.DRAGON_HEAD).apply(::register)
         @JvmField val WITHER_DESTROY = Permission("wither_destroy", Target.Enclosure, false, Items.WITHER_SKELETON_SKULL).apply(::register)

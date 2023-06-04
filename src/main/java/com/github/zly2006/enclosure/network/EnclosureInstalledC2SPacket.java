@@ -58,7 +58,7 @@ public class EnclosureInstalledC2SPacket implements ServerPlayNetworking.PlayCha
             version = Version.parse(buf.readString());
             if (version instanceof SemanticVersion clientVersion && MOD_VERSION instanceof SemanticVersion serverVersion &&
                     clientVersion.getVersionComponent(0) == serverVersion.getVersionComponent(0) &&
-                    clientVersion.getVersionComponent(1) == serverVersion.getVersionComponent(1)) {
+                    clientVersion.getVersionComponent(1) >= serverVersion.getVersionComponent(1)) {
                 ServerMainKt.LOGGER.info(player.getName().getString() + " joined with a matching enclosure client.");
                 installedClientMod.put(player, version);
 
@@ -67,7 +67,6 @@ public class EnclosureInstalledC2SPacket implements ServerPlayNetworking.PlayCha
                 NbtCompound compound = new NbtCompound();
                 ServerMainKt.byUuid.forEach((uuid, s) -> compound.putUuid(s, uuid));
                 buf2.writeNbt(compound);
-                compound.put("", new NbtCompound());
                 ServerPlayNetworking.send(player, NetworkChannels.SYNC_UUID, buf2);
             } else {
                 player.sendMessage(new TranslatableText("enclosure.message.outdated", MOD_VERSION.getFriendlyString(), version.getFriendlyString()), false);

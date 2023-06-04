@@ -267,7 +267,7 @@ open class EnclosureArea : PersistentState, ReadOnlyEnclosureArea {
         }
         LOGGER.info("${source?.name ?: "<null>"} set perm ${perm.name} to $value for $uuid in $fullName")
         super.setPermission(source, uuid, perm, value)
-        // sync to client
+        // sync to the client
         minecraftServer.playerManager.playerList.forEach {
             val handler = it.currentScreenHandler as? EnclosureScreenHandler ?: return@forEach
             if (handler.fullName == fullName) {
@@ -313,27 +313,8 @@ open class EnclosureArea : PersistentState, ReadOnlyEnclosureArea {
         return when (settings) {
             SerializationSettings.Name -> LiteralText(fullName)
             SerializationSettings.Hover -> {
-                TrT.of("enclosure.message.select.from") +
-                        literalText("[").darkGreen() +
-                        literalText(minX).green() +
-                        literalText(", ").darkGreen() +
-                        literalText(minY).green() +
-                        literalText(", ").darkGreen() +
-                        literalText(minZ).green() +
-                        literalText("]").darkGreen() +
-                        TrT.of("enclosure.message.select.to") +
-                        literalText("[").darkGreen() +
-                        literalText(maxX).green() +
-                        literalText(", ").darkGreen() +
-                        literalText(maxY).green() +
-                        literalText(", ").darkGreen() +
-                        literalText(maxZ).green() +
-                        literalText("]").darkGreen() +
-                        TrT.of("enclosure.message.select.world") +
-                        literalText(world.registryKey.value).green() +
-                        literalText("\n") +
-                        TrT.of("enclosure.info.created_on") +
-                        literalText(SimpleDateFormat().format(Date(createdOn))).gold()
+                formatSelection(world.registryKey.value, minX, minY, minZ, maxX, maxY, maxZ) + "\n" +
+                        TrT.of("enclosure.info.created_on") + literalText(SimpleDateFormat().format(Date(createdOn))).gold()
             }
 
             SerializationSettings.Summarize -> {

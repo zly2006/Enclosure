@@ -9,6 +9,7 @@ import net.minecraft.server.command.ServerCommandSource
 import net.minecraft.server.world.ServerWorld
 import net.minecraft.text.*
 import net.minecraft.util.Formatting
+import net.minecraft.util.Identifier
 import net.minecraft.util.math.BlockPos
 import net.minecraft.util.math.Box
 
@@ -100,3 +101,26 @@ fun PlayerEntity.sendMessage(msg: Text) {
 fun ServerCommandSource.sendMessage(msg: Text) {
     this.sendFeedback(msg, false)
 }
+fun formatSelection(
+    worldId: Identifier,
+    x1: Int, y1: Int, z1: Int,
+    x2: Int, y2: Int, z2: Int
+) = TrT.of("enclosure.message.select.from") +
+        literalText("[").darkGreen() +
+        literalText(x1).green() +
+        literalText(", ").darkGreen() +
+        literalText(y1).green() +
+        literalText(", ").darkGreen() +
+        literalText(z1).green() +
+        literalText("]").darkGreen() +
+        TrT.of("enclosure.message.select.to") +
+        literalText("[").darkGreen() +
+        literalText(x2).green() +
+        literalText(", ").darkGreen() +
+        literalText(y2).green() +
+        literalText(", ").darkGreen() +
+        literalText(z2).green() +
+        literalText("]").darkGreen() +
+        TrT.of("enclosure.message.select.world") +
+        literalText(worldId).green()
+

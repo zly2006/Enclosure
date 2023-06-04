@@ -32,6 +32,5 @@ bin/
 
 run/
 .mixin.out/
-
 # old-config
 src/main/old-config
