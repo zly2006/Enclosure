@@ -14,7 +14,6 @@ import net.minecraft.client.gui.widget.ElementListWidget
 import net.minecraft.client.gui.widget.TextFieldWidget
 import net.minecraft.client.util.math.MatrixStack
 import net.minecraft.item.ItemStack
-import net.minecraft.text.MutableText
 import net.minecraft.text.Style
 import net.minecraft.text.Text
 import net.minecraft.text.TranslatableTextContent
@@ -22,7 +21,6 @@ import net.minecraft.util.Formatting
 import net.minecraft.util.Language
 import org.lwjgl.glfw.GLFW
 import java.util.*
-import java.util.function.Supplier
 
 class PermissionListWidget(
     minecraftClient: MinecraftClient?,
@@ -35,10 +33,9 @@ class PermissionListWidget(
     top: Int,
     bottom: Int
 ) : ElementListWidget<PermissionListWidget.Entry?>(minecraftClient, width, height, top, bottom, 20) {
-    private val target: Permission.Target
+    private val target: Permission.Target = if (uuid == CONSOLE) Permission.Target.Enclosure else Permission.Target.Player
 
     init {
-        target = if (uuid == CONSOLE) Permission.Target.Enclosure else Permission.Target.Player
         addEntry(SearchEntry())
         Permission.PERMISSIONS.values
             .filter { it.target.fitPlayer() && target.fitPlayer() || it.target.fitEnclosure() && target.fitEnclosure() }
@@ -65,7 +62,7 @@ class PermissionListWidget(
 
     @Environment(EnvType.CLIENT)
     inner class PermissionEntry(val permission: Permission) : Entry() {
-        val buttonWidget: ButtonWidget
+        val buttonWidget = SetButtonWidget(0, 0, 40, 20, value()) { }
         private fun value(value: Boolean? = this.value): Text {
             return if (value == null) Text.translatable("enclosure.widget.none").setStyle(
                 Style.EMPTY.withColor(
@@ -90,16 +87,6 @@ class PermissionListWidget(
                 area.permissionsMap[uuid] = perm
             }
 
-        init {
-            buttonWidget = SetButtonWidget(
-                0,
-                0,
-                40,
-                20,
-                value(),
-                { buttonWidget: ButtonWidget? -> }) { obj: Supplier<MutableText?> -> obj.get() }
-        }
-
         override fun render(
             matrices: MatrixStack,
             index: Int,
@@ -121,16 +108,16 @@ class PermissionListWidget(
             permission.icon
             client.itemRenderer.renderInGui(matrices, ItemStack(permission.icon), x, y)
             if (buttonWidget.isHovered) {
-                parent.renderTooltip(matrices, java.util.List.of<Text>(
+                parent.renderTooltip(matrices, listOf<Text>(
                     Text.translatable("enclosure.widget.click.left")
-                        .styled { style: Style -> style.withColor(Formatting.GREEN) },
+                        .formatted(Formatting.GREEN),
                     Text.translatable("enclosure.widget.click.right")
-                        .styled { style: Style -> style.withColor(Formatting.RED) }
+                        .formatted(Formatting.RED)
                 ), mouseX, mouseY)
             } else if (hovered) {
                 parent.renderTooltip(
                     matrices,
-                    java.util.List.of(
+                    listOf(
                         permission.description,
                         Text.translatable("enclosure.widget.default_value_is")
                             .setStyle(Style.EMPTY.withColor(Formatting.GOLD))
@@ -141,13 +128,8 @@ class PermissionListWidget(
             }
         }
 
-        override fun selectableChildren(): List<Selectable?> {
-            return java.util.List.of(buttonWidget)
-        }
-
-        override fun children(): List<Element?> {
-            return java.util.List.of(buttonWidget)
-        }
+        override fun selectableChildren() = listOf(buttonWidget)
+        override fun children() = listOf(buttonWidget)
 
         inner class SetButtonWidget(
             x: Int,
@@ -155,9 +137,8 @@ class PermissionListWidget(
             width: Int,
             height: Int,
             message: Text?,
-            onPress: PressAction?,
-            narrationSupplier: NarrationSupplier?
-        ) : ButtonWidget(x, y, width, height, message, onPress, narrationSupplier) {
+            onPress: PressAction?
+        ) : ButtonWidget(x, y, width, height, message, onPress, { it.get() }) {
             override fun mouseClicked(mouseX: Double, mouseY: Double, button: Int): Boolean {
                 assert(client.player != null)
                 if (!visible || !active) {

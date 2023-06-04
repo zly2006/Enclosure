@@ -14,10 +14,8 @@ import net.minecraft.client.gui.screen.Screen
 import net.minecraft.client.gui.widget.ButtonWidget
 import net.minecraft.client.gui.widget.ElementListWidget
 import net.minecraft.client.gui.widget.TextFieldWidget
-import net.minecraft.client.network.PlayerListEntry
 import net.minecraft.client.util.math.MatrixStack
 import net.minecraft.text.Text
-import net.minecraft.util.Identifier
 import java.util.*
 
 class PermissionTargetListWidget(
@@ -29,14 +27,14 @@ class PermissionTargetListWidget(
     height: Int,
     top: Int,
     bottom: Int
-) : ElementListWidget<PermissionTargetListWidget.Entry?>(minecraftClient, width, height, top, bottom, 20) {
+) : ElementListWidget<PermissionTargetListWidget.Entry>(minecraftClient, width, height, top, bottom, 20) {
     enum class Mode {
         Players,
         Unspecified
     }
 
-    var mode = Mode.Players
-    val searchEntry: SearchEntry = SearchEntry()
+    private var mode = Mode.Players
+    private val searchEntry: SearchEntry = SearchEntry()
 
     init {
         setRenderBackground(false) // 不渲染背景
@@ -77,18 +75,13 @@ class PermissionTargetListWidget(
             .forEach { entry -> addEntry(entry) }
     }
 
-    abstract class Entry : ElementListWidget.Entry<Entry?>()
-    internal inner class PlayerEntry(val name: Text, val uuid: UUID?) : Entry() {
-        private val setButton: ButtonWidget
-        private var screen: PermissionScreen? = null
-
-        init {
-            setButton = ButtonWidget.builder(Text.translatable("enclosure.widget.set")) { button: ButtonWidget? ->
-                if (screen == null) {
-                    screen = PermissionScreen(area, uuid!!, fullName, parent)
-                }
-                client.setScreen(screen)
-            }.size(40, 20).build()
+    abstract class Entry : ElementListWidget.Entry<Entry>()
+    internal inner class PlayerEntry(val name: Text, val uuid: UUID) : Entry() {
+        private val setButton = ButtonWidget.builder(Text.translatable("enclosure.widget.set")) {
+            client.setScreen(screenCache)
+        }.size(40, 20).build()
+        private val screenCache: PermissionScreen by lazy {
+            PermissionScreen(area, uuid, fullName, parent)
         }
 
         override fun selectableChildren(): List<Selectable?> {
@@ -115,13 +108,10 @@ class PermissionTargetListWidget(
             setButton.x = x + entryWidth - 40
             setButton.y = y
             setButton.render(matrices, mouseX, mouseY, tickDelta)
-            assert(client.player != null)
-            Optional.ofNullable(client.player!!.networkHandler.getPlayerListEntry(uuid))
-                .map { obj: PlayerListEntry -> obj.skinTexture }
-                .ifPresent { texture: Identifier? ->
-                    RenderSystem.setShaderTexture(0, texture)
-                    PlayerSkinDrawer.draw(matrices, x, y, 16)
-                }
+            client.player!!.networkHandler.getPlayerListEntry(uuid)?.skinTexture?.let {
+                RenderSystem.setShaderTexture(0, it)
+                PlayerSkinDrawer.draw(matrices, x, y, 16)
+            }
         }
     }
 
@@ -136,17 +126,17 @@ class PermissionTargetListWidget(
                 when (mode) {
                     Mode.Players -> area.permissionsMap.keys
                         .filter { it != CONSOLE }
-                        .map { uuid: UUID? ->
+                        .map { uuid ->
                             PlayerEntry(Text.literal(UUIDCacheS2CPacket.getName(uuid)), uuid)
                         }
 
                     Mode.Unspecified -> UUIDCacheS2CPacket.uuid2name.keys
-                        .map { uuid: UUID? ->
+                        .map { uuid ->
                             PlayerEntry(Text.literal(UUIDCacheS2CPacket.getName(uuid)), uuid)
                         }
                 }.filter { it.name.string.contains(s!!) }
                     .sortedBy { it.name.string }
-                    .forEach { entry: PlayerEntry? -> addEntry(entry) }
+                    .forEach { entry -> addEntry(entry) }
             }
         }
 
@@ -176,11 +166,11 @@ class PermissionTargetListWidget(
         }
 
         override fun selectableChildren(): List<Selectable?> {
-            return java.util.List.of(searchWidget)
+            return listOf(searchWidget)
         }
 
         override fun children(): List<Element?> {
-            return java.util.List.of(searchWidget)
+            return listOf(searchWidget)
         }
     }
 }

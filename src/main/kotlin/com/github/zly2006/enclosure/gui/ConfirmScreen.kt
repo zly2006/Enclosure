@@ -7,12 +7,9 @@ import net.minecraft.client.util.math.MatrixStack
 import net.minecraft.text.Text
 import net.minecraft.util.Identifier
 
-class ConfirmScreen(val parent: Screen, val message: Text, val action: Runnable) : Screen(Text.of("Confirm")) {
-    val yesButton: ButtonWidget
-    val noButton: ButtonWidget
-
-    init {
-        yesButton = ButtonWidget.builder(Text.translatable("enclosure.widget.yes")) { button: ButtonWidget? ->
+class ConfirmScreen(private val parent: Screen, val message: Text, val action: Runnable) : Screen(Text.of("Confirm")) {
+    private val yesButton: ButtonWidget =
+        ButtonWidget.builder(Text.translatable("enclosure.widget.yes")) { button: ButtonWidget? ->
             action.run()
             assert(client != null)
             client!!.setScreen(parent)
@@ -20,13 +17,16 @@ class ConfirmScreen(val parent: Screen, val message: Text, val action: Runnable)
             .position(parent.width / 2 - 95, 0)
             .size(90, 20)
             .build()
-        noButton = ButtonWidget.builder(Text.translatable("enclosure.widget.no")) { button: ButtonWidget? ->
+    private val noButton: ButtonWidget =
+        ButtonWidget.builder(Text.translatable("enclosure.widget.no")) { button: ButtonWidget? ->
             assert(client != null)
             client!!.setScreen(parent)
         }
             .position(parent.width / 2 + 5, 0)
             .size(90, 20)
             .build()
+
+    init {
         addDrawableChild(yesButton)
         addDrawableChild(noButton)
     }

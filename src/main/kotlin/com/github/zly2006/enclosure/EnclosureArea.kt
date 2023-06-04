@@ -267,7 +267,7 @@ open class EnclosureArea : PersistentState, ReadOnlyEnclosureArea {
         }
         LOGGER.info("${source?.name ?: "<null>"} set perm ${perm.name} to $value for $uuid in $fullName")
         super.setPermission(source, uuid, perm, value)
-        // sync to client
+        // sync to the client
         minecraftServer.playerManager.playerList.forEach {
             val handler = it.currentScreenHandler as? EnclosureScreenHandler ?: return@forEach
             if (handler.fullName == fullName) {

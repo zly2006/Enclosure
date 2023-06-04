@@ -10,11 +10,13 @@ import net.minecraft.text.Text
 import net.minecraft.util.Identifier
 import java.util.*
 
-class PermissionScreen(val area: ReadOnlyEnclosureArea, val uuid: UUID, val fullName: String, val parent: Screen) :
-    Screen(
-        Text.of("Set permission")
-    ) {
-    var permissionWidgetList: PermissionListWidget? = null
+class PermissionScreen(
+    val area: ReadOnlyEnclosureArea,
+    val uuid: UUID,
+    val fullName: String,
+    private val parent: Screen
+): Screen(Text.of("Set permission")) {
+    private var permissionWidgetList: PermissionListWidget? = null
     override fun init() {
         super.init()
         permissionWidgetList = PermissionListWidget(

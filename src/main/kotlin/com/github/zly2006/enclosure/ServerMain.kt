@@ -201,7 +201,7 @@ object ServerMain: DedicatedServerModInitializer {
         }
     }
     private val updateChecker = UpdateChecker()
-    val checkUpdateThread = Thread {
+    private val checkUpdateThread = Thread {
         while (commonConfig.checkUpdate) {
             updateChecker.check()
             try {

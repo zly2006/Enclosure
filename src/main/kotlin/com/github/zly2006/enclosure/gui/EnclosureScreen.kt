@@ -86,13 +86,13 @@ class EnclosureScreen(handler: EnclosureScreenHandler, inventory: PlayerInventor
                 .build())
         val owner = UUIDCacheS2CPacket.getName(area.owner)
         assert(client != null)
-        if (!handler!!.fatherFullName.isEmpty()) {
+        if (handler!!.fatherFullName.isNotEmpty()) {
             textWidgets.add(ClickableTextWidget(
                 client!!, this, Text.literal("<<< ")
                     .styled { style: Style -> style.withColor(Formatting.DARK_GREEN) }
                     .append(Text.literal(handler!!.fatherFullName).formatted(Formatting.GOLD)),
                 Text.translatable("enclosure.widget.father_land.hover"),
-                { button: Int? ->
+                {
                     assert(client!!.player != null)
                     close()
                     client!!.player!!.networkHandler.sendChatCommand("enclosure gui " + handler!!.fatherFullName)

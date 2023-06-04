@@ -10,19 +10,21 @@ import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder
 import net.minecraft.client.util.math.MatrixStack
 import net.minecraft.text.Text
 import java.util.function.Consumer
+import kotlin.math.max
+import kotlin.math.min
 
 class ClickableTextWidget(
     client: MinecraftClient,
     private val parent: Screen,
     val text: Text,
-    val hover: Text?,
-    val onClick: Consumer<Int>?,
+    private val hover: Text?,
+    private val onClick: Consumer<Int>?,
     var x: Int,
     var y: Int,
     var width: Int
 ) : Element, Drawable, Selectable {
-    var hovered = false
-    var selected = false
+    private var hovered = false
+    private var selected = false
     override fun getType(): Selectable.SelectionType {
         return if (hovered) {
             Selectable.SelectionType.HOVERED
@@ -72,7 +74,7 @@ class ClickableTextWidget(
                 if (hover != null) {
                     parent.renderOrderedTooltip(
                         matrices,
-                        textRenderer.wrapLines(hover, Math.max(200, parent.width / 2)),
+                        textRenderer.wrapLines(hover, max(200, parent.width / 2)),
                         mouseX,
                         mouseY
                     )
@@ -81,7 +83,7 @@ class ClickableTextWidget(
         }
         height = 0
         if (width == 0) {
-            width = Math.min(textRenderer.getWidth(text), parent.width)
+            width = min(textRenderer.getWidth(text), parent.width)
         }
         val orderedTexts = textRenderer.wrapLines(text, width)
         renderedWidth = if (orderedTexts.size == 1) {

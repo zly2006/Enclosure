@@ -8,8 +8,8 @@ import net.minecraft.client.util.math.MatrixStack
 import net.minecraft.text.Text
 import net.minecraft.util.Formatting
 
-class AboutScreen(val parent: Screen) : Screen(Text.of("About")) {
-    val textWidgets: MutableList<ClickableTextWidget> = ArrayList()
+class AboutScreen(private val parent: Screen) : Screen(Text.of("About")) {
+    private val textWidgets: MutableList<ClickableTextWidget> = ArrayList()
     override fun init() {
         textWidgets.clear()
         super.init()
@@ -91,7 +91,7 @@ class AboutScreen(val parent: Screen) : Screen(Text.of("About")) {
     override fun render(matrices: MatrixStack, mouseX: Int, mouseY: Int, delta: Float) {
         val centerHeight = height / 2
         val centerWidth = width / 2
-        var renderStart = Math.max(50, centerHeight - 80)
+        var renderStart = (centerHeight - 80).coerceAtLeast(50)
         drawTextAtCenter(matrices, Text.of("About Enclosure"), centerWidth, 10)
         renderStart += 10
         renderBackgroundTexture(matrices)
