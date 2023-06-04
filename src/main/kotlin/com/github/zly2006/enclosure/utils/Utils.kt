@@ -37,6 +37,14 @@ operator fun Text.plus(text: String): MutableText {
     return this.copy().append(text)
 }
 
+operator fun MutableText.plus(text: Text): MutableText {
+    return this.append(text)
+}
+
+operator fun MutableText.plus(text: String): MutableText {
+    return this.append(text)
+}
+
 fun MutableText.green(): MutableText {
     return this.formatted(Formatting.GREEN)
 }
