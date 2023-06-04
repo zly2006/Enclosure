@@ -1,8 +1,8 @@
 plugins {
-    id 'fabric-loom' version '1.0-SNAPSHOT' apply false
-    id 'maven-publish'
+    id "fabric-loom" version "1.2-SNAPSHOT" apply false
+    id "maven-publish"
     id "org.ajoberstar.grgit" version "4.1.0"
-    id 'org.jetbrains.kotlin.jvm' version '1.8.10'
+    id "org.jetbrains.kotlin.jvm" version "1.8.10"
 }
 
 allprojects {
@@ -13,6 +13,10 @@ allprojects {
         mavenCentral()
         maven { url = "https://maven.fabricmc.net/" }
         maven { url "https://maven.shedaniel.me" }
+    }
+
+    base {
+        archivesName = project.archives_base_name
     }
 
     processResources {
@@ -34,8 +38,23 @@ allprojects {
         modImplementation("net.fabricmc:fabric-language-kotlin:1.9.2+kotlin.1.8.10")
     }
 
-    this.tasks.withType(JavaCompile).configureEach {
+    tasks.withType(JavaCompile).configureEach {
+        // Minecraft 1.18 (1.18-pre2) upwards uses Java 17.
         it.options.release = 17
+    }
+
+    kotlin {
+        jvmToolchain(17)
+    }
+
+    java {
+        // Loom will automatically attach sourcesJar to a RemapSourcesJar task and to the "build" task
+        // if it is present.
+        // If you remove this line, sources will not be generated.
+        withSourcesJar()
+
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
 }
 
@@ -62,14 +81,13 @@ loom {
 }
 
 dependencies {
-    //implementation 'org.projectlombok:lombok:1.18.22'
     //compileOnly "net.luckperms:api:5.4"
 
     // SnakeYAML. To convert the old config
     include(modImplementation("org.yaml:snakeyaml:1.33"))
 
     // SQLite. To store the data
-    compileOnly("org.xerial:sqlite-jdbc:3.41.0.0")
+    implementation("org.xerial:sqlite-jdbc:3.41.0.0")
     // REI. To avoid the REI GUI overlap with the Enclosure GUI
     modCompileOnly "me.shedaniel:RoughlyEnoughItems-api-fabric:${project.rei_version}"
 
@@ -94,7 +112,7 @@ java {
 
 jar {
     from("LICENSE") {
-        rename { "${it}_${project.archivesBaseName}" }
+        rename { "${it}_${base.archivesName.get()}" }
     }
 }
 
@@ -113,8 +131,4 @@ publishing {
         // The repositories here will be used for publishing your artifact, not for
         // retrieving dependencies.
     }
-}
-
-tasks.register('rebuild') {
-    dependsOn 'clean', 'remapJar'
 }
