@@ -13,6 +13,7 @@ public class ResourceLoader {
             if (resource == null) {
                 throw new IOException("Language file not found: " + langCode);
             }
+            //noinspection BlockingMethodInNonBlockingContext
             return new String(resource.readAllBytes());
         }
     }

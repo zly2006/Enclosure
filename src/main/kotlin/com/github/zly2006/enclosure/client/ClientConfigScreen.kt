@@ -8,8 +8,4 @@ class ClientConfigScreen: Screen(Text.literal("Enclosure Config")) {
     override fun render(context: DrawContext?, mouseX: Int, mouseY: Int, delta: Float) {
         super.render(context, mouseX, mouseY, delta)
     }
-
-    override fun init() {
-        super.init()
-    }
 }

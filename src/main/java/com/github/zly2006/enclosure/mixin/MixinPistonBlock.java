@@ -45,7 +45,7 @@ public class MixinPistonBlock extends FacingBlock {
     // Fix for iron-head bedrock breaking
     @Redirect(method = "onSyncedBlockEvent", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/World;removeBlock(Lnet/minecraft/util/math/BlockPos;Z)Z"))
     private boolean protectBlockEvent(World world, BlockPos pos, boolean move) {
-        if (world instanceof ServerWorld serverWorld) {
+        if (world instanceof ServerWorld serverWorld && !serverWorld.getBlockState(pos).isOf(Blocks.MOVING_PISTON)) {
             if (!ServerMain.INSTANCE.checkPermission(serverWorld, pos, null, Permission.BREAK_BLOCK) && !serverWorld.getBlockState(pos).isOf(Blocks.MOVING_PISTON)) {
                 serverWorld.getChunkManager().markForUpdate(pos);
                 return false;

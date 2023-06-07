@@ -133,7 +133,7 @@ object EnclosureWorldRenderer {
      * @param y1 the y coordinate of the first point
      * @param z1 the z coordinate of the first point
      * @param way 0 = x, 1 = y, 2 = z
-     * @param to the second point, must be greater than from
+     * @param to the second point, it must be greater than from
      * @param red 0-1
      * @param blue 0-1
      * @param green 0-1

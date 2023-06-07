@@ -200,7 +200,17 @@ object ServerMain: DedicatedServerModInitializer {
             }
         }
     }
-    var updateChecker = UpdateChecker()
+    private val updateChecker = UpdateChecker()
+    private val checkUpdateThread = Thread {
+        while (commonConfig.checkUpdate) {
+            updateChecker.check()
+            try {
+                Thread.sleep((1000 * 60 * 60 * 12).toLong()) // 12 hours
+            } catch (e: InterruptedException) {
+                return@Thread
+            }
+        }
+    }
 
     /**
      * 判断某个情况是否适用某个权限
@@ -611,16 +621,11 @@ object ServerMain: DedicatedServerModInitializer {
                     EnclosureGroup.GROUPS_KEY
                 )
             Converter.convert()
-            Thread {
-                while (commonConfig.checkUpdate) {
-                    updateChecker.check()
-                    try {
-                        Thread.sleep((1000 * 60 * 60 * 12).toLong()) // 12 hours
-                    } catch (e: InterruptedException) {
-                        return@Thread
-                    }
-                }
-            }.start()
+            checkUpdateThread.start()
+        }
+        ServerLifecycleEvents.SERVER_STOPPING.register {
+            checkUpdateThread.interrupt()
+            playerSessions.clear()
         }
 
         LOGGER.info("Enclosure enabled now!")
