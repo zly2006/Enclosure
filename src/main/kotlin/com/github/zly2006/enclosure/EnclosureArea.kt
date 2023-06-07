@@ -30,7 +30,7 @@ import kotlin.math.max
 import kotlin.math.min
 import kotlin.properties.ReadWriteProperty
 
-open class EnclosureArea : PersistentState, ReadOnlyEnclosureArea {
+open class EnclosureArea : PersistentState, EnclosureView {
     private fun <T> lockChecker(initialValue: T): ReadWriteProperty<Any?, T> {
         return object : ReadWriteProperty<Any?, T> {
             var value = initialValue

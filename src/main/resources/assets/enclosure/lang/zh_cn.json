@@ -212,6 +212,8 @@
   "enclosure.widget.set": "设置",
   "enclosure.widget.set_permission": "正在设置权限：",
   "enclosure.widget.sub_land.hover": "点击显示子领地",
+  "enclosure.widget.transfer": "转让领地",
+  "enclosure.widget.transfer_confirm": "确认转让领地给玩家，此操作不可逆！",
   "enclosure.widget.true": "允许",
   "enclosure.widget.unspecified_player": "未设置的玩家",
   "enclosure.widget.yes": "是"

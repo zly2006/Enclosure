@@ -212,6 +212,8 @@
   "enclosure.widget.set": "Set",
   "enclosure.widget.set_permission": "Setting permission for",
   "enclosure.widget.sub_land.hover": "Click to show sub lands",
+  "enclosure.widget.transfer": "Transfer",
+  "enclosure.widget.transfer_confirm": "Please confirm the transfer of the enclosure, THIS OPERATION CANNOT BE UNDONE!",
   "enclosure.widget.true": "True",
   "enclosure.widget.unspecified_player": "No specified perm",
   "enclosure.widget.yes": "Yes"

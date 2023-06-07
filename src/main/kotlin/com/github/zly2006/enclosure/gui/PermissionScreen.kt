@@ -1,6 +1,6 @@
 package com.github.zly2006.enclosure.gui
 
-import com.github.zly2006.enclosure.ReadOnlyEnclosureArea
+import com.github.zly2006.enclosure.EnclosureView
 import com.github.zly2006.enclosure.command.CONSOLE
 import com.github.zly2006.enclosure.network.UUIDCacheS2CPacket
 import net.minecraft.client.gui.screen.Screen
@@ -11,11 +11,11 @@ import net.minecraft.util.Identifier
 import java.util.*
 
 class PermissionScreen(
-    val area: ReadOnlyEnclosureArea,
-    val uuid: UUID,
-    val fullName: String,
-    private val parent: Screen
-): Screen(Text.of("Set permission")) {
+        val area: EnclosureView,
+        val uuid: UUID,
+        val fullName: String,
+        private val parent: Screen
+): Screen(Text.of("Set permission")), EnclosureGui {
     private var permissionWidgetList: PermissionListWidget? = null
     override fun init() {
         super.init()
@@ -59,16 +59,6 @@ class PermissionScreen(
             .append(" ")
             .append(fullName)
         textRenderer.draw(matrices, title, 10f, 10f, 0xffffff)
-    }
-
-    fun requestConfirm(readString: Text?) {
-        assert(client != null)
-        client!!.execute {
-            client!!.setScreen(ConfirmScreen(this, readString!!) {
-                assert(client!!.player != null)
-                client!!.player!!.networkHandler.sendCommand("enclosure confirm")
-            })
-        }
     }
 
     fun syncPermission(permission: NbtCompound) {

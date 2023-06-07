@@ -16,7 +16,7 @@ fun protectPiston(
     pistonPos: BlockPos,
     dir: Direction, // facing
     extend: Boolean,
-    cir: CallbackInfoReturnable<Boolean?>,
+    cir: CallbackInfoReturnable<Boolean>,
     pistonHandler: PistonHandler
 ) {
     var positions = pistonHandler.brokenBlocks + pistonHandler.movedBlocks + pistonPos

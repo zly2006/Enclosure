@@ -8,9 +8,7 @@ import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.item.ItemStack;
-import net.minecraft.particle.ParticleEffect;
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.stat.Stat;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
 import net.minecraft.util.hit.EntityHitResult;
@@ -28,15 +26,7 @@ import static com.github.zly2006.enclosure.utils.Permission.PLACE_BLOCK;
 
 @Mixin(PlayerEntity.class)
 public abstract class MixinPlayerEntity extends LivingEntity {
-    @Shadow public abstract boolean isPlayer();
-
     @Shadow @Final private PlayerInventory inventory;
-
-    @Shadow protected abstract void spawnParticles(ParticleEffect parameters);
-
-    @Shadow public abstract void resetStat(Stat<?> stat);
-
-    @Shadow public abstract void remove(RemovalReason reason);
 
     public MixinPlayerEntity(EntityType<? extends LivingEntity> type, World world) {
         super(type, world);

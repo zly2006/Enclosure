@@ -1,6 +1,6 @@
 package com.github.zly2006.enclosure.gui
 
-import com.github.zly2006.enclosure.ReadOnlyEnclosureArea
+import com.github.zly2006.enclosure.EnclosureView
 import com.github.zly2006.enclosure.network.UUIDCacheS2CPacket
 import com.github.zly2006.enclosure.utils.formatSelection
 import net.minecraft.client.MinecraftClient
@@ -16,141 +16,117 @@ import java.text.SimpleDateFormat
 import java.util.*
 import java.util.function.Consumer
 
-class EnclosureScreen(handler: EnclosureScreenHandler, inventory: PlayerInventory?, title: Text?) :
-    HandledScreen<EnclosureScreenHandler?>(handler, inventory, title) {
-    val area: ReadOnlyEnclosureArea
-    var permissionTargetListWidget: PermissionTargetListWidget? = null
-    lateinit var globalWidget: ButtonWidget
-    lateinit var playerWidget: ButtonWidget
-    lateinit var unlistedWidget: ButtonWidget
-    lateinit var aboutWidget: ButtonWidget
-    val textWidgets: MutableList<ClickableTextWidget> = ArrayList()
-    val subLandWidgets: MutableList<ClickableTextWidget> = ArrayList()
-    var renderBottom = 5
-
-    init {
-        area = handler.area
+private class SetButton(uuid: UUID, widget: PermissionTargetListWidget<SetButton>): ButtonWidget(0, 0, 40, 20, Text.translatable("enclosure.widget.set"),null, { it.get() }) {
+    override fun onPress() {
+        MinecraftClient.getInstance().setScreen(screenCache)
     }
+
+    private val screenCache: PermissionScreen by lazy {
+        PermissionScreen(widget.area, uuid, widget.fullName, widget.parent)
+    }
+}
+
+class EnclosureScreen(handler: EnclosureScreenHandler, inventory: PlayerInventory?, title: Text?) :
+    HandledScreen<EnclosureScreenHandler>(handler, inventory, title), EnclosureGui {
+    val area: EnclosureView.ReadOnly = handler.area
+    private var permissionTargetListWidget = PermissionTargetListWidget(client, area, handler.fullName, this, width, height, 60, height) { a, b -> SetButton(a, b) }
+    private var globalWidget: ButtonWidget = ButtonWidget.builder(Text.translatable("enclosure.widget.global")) {
+        assert(client != null)
+        client!!.setScreen(PermissionScreen(area, UUID(0, 0), handler.fullName, this))
+    }.size(100, 20).position(5, 35).build()
+    private var playerWidget: ButtonWidget = ButtonWidget.builder(Text.translatable("enclosure.widget.player")) { button: ButtonWidget ->
+        assert(client != null)
+        button.active = false
+        unlistedWidget.active = true
+        permissionTargetListWidget.showPlayers()
+    }.size(100, 20).position(110, 35).build()
+    private var unlistedWidget: ButtonWidget = ButtonWidget.builder(Text.translatable("enclosure.widget.unspecified_player")) { button: ButtonWidget ->
+        assert(client != null)
+        button.active = false
+        playerWidget.active = true
+        permissionTargetListWidget.showUnlistedPlayers()
+    }.size(100, 20).position(215, 35).build()
+    private var aboutWidget: ButtonWidget = ButtonWidget.builder(Text.translatable("enclosure.widget.about")) {
+        assert(client != null)
+        client!!.setScreen(AboutScreen(this))
+    }.size(50, 20).position(320, 35).build()
+    private val transferButton: ButtonWidget = ButtonWidget.builder(Text.translatable("enclosure.widget.transfer")) {
+        assert(client != null)
+        client!!.setScreen(TransferScreen(area, handler.fullName, this))
+    }.size(100, 20).position(5, 5).build()
+    private val textWidgets: MutableList<ClickableTextWidget> = ArrayList()
+    private val subLandWidgets: MutableList<ClickableTextWidget> = ArrayList()
+    private var renderBottom = 5
 
     override fun init() {
         super.init()
         textWidgets.clear()
         subLandWidgets.clear()
-        permissionTargetListWidget = addDrawableChild(
-            PermissionTargetListWidget(
-                client,
-                area,
-                handler!!.fullName,
-                this,
-                width,
-                height,
-                60,
-                height
-            )
-        )
-        globalWidget =
-            addDrawableChild(ButtonWidget.builder(Text.translatable("enclosure.widget.global")) { button: ButtonWidget? ->
-                assert(client != null)
-                client!!.setScreen(PermissionScreen(area, UUID(0, 0), handler!!.fullName, this))
-            }
-                .size(100, 20)
-                .position(5, 35)
-                .build())
-        playerWidget =
-            addDrawableChild(ButtonWidget.builder(Text.translatable("enclosure.widget.player")) { button: ButtonWidget ->
-                assert(client != null)
-                button.active = false
-                unlistedWidget.active = true
-                permissionTargetListWidget!!.showPlayers()
-            }
-                .size(100, 20)
-                .position(110, 35)
-                .build())
-        unlistedWidget =
-            addDrawableChild(ButtonWidget.builder(Text.translatable("enclosure.widget.unspecified_player")) { button: ButtonWidget ->
-                assert(client != null)
-                button.active = false
-                playerWidget.active = true
-                permissionTargetListWidget!!.showUnlistedPlayers()
-            }
-                .size(100, 20)
-                .position(215, 35)
-                .build())
-        aboutWidget =
-            addDrawableChild(ButtonWidget.builder(Text.translatable("enclosure.widget.about")) { button: ButtonWidget? ->
-                assert(client != null)
-                client!!.setScreen(AboutScreen(this))
-            }
-                .size(50, 20)
-                .position(320, 35)
-                .build())
+        addDrawableChild(permissionTargetListWidget)
+        addDrawableChild(globalWidget)
+        addDrawableChild(playerWidget)
+        addDrawableChild(unlistedWidget)
+        addDrawableChild(aboutWidget)
         val owner = UUIDCacheS2CPacket.getName(area.owner)
         assert(client != null)
         if (handler!!.fatherFullName.isNotEmpty()) {
             textWidgets.add(ClickableTextWidget(
-                client!!, this, Text.literal("<<< ")
+                    client!!, this, Text.literal("<<< ")
                     .styled { style: Style -> style.withColor(Formatting.DARK_GREEN) }
                     .append(Text.literal(handler!!.fatherFullName).formatted(Formatting.GOLD)),
-                Text.translatable("enclosure.widget.father_land.hover"),
-                {
-                    assert(client!!.player != null)
-                    close()
-                    client!!.player!!.networkHandler.sendChatCommand("enclosure gui " + handler!!.fatherFullName)
-                }, 5, 5, width - 10
+                    Text.translatable("enclosure.widget.father_land.hover"),
+                    {
+                        assert(client!!.player != null)
+                        close()
+                        client!!.player!!.networkHandler.sendChatCommand("enclosure gui " + handler!!.fatherFullName)
+                    }, 5, 5, width - 10
             )
             )
         }
         textWidgets.add(ClickableTextWidget(
-            client!!, this, Text.empty()
+                client!!, this, Text.empty()
                 .append(Text.literal(area.fullName).styled { style: Style -> style.withColor(Formatting.GOLD) })
                 .append(" ")
                 .append(Text.translatable("enclosure.info.created_by"))
                 .append(" ")
                 .append(
-                    if (owner == null) Text.translatable("enclosure.message.unknown_user").styled { style: Style ->
-                        style.withColor(
-                            Formatting.RED
-                        )
-                    } else Text.literal(owner).styled { style: Style -> style.withColor(Formatting.GOLD) })
+                        if (owner == null) Text.translatable("enclosure.message.unknown_user").formatted(Formatting.RED)
+                        else Text.literal(owner).styled { style: Style -> style.withColor(Formatting.GOLD) }
+                )
                 .append(", ")
                 .append(Text.translatable("enclosure.info.created_on"))
                 .append(Text.literal(SimpleDateFormat().format(area.createdOn)).styled { style: Style ->
                     style.withColor(
-                        Formatting.GOLD
+                            Formatting.GOLD
                     )
                 }),
-            null, null,
-            5, 5, width - 10
+                null, null,
+                5, 5, width - 10
         )
         )
         textWidgets.add(
-            ClickableTextWidget(
-                client!!, this,
-                formatSelection(handler!!.worldId, area.minX, area.minY, area.minZ, area.maxX, area.maxY, area.maxZ),
-                Text.translatable("enclosure.widget.selection_render.hover"),
-                {
-                    assert(client!!.player != null)
-                    client!!.player!!.networkHandler.sendChatCommand("enclosure select land " + handler!!.fullName)
-                    close()
-                }, 5, 20, width - 10
-            )
+                ClickableTextWidget(
+                        client!!, this,
+                        formatSelection(handler!!.worldId, area.minX, area.minY, area.minZ, area.maxX, area.maxY, area.maxZ),
+                        Text.translatable("enclosure.widget.selection_render.hover"),
+                        {
+                            assert(client!!.player != null)
+                            client!!.player!!.networkHandler.sendChatCommand("enclosure select land " + handler!!.fullName)
+                            close()
+                        }, 5, 20, width - 10
+                )
         )
         for (name in handler!!.subAreaNames) {
             subLandWidgets.add(ClickableTextWidget(
-                client!!, this, Text.literal(">>> ")
+                    client!!, this, Text.literal(">>> ")
                     .styled { style: Style -> style.withColor(Formatting.DARK_GREEN) }
                     .append(Text.literal(name).formatted(Formatting.GOLD)),
-                Text.translatable("enclosure.widget.sub_land.hover"),
-                {
-                    assert(client!!.player != null)
-                    close()
-                    client!!.player!!.networkHandler.sendChatCommand(
-                        "enclosure gui %s.%s".formatted(
-                            handler!!.fullName,
-                            name
-                        )
-                    )
-                }, 5, 5, 0
+                    Text.translatable("enclosure.widget.sub_land.hover"),
+                    {
+                        assert(client!!.player != null)
+                        close()
+                        client!!.player!!.networkHandler.sendChatCommand("enclosure gui ${handler!!.fullName}.$name")
+                    }, 5, 5, 0
             )
             )
         }
@@ -171,7 +147,7 @@ class EnclosureScreen(handler: EnclosureScreenHandler, inventory: PlayerInventor
         playerWidget.y = renderBottom
         unlistedWidget.y = renderBottom
         aboutWidget.y = renderBottom
-        permissionTargetListWidget!!.top = renderBottom + 25
+        permissionTargetListWidget.top = renderBottom + 25
         super.render(matrices, mouseX, mouseY, delta)
         for (textWidget in textWidgets) {
             textWidget.render(matrices, mouseX, mouseY, delta)
@@ -208,13 +184,4 @@ class EnclosureScreen(handler: EnclosureScreenHandler, inventory: PlayerInventor
 
     override fun drawForeground(matrices: MatrixStack, mouseX: Int, mouseY: Int) {}
     override fun drawBackground(matrices: MatrixStack, delta: Float, mouseX: Int, mouseY: Int) {}
-    fun requestConfirm(message: Text?) {
-        assert(client != null)
-        client!!.execute {
-            client!!.setScreen(ConfirmScreen(this, message!!) {
-                assert(client!!.player != null)
-                client!!.player!!.networkHandler.sendCommand("enclosure confirm")
-            })
-        }
-    }
 }

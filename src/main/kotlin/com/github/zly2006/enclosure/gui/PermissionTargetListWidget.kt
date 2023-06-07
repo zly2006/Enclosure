@@ -1,6 +1,6 @@
 package com.github.zly2006.enclosure.gui
 
-import com.github.zly2006.enclosure.ReadOnlyEnclosureArea
+import com.github.zly2006.enclosure.EnclosureView
 import com.github.zly2006.enclosure.command.CONSOLE
 import com.github.zly2006.enclosure.network.UUIDCacheS2CPacket
 import com.mojang.blaze3d.systems.RenderSystem
@@ -11,22 +11,23 @@ import net.minecraft.client.gui.Element
 import net.minecraft.client.gui.PlayerSkinDrawer
 import net.minecraft.client.gui.Selectable
 import net.minecraft.client.gui.screen.Screen
-import net.minecraft.client.gui.widget.ButtonWidget
+import net.minecraft.client.gui.widget.ClickableWidget
 import net.minecraft.client.gui.widget.ElementListWidget
 import net.minecraft.client.gui.widget.TextFieldWidget
 import net.minecraft.client.util.math.MatrixStack
 import net.minecraft.text.Text
 import java.util.*
 
-class PermissionTargetListWidget(
-    minecraftClient: MinecraftClient?,
-    val area: ReadOnlyEnclosureArea,
-    val fullName: String,
-    val parent: Screen,
-    width: Int,
-    height: Int,
-    top: Int,
-    bottom: Int
+class PermissionTargetListWidget<Button: ClickableWidget>(
+        minecraftClient: MinecraftClient?,
+        val area: EnclosureView,
+        val fullName: String,
+        val parent: Screen,
+        width: Int,
+        height: Int,
+        top: Int,
+        bottom: Int,
+        val buttonSupplier: (UUID, PermissionTargetListWidget<Button>) -> Button
 ) : ElementListWidget<PermissionTargetListWidget.Entry>(minecraftClient, width, height, top, bottom, 20) {
     enum class Mode {
         Players,
@@ -77,19 +78,14 @@ class PermissionTargetListWidget(
 
     abstract class Entry : ElementListWidget.Entry<Entry>()
     internal inner class PlayerEntry(val name: Text, val uuid: UUID) : Entry() {
-        private val setButton = ButtonWidget.builder(Text.translatable("enclosure.widget.set")) {
-            client.setScreen(screenCache)
-        }.size(40, 20).build()
-        private val screenCache: PermissionScreen by lazy {
-            PermissionScreen(area, uuid, fullName, parent)
-        }
+        private val button: Button = buttonSupplier(uuid, this@PermissionTargetListWidget)
 
         override fun selectableChildren(): List<Selectable?> {
-            return listOf(setButton)
+            return listOf(button)
         }
 
         override fun children(): List<Element?> {
-            return listOf(setButton)
+            return listOf(button)
         }
 
         override fun render(
@@ -105,9 +101,9 @@ class PermissionTargetListWidget(
             tickDelta: Float
         ) {
             client.textRenderer.draw(matrices, name, (x + 20).toFloat(), (y + 3).toFloat(), 0xffffff)
-            setButton.x = x + entryWidth - 40
-            setButton.y = y
-            setButton.render(matrices, mouseX, mouseY, tickDelta)
+            button.x = x + entryWidth - 40
+            button.y = y
+            button.render(matrices, mouseX, mouseY, tickDelta)
             client.player!!.networkHandler.getPlayerListEntry(uuid)?.skinTexture?.let {
                 RenderSystem.setShaderTexture(0, it)
                 PlayerSkinDrawer.draw(matrices, x, y, 16)

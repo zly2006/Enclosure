@@ -8,7 +8,7 @@ import net.minecraft.client.util.math.MatrixStack
 import net.minecraft.text.Text
 import net.minecraft.util.Formatting
 
-class AboutScreen(private val parent: Screen) : Screen(Text.of("About")) {
+class AboutScreen(private val parent: Screen) : Screen(Text.of("About")), EnclosureGui {
     private val textWidgets: MutableList<ClickableTextWidget> = ArrayList()
     override fun init() {
         textWidgets.clear()

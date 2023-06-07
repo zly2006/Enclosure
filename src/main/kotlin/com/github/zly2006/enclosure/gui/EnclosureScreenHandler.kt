@@ -2,8 +2,7 @@ package com.github.zly2006.enclosure.gui
 
 import com.github.zly2006.enclosure.Enclosure
 import com.github.zly2006.enclosure.EnclosureArea
-import com.github.zly2006.enclosure.ReadOnlyEnclosureArea
-import com.github.zly2006.enclosure.ReadOnlyEnclosureArea.Companion.fromTag
+import com.github.zly2006.enclosure.EnclosureView
 import com.github.zly2006.enclosure.utils.Serializable2Text
 import net.fabricmc.fabric.api.networking.v1.PacketByteBufs
 import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerFactory
@@ -21,12 +20,12 @@ import net.minecraft.text.Text
 import net.minecraft.util.Identifier
 
 class EnclosureScreenHandler private constructor(
-    syncId: Int,
-    val area: ReadOnlyEnclosureArea,
-    val fullName: String,
-    val fatherFullName: String,
-    val worldId: Identifier,
-    val subAreaNames: List<String>
+        syncId: Int,
+        val area: EnclosureView.ReadOnly,
+        val fullName: String,
+        val fatherFullName: String,
+        val worldId: Identifier,
+        val subAreaNames: List<String>
 ) : ScreenHandler(ENCLOSURE_SCREEN_HANDLER, syncId) {
     override fun quickMove(player: PlayerEntity, slot: Int): ItemStack = ItemStack.EMPTY
 
@@ -35,12 +34,12 @@ class EnclosureScreenHandler private constructor(
     companion object {
         @JvmField val ENCLOSURE_SCREEN_ID = Identifier("enclosure", "screen.enclosure")
         @JvmField val ENCLOSURE_SCREEN_HANDLER =
-            ExtendedScreenHandlerType { syncId: Int, inventory: PlayerInventory?, buf: PacketByteBuf ->
+            ExtendedScreenHandlerType { syncId: Int, _, buf: PacketByteBuf ->
                 val fullName = buf.readString()
                 val fatherFullName = buf.readString()
                 val worldId = buf.readIdentifier()
                 val compound = buf.readNbt()!!
-                val area = fromTag(compound)
+                val area = EnclosureView.readonly(compound)
                 val subAreaNames: MutableList<String> = ArrayList()
                 val size = buf.readVarInt()
                 for (i in 0 until size) {

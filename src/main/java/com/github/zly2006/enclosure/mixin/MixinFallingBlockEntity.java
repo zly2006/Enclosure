@@ -6,11 +6,9 @@ import net.fabricmc.api.Environment;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.FallingBlockEntity;
-import net.minecraft.entity.data.TrackedData;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
-import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
@@ -22,10 +20,6 @@ import static net.fabricmc.api.EnvType.SERVER;
 @Environment(SERVER)
 @Mixin(value = FallingBlockEntity.class)
 public abstract class MixinFallingBlockEntity extends Entity {
-    @Shadow
-    @Final
-    protected static TrackedData<BlockPos> BLOCK_POS;
-
     public MixinFallingBlockEntity(EntityType<?> type, World world) {
         super(type, world);
     }

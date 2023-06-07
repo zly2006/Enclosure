@@ -12,7 +12,7 @@ Please help improve our [wiki](https://enclosure.fandom.com/wiki/Enclosure_Wiki)
 - Vanilla, this mod will not break any vanilla features, unless in a player's enclosure.
 - Use GUI to configure permissions
 - Sub-enclosure support
-- Fix some vanilla "features"(like breaking bedrock, it will not affect any block in the protection of Enclosure)
+- Fix some vanilla "features" (like breaking bedrock, it will not affect any block in the protection of Enclosure)
 
 ## Quick Start
 

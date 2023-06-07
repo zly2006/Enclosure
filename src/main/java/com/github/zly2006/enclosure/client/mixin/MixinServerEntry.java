@@ -3,7 +3,6 @@ package com.github.zly2006.enclosure.client.mixin;
 import com.github.zly2006.enclosure.ServerMainKt;
 import com.github.zly2006.enclosure.access.ServerMetadataAccess;
 import com.mojang.blaze3d.systems.RenderSystem;
-import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawableHelper;
 import net.minecraft.client.gui.screen.multiplayer.MultiplayerScreen;
 import net.minecraft.client.gui.screen.multiplayer.MultiplayerServerListWidget;
@@ -24,7 +23,7 @@ import java.util.List;
 public class MixinServerEntry {
     @Shadow @Final private MultiplayerScreen screen;
     @Shadow @Final private ServerInfo server;
-    @Shadow @Final private MinecraftClient client;
+
     Identifier NOTIFY_TEXTURE = new Identifier("realms", "textures/gui/realms/trial_icon.png");
     @Inject(method = "render", at = @At("RETURN"))
     private void onRender(MatrixStack matrices, int index, int y, int x, int entryWidth, int entryHeight, int mouseX, int mouseY, boolean hovered, float tickDelta, CallbackInfo ci) {

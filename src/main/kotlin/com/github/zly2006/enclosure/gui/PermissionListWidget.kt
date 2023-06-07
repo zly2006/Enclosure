@@ -1,6 +1,6 @@
 package com.github.zly2006.enclosure.gui
 
-import com.github.zly2006.enclosure.ReadOnlyEnclosureArea
+import com.github.zly2006.enclosure.EnclosureView
 import com.github.zly2006.enclosure.command.CONSOLE
 import com.github.zly2006.enclosure.utils.Permission
 import net.fabricmc.api.EnvType
@@ -23,15 +23,15 @@ import org.lwjgl.glfw.GLFW
 import java.util.*
 
 class PermissionListWidget(
-    minecraftClient: MinecraftClient?,
-    private val parent: Screen,
-    private val fullName: String,
-    private val area: ReadOnlyEnclosureArea,
-    private val uuid: UUID,
-    width: Int,
-    height: Int,
-    top: Int,
-    bottom: Int
+        minecraftClient: MinecraftClient?,
+        private val parent: Screen,
+        private val fullName: String,
+        private val area: EnclosureView,
+        private val uuid: UUID,
+        width: Int,
+        height: Int,
+        top: Int,
+        bottom: Int
 ) : ElementListWidget<PermissionListWidget.Entry?>(minecraftClient, width, height, top, bottom, 20) {
     private val target: Permission.Target = if (uuid == CONSOLE) Permission.Target.Enclosure else Permission.Target.Player
 

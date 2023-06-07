@@ -5,7 +5,6 @@ import com.github.zly2006.enclosure.access.PlayerAccess
 import com.github.zly2006.enclosure.exceptions.PermissionTargetException
 import com.github.zly2006.enclosure.gui.EnclosureScreenHandler
 import com.github.zly2006.enclosure.network.EnclosureInstalledC2SPacket
-import com.github.zly2006.enclosure.network.NetworkChannels
 import com.github.zly2006.enclosure.utils.*
 import com.github.zly2006.enclosure.utils.Serializable2Text.SerializationSettings
 import com.mojang.brigadier.Command
@@ -21,8 +20,6 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType
 import com.mojang.brigadier.suggestion.SuggestionsBuilder
 import com.mojang.brigadier.tree.LiteralCommandNode
-import net.fabricmc.fabric.api.networking.v1.PacketByteBufs
-import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking
 import net.minecraft.command.CommandSource
 import net.minecraft.command.argument.BlockPosArgumentType
 import net.minecraft.command.argument.DimensionArgumentType
@@ -30,7 +27,6 @@ import net.minecraft.command.argument.TextArgumentType
 import net.minecraft.command.argument.UuidArgumentType
 import net.minecraft.server.command.CommandManager
 import net.minecraft.server.command.ServerCommandSource
-import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.text.*
 import net.minecraft.util.Formatting
 import net.minecraft.util.math.BlockPos
@@ -188,24 +184,6 @@ class BuilderScope<T: argT>(var parent: T) {
     }
 }
 
-object ConfirmManager {
-    val runnableMap: MutableMap<UUID, () -> Unit> = HashMap()
-    fun confirm(player: ServerPlayerEntity?, runnable: () -> Unit) {
-        val text = TrT.of("enclosure.message.dangerous")
-        text.style = Style.EMPTY
-            .hoverText(TrT.of("enclosure.message.confirm_event"))
-            .withClickEvent(ClickEvent(ClickEvent.Action.RUN_COMMAND, "/enclosure confirm"))
-            .withColor(Formatting.YELLOW)
-        if (player == null) {
-            runnableMap[CONSOLE] = runnable
-            minecraftServer.commandSource.sendMessage(TrT.of("enclosure.message.operation_confirm"))
-        } else {
-            runnableMap[player.uuid] = runnable
-            player.sendMessage(text)
-        }
-    }
-}
-
 private fun getEnclosure(context: CommandContext<ServerCommandSource>): EnclosureArea {
     return ServerMain.getEnclosure(StringArgumentType.getString(context, "land"))
         ?: error(TrT.of("enclosure.message.no_enclosure"), context)
@@ -338,7 +316,7 @@ private fun getOfflineUUID(context: CommandContext<ServerCommandSource>): UUID {
 fun BuilderScope<*>.registerConfirmCommand() {
     literal("confirm") {
         executes {
-            ConfirmManager.runnableMap.remove(source.uuid)?.run { invoke() }
+            ConfirmManager.runnableMap.remove(source.uuid)?.run { runnable() }
                 ?: error(TrT.of("enclosure.message.no_task_to_confirm"), this)
         }
     }
@@ -780,7 +758,7 @@ fun register(dispatcher: CommandDispatcher<ServerCommandSource>): LiteralCommand
                             source.sendMessage(
                                 TrT.of("enclosure.message.teleport_warning").formatted(Formatting.YELLOW)
                             )
-                            ConfirmManager.confirm(source.player) { area.teleport(player) }
+                            ConfirmManager.confirm(null, source.player) { area.teleport(player) }
                         } else {
                             area.teleport(player)
                         }
@@ -826,7 +804,7 @@ fun register(dispatcher: CommandDispatcher<ServerCommandSource>): LiteralCommand
                     if (!res.isOwner(source)) {
                         error(TrT.of("enclosure.message.not_owner"), this)
                     }
-                    ConfirmManager.confirm(source.player) {
+                    ConfirmManager.confirm(null, source.player) {
                         val list =
                             (res.father as? Enclosure)?.subEnclosures ?: ServerMain.getAllEnclosures(res.world)
                         val success = res.father?.let {
@@ -858,41 +836,51 @@ fun register(dispatcher: CommandDispatcher<ServerCommandSource>): LiteralCommand
         }
         literal("give") {
             argument(landArgument()) {
+                fun CommandContext<ServerCommandSource>.execute(area: EnclosureArea, uuid: UUID) {
+                    val target = minecraftServer.playerManager.getPlayer(uuid)
+                    if (!area.isOwner(source)) {
+                        error(TrT.of("enclosure.message.not_owner"), this)
+                    }
+                    ConfirmManager.confirm(null, source.player) {
+                        val limitsOfReceiver = ServerMain.limits
+                        if (!source.hasPermissionLevel(4)) {
+                            val count = ServerMain.getAllEnclosures(uuid).size.toLong()
+                            if (count > limitsOfReceiver.maxLands) {
+                                error(
+                                        TrT.of("enclosure.message.rcle.receiver")
+                                                .append(limitsOfReceiver.maxLands.toString()), this
+                                )
+                            }
+                        }
+                        area.setPermission(source, area.owner, Permission.ALL, null)
+                        area.owner = uuid
+                        area.setPermission(source, uuid, Permission.ALL, true)
+                        source.sendFeedback(
+                                TrT.of("enclosure.message.given.1")
+                                        .append(area.serialize(SerializationSettings.Name, source.player))
+                                        .append(TrT.of("enclosure.message.given.2"))
+                                        .append(Utils.getDisplayNameByUUID(uuid)), true
+                        )
+                        target?.sendMessage(
+                                TrT.of("enclosure.message.received.1")
+                                        .append(area.serialize(SerializationSettings.Name, source.player))
+                                        .append(TrT.of("enclosure.message.received.2"))
+                                        .append(Utils.getDisplayNameByUUID(area.owner))
+                        )
+                    }
+                }
                 argument(offlinePlayerArgument()) {
                     executes {
                         val res = getEnclosure(this)
                         val uuid = getOfflineUUID(this)
-                        val target = minecraftServer.playerManager.getPlayer(uuid)
-                        if (!res.isOwner(source)) {
-                            error(TrT.of("enclosure.message.not_owner"), this)
-                        }
-                        ConfirmManager.confirm(source.player) {
-                            val limitsOfReceiver = ServerMain.limits
-                            if (!source.hasPermissionLevel(4)) {
-                                val count = ServerMain.getAllEnclosures(uuid).size.toLong()
-                                if (count > limitsOfReceiver.maxLands) {
-                                    error(
-                                        TrT.of("enclosure.message.rcle.receiver")
-                                            .append(limitsOfReceiver.maxLands.toString()), this
-                                    )
-                                }
-                            }
-                            res.setPermission(source, res.owner, Permission.ALL, null)
-                            res.owner = uuid
-                            res.setPermission(source, uuid, Permission.ALL, true)
-                            source.sendFeedback(
-                                TrT.of("enclosure.message.given.1")
-                                    .append(res.serialize(SerializationSettings.Name, source.player))
-                                    .append(TrT.of("enclosure.message.given.2"))
-                                    .append(Utils.getDisplayNameByUUID(uuid)), true
-                            )
-                            target?.sendMessage(
-                                TrT.of("enclosure.message.received.1")
-                                    .append(res.serialize(SerializationSettings.Name, source.player))
-                                    .append(TrT.of("enclosure.message.received.2"))
-                                    .append(Utils.getDisplayNameByUUID(res.owner))
-                            )
-                        }
+                        execute(res, uuid)
+                    }
+                }
+                argument("uuid", UuidArgumentType.uuid()) {
+                    executes {
+                        val res = getEnclosure(this)
+                        val uuid = UuidArgumentType.getUuid(this, "uuid")
+                        execute(res, uuid)
                     }
                 }
             }
@@ -1028,7 +1016,7 @@ fun register(dispatcher: CommandDispatcher<ServerCommandSource>): LiteralCommand
                             error(Permission.ADMIN.getNoPermissionMsg(it), this)
                         }
                     }
-                    val value: Boolean? = when(getArgument("value", String::class.java)) {
+                    val value: Boolean? = when (getArgument("value", String::class.java)) {
                         "true" -> true
                         "false" -> false
                         else -> null
@@ -1037,13 +1025,13 @@ fun register(dispatcher: CommandDispatcher<ServerCommandSource>): LiteralCommand
                         area.setPermission(source, uuid, permission, value)
                         area.markDirty()
                         source.sendFeedback(
-                            TrT.of(
-                                "enclosure.message.set_permission",
-                                Utils.getDisplayNameByUUID(uuid),
-                                permission.serialize(SerializationSettings.Summarize, source.player),
-                                value?.toString() ?: "none",
-                                area.fullName
-                            ).formatted(Formatting.YELLOW), true
+                                TrT.of(
+                                        "enclosure.message.set_permission",
+                                        Utils.getDisplayNameByUUID(uuid),
+                                        permission.serialize(SerializationSettings.Summarize, source.player),
+                                        value?.toString() ?: "none",
+                                        area.fullName
+                                ).formatted(Formatting.YELLOW), true
                         )
                     }
                     val warning = if (permission === Permission.ADMIN) {
@@ -1052,15 +1040,7 @@ fun register(dispatcher: CommandDispatcher<ServerCommandSource>): LiteralCommand
                         TrT.of("enclosure.message.setting_multiple").formatted(Formatting.RED)
                     } else null
                     if (warning != null) {
-                        if (source.player != null && source.player!!.currentScreenHandler is EnclosureScreenHandler) {
-                            val buf = PacketByteBufs.create()
-                            buf.writeText(warning)
-                            ServerPlayNetworking.send(source.player, NetworkChannels.CONFIRM, buf)
-                            ConfirmManager.runnableMap[source.player!!.uuid] = action
-                        } else {
-                            source.sendMessage(warning)
-                            ConfirmManager.confirm(source.player, action)
-                        }
+                        ConfirmManager.confirm(warning, source.player, false, action)
                     } else {
                         action()
                     }

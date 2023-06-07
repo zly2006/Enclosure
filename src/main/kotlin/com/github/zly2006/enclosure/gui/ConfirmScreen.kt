@@ -7,7 +7,7 @@ import net.minecraft.client.util.math.MatrixStack
 import net.minecraft.text.Text
 import net.minecraft.util.Identifier
 
-class ConfirmScreen(private val parent: Screen, val message: Text, val action: Runnable) : Screen(Text.of("Confirm")) {
+class ConfirmScreen(private val parent: Screen, val message: Text, val action: Runnable) : Screen(Text.of("Confirm")), EnclosureGui {
     private val yesButton: ButtonWidget =
         ButtonWidget.builder(Text.translatable("enclosure.widget.yes")) { button: ButtonWidget? ->
             action.run()
