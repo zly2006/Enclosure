@@ -6,13 +6,13 @@ import com.github.zly2006.enclosure.utils.Permission
 import net.fabricmc.api.EnvType
 import net.fabricmc.api.Environment
 import net.minecraft.client.MinecraftClient
+import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.gui.Element
 import net.minecraft.client.gui.Selectable
 import net.minecraft.client.gui.screen.Screen
 import net.minecraft.client.gui.widget.ButtonWidget
 import net.minecraft.client.gui.widget.ElementListWidget
 import net.minecraft.client.gui.widget.TextFieldWidget
-import net.minecraft.client.util.math.MatrixStack
 import net.minecraft.item.ItemStack
 import net.minecraft.text.Style
 import net.minecraft.text.Text
@@ -53,10 +53,6 @@ class PermissionListWidget(
         return width - 15
     }
 
-    override fun render(matrices: MatrixStack, mouseX: Int, mouseY: Int, delta: Float) {
-        super.render(matrices, mouseX, mouseY, delta)
-    }
-
     @Environment(EnvType.CLIENT)
     abstract class Entry : ElementListWidget.Entry<Entry?>()
 
@@ -88,7 +84,7 @@ class PermissionListWidget(
             }
 
         override fun render(
-            matrices: MatrixStack,
+            drawContext: DrawContext,
             index: Int,
             y: Int,
             x: Int,
@@ -102,21 +98,20 @@ class PermissionListWidget(
             buttonWidget.y = y
             buttonWidget.x = x + entryWidth - 40
             buttonWidget.message = value()
-            buttonWidget.render(matrices, mouseX, mouseY, tickDelta)
-            client.textRenderer.draw(matrices, permission.name, (x + 20).toFloat(), (y + 3).toFloat(), 0xFFFFFF)
-            client.textRenderer.draw(matrices, permission.description, (x + 140).toFloat(), (y + 3).toFloat(), 0x999999)
-            permission.icon
-            client.itemRenderer.renderInGui(matrices, ItemStack(permission.icon), x, y)
+            buttonWidget.render(drawContext, mouseX, mouseY, tickDelta)
+            drawContext.drawText(client.textRenderer, permission.name, x + 20, y + 3, 0xFFFFFF, false)
+            drawContext.drawText(client.textRenderer, permission.description, x + 140, y + 3, 0x999999, false)
+            drawContext.drawItem(ItemStack(permission.icon), x, y)
             if (buttonWidget.isHovered) {
-                parent.renderTooltip(matrices, listOf<Text>(
+                drawContext.drawTooltip(client.textRenderer, listOf<Text>(
                     Text.translatable("enclosure.widget.click.left")
                         .formatted(Formatting.GREEN),
                     Text.translatable("enclosure.widget.click.right")
                         .formatted(Formatting.RED)
                 ), mouseX, mouseY)
             } else if (hovered) {
-                parent.renderTooltip(
-                    matrices,
+                drawContext.drawTooltip(
+                    client.textRenderer,
                     listOf(
                         permission.description,
                         Text.translatable("enclosure.widget.default_value_is")
@@ -194,7 +189,7 @@ class PermissionListWidget(
         }
 
         override fun render(
-            matrices: MatrixStack,
+            drawContext: DrawContext,
             index: Int,
             y: Int,
             x: Int,
@@ -208,14 +203,8 @@ class PermissionListWidget(
             searchWidget.y = y
             searchWidget.x = x + 70
             searchWidget.width = entryWidth - 70 - 2
-            searchWidget.render(matrices, mouseX, mouseY, tickDelta)
-            client.textRenderer.draw(
-                matrices,
-                Text.translatable("enclosure.widget.search"),
-                x.toFloat(),
-                (y + 3).toFloat(),
-                0xFFFFFF
-            )
+            searchWidget.render(drawContext, mouseX, mouseY, tickDelta)
+            drawContext.drawText(client.textRenderer, Text.translatable("enclosure.widget.search"), x, y + 3, 0xFFFFFF, false)
         }
 
         override fun selectableChildren(): List<Selectable?> {

@@ -3,10 +3,10 @@ package com.github.zly2006.enclosure.gui
 import com.github.zly2006.enclosure.ReadOnlyEnclosureArea
 import com.github.zly2006.enclosure.command.CONSOLE
 import com.github.zly2006.enclosure.network.UUIDCacheS2CPacket
-import com.mojang.blaze3d.systems.RenderSystem
 import net.fabricmc.api.EnvType
 import net.fabricmc.api.Environment
 import net.minecraft.client.MinecraftClient
+import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.gui.Element
 import net.minecraft.client.gui.PlayerSkinDrawer
 import net.minecraft.client.gui.Selectable
@@ -14,7 +14,6 @@ import net.minecraft.client.gui.screen.Screen
 import net.minecraft.client.gui.widget.ButtonWidget
 import net.minecraft.client.gui.widget.ElementListWidget
 import net.minecraft.client.gui.widget.TextFieldWidget
-import net.minecraft.client.util.math.MatrixStack
 import net.minecraft.text.Text
 import java.util.*
 
@@ -93,7 +92,7 @@ class PermissionTargetListWidget(
         }
 
         override fun render(
-            matrices: MatrixStack,
+            drawContext: DrawContext,
             index: Int,
             y: Int,
             x: Int,
@@ -104,13 +103,12 @@ class PermissionTargetListWidget(
             hovered: Boolean,
             tickDelta: Float
         ) {
-            client.textRenderer.draw(matrices, name, (x + 20).toFloat(), (y + 3).toFloat(), 0xffffff)
+            drawContext.drawText(client.textRenderer, name, x + 20, y + 3, 0xffffff, false)
             setButton.x = x + entryWidth - 40
             setButton.y = y
-            setButton.render(matrices, mouseX, mouseY, tickDelta)
+            setButton.render(drawContext, mouseX, mouseY, tickDelta)
             client.player!!.networkHandler.getPlayerListEntry(uuid)?.skinTexture?.let {
-                RenderSystem.setShaderTexture(0, it)
-                PlayerSkinDrawer.draw(matrices, x, y, 16)
+                PlayerSkinDrawer.draw(drawContext, it, x, y, 16)
             }
         }
     }
@@ -141,7 +139,7 @@ class PermissionTargetListWidget(
         }
 
         override fun render(
-            matrices: MatrixStack,
+            drawContext: DrawContext,
             index: Int,
             y: Int,
             x: Int,
@@ -155,14 +153,8 @@ class PermissionTargetListWidget(
             searchWidget.y = y
             searchWidget.x = x + 70
             searchWidget.width = entryWidth - 70 - 2
-            searchWidget.render(matrices, mouseX, mouseY, tickDelta)
-            client.textRenderer.draw(
-                matrices,
-                Text.translatable("enclosure.widget.search"),
-                x.toFloat(),
-                (y + 3).toFloat(),
-                0xFFFFFF
-            )
+            searchWidget.render(drawContext, mouseX, mouseY, tickDelta)
+            drawContext.drawText(client.textRenderer, Text.translatable("enclosure.widget.search"), x + 3, y + 3, 0xffffff, false)
         }
 
         override fun selectableChildren(): List<Selectable?> {

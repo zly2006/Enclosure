@@ -4,10 +4,10 @@ import com.github.zly2006.enclosure.ReadOnlyEnclosureArea
 import com.github.zly2006.enclosure.network.UUIDCacheS2CPacket
 import com.github.zly2006.enclosure.utils.formatSelection
 import net.minecraft.client.MinecraftClient
+import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.gui.Element
 import net.minecraft.client.gui.screen.ingame.HandledScreen
 import net.minecraft.client.gui.widget.ButtonWidget
-import net.minecraft.client.util.math.MatrixStack
 import net.minecraft.entity.player.PlayerInventory
 import net.minecraft.text.Style
 import net.minecraft.text.Text
@@ -156,8 +156,8 @@ class EnclosureScreen(handler: EnclosureScreenHandler, inventory: PlayerInventor
         }
     }
 
-    override fun render(matrices: MatrixStack, mouseX: Int, mouseY: Int, delta: Float) {
-        renderBackground(matrices)
+    override fun render(drawContext: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
+        renderBackground(drawContext)
         renderBottom = 5
         for (textWidget in textWidgets) {
             textWidget.y = renderBottom
@@ -172,14 +172,14 @@ class EnclosureScreen(handler: EnclosureScreenHandler, inventory: PlayerInventor
         unlistedWidget.y = renderBottom
         aboutWidget.y = renderBottom
         permissionTargetListWidget!!.top = renderBottom + 25
-        super.render(matrices, mouseX, mouseY, delta)
+        super.render(drawContext, mouseX, mouseY, delta)
         for (textWidget in textWidgets) {
-            textWidget.render(matrices, mouseX, mouseY, delta)
+            textWidget.render(drawContext, mouseX, mouseY, delta)
         }
         var subLandsX = 5
         for (textWidget in subLandWidgets) {
             textWidget.x = subLandsX
-            textWidget.render(matrices, mouseX, mouseY, delta)
+            textWidget.render(drawContext, mouseX, mouseY, delta)
             subLandsX += textWidget.width + 5
         }
     }
@@ -196,6 +196,8 @@ class EnclosureScreen(handler: EnclosureScreenHandler, inventory: PlayerInventor
         super.resize(client, width, height)
     }
 
+    override fun drawBackground(context: DrawContext?, delta: Float, mouseX: Int, mouseY: Int) { }
+
     override fun keyPressed(keyCode: Int, scanCode: Int, modifiers: Int): Boolean {
         if (keyCode == 256 && shouldCloseOnEsc()) {
             close()
@@ -206,8 +208,6 @@ class EnclosureScreen(handler: EnclosureScreenHandler, inventory: PlayerInventor
         } else focused!!.keyPressed(keyCode, scanCode, modifiers)
     }
 
-    override fun drawForeground(matrices: MatrixStack, mouseX: Int, mouseY: Int) {}
-    override fun drawBackground(matrices: MatrixStack, delta: Float, mouseX: Int, mouseY: Int) {}
     fun requestConfirm(message: Text?) {
         assert(client != null)
         client!!.execute {

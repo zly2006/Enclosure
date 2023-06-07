@@ -1,9 +1,8 @@
 package com.github.zly2006.enclosure.gui
 
-import com.mojang.blaze3d.systems.RenderSystem
+import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.gui.screen.Screen
 import net.minecraft.client.gui.widget.ButtonWidget
-import net.minecraft.client.util.math.MatrixStack
 import net.minecraft.text.Text
 import net.minecraft.util.Identifier
 
@@ -31,24 +30,23 @@ class ConfirmScreen(private val parent: Screen, val message: Text, val action: R
         addDrawableChild(noButton)
     }
 
-    override fun render(matrices: MatrixStack, mouseX: Int, mouseY: Int, delta: Float) {
-        parent.render(matrices, 0, 0, delta)
-        renderBackground(matrices)
-        RenderSystem.setShaderTexture(0, TEXTURE)
+    override fun render(drawContext: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
+        parent.render(drawContext, 0, 0, delta)
+        renderBackground(drawContext)
         val height = 150
         val x = (parent.width - 200) / 2
         val y = (parent.height - height) / 2
         var linesY = y + 10
-        drawTexture(matrices, x, y, 0f, 0f, 200, 150, 200, 150)
+        drawContext.drawTexture(TEXTURE, 0, 0, 0, 0, 200, 150)
         val lines = textRenderer.wrapLines(message, 180)
         for (line in lines) {
-            textRenderer.draw(matrices, line, (x + 10).toFloat(), linesY.toFloat(), 0xFFFFFF)
+            drawContext.drawText(textRenderer, line, x + 10, linesY, 0xFFFFFF, true)
             linesY += 10
         }
         yesButton.y = y + height - 30
         noButton.y = y + height - 30
-        yesButton.render(matrices, mouseX, mouseY, delta)
-        noButton.render(matrices, mouseX, mouseY, delta)
+        yesButton.render(drawContext, mouseX, mouseY, delta)
+        noButton.render(drawContext, mouseX, mouseY, delta)
     }
 
     companion object {

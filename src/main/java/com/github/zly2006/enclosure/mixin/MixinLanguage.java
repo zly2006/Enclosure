@@ -14,7 +14,7 @@ import java.util.function.BiConsumer;
 @Mixin(Language.class)
 public class MixinLanguage {
     @SuppressWarnings({"rawtypes", "unchecked"})
-    @Inject(method = "create", locals = LocalCapture.CAPTURE_FAILHARD, at = @At(value = "INVOKE", target = "Lcom/google/common/collect/ImmutableMap$Builder;build()Lcom/google/common/collect/ImmutableMap;"))
+    @Inject(method = "create", locals = LocalCapture.CAPTURE_FAILHARD, at = @At(value = "INVOKE", target = "Lnet/minecraft/util/Language;load(Ljava/util/function/BiConsumer;Ljava/lang/String;)V"))
     private static void create(CallbackInfoReturnable<Language> cir, ImmutableMap.Builder builder, BiConsumer biConsumer) {
         if (ServerMain.INSTANCE.getCommonConfig().injectServerLanguage) {
             ServerMain.INSTANCE.getTranslation().entrySet().forEach(entry ->

@@ -2,15 +2,14 @@ package com.github.zly2006.enclosure.gui
 
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.font.TextRenderer
+import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.gui.Drawable
 import net.minecraft.client.gui.Element
 import net.minecraft.client.gui.Selectable
 import net.minecraft.client.gui.screen.Screen
 import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder
-import net.minecraft.client.util.math.MatrixStack
 import net.minecraft.text.Text
 import java.util.function.Consumer
-import kotlin.math.max
 import kotlin.math.min
 
 class ClickableTextWidget(
@@ -67,17 +66,12 @@ class ClickableTextWidget(
         return selected
     }
 
-    override fun render(matrices: MatrixStack, mouseX: Int, mouseY: Int, delta: Float) {
+    override fun render(drawContext: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
         if (mouseX >= x && mouseX <= x + renderedWidth) {
             if (mouseY >= y && mouseY <= y + height) {
                 hovered = true
                 if (hover != null) {
-                    parent.renderOrderedTooltip(
-                        matrices,
-                        textRenderer.wrapLines(hover, max(200, parent.width / 2)),
-                        mouseX,
-                        mouseY
-                    )
+                    drawContext.drawTooltip(textRenderer, hover, mouseX, mouseY)
                 }
             }
         }
@@ -92,7 +86,7 @@ class ClickableTextWidget(
             width
         }
         for (orderedText in orderedTexts) {
-            textRenderer.draw(matrices, orderedText, x.toFloat(), (y + height).toFloat(), 0xffffff)
+            drawContext.drawText(textRenderer, orderedText, x, y + height, 0xffffff, false)
             height += textRenderer.fontHeight + 1
         }
     }

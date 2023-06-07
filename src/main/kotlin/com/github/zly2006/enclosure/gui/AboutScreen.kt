@@ -1,10 +1,10 @@
 package com.github.zly2006.enclosure.gui
 
 import net.minecraft.client.MinecraftClient
+import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.gui.Element
 import net.minecraft.client.gui.screen.ConfirmLinkScreen
 import net.minecraft.client.gui.screen.Screen
-import net.minecraft.client.util.math.MatrixStack
 import net.minecraft.text.Text
 import net.minecraft.util.Formatting
 
@@ -88,17 +88,17 @@ class AboutScreen(private val parent: Screen) : Screen(Text.of("About")) {
         )
     }
 
-    override fun render(matrices: MatrixStack, mouseX: Int, mouseY: Int, delta: Float) {
+    override fun render(drawContext: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
         val centerHeight = height / 2
         val centerWidth = width / 2
         var renderStart = (centerHeight - 80).coerceAtLeast(50)
-        drawTextAtCenter(matrices, Text.of("About Enclosure"), centerWidth, 10)
+        drawTextAtCenter(drawContext, Text.of("About Enclosure"), centerWidth, 10)
         renderStart += 10
-        renderBackgroundTexture(matrices)
+        renderBackgroundTexture(drawContext)
         for (textWidget in textWidgets) {
             textWidget.x = 10
             textWidget.y = renderStart
-            textWidget.render(matrices, mouseX, mouseY, delta)
+            textWidget.render(drawContext, mouseX, mouseY, delta)
             renderStart += textWidget.height + 10
         }
     }
@@ -114,9 +114,9 @@ class AboutScreen(private val parent: Screen) : Screen(Text.of("About")) {
         client!!.setScreen(parent)
     }
 
-    private fun drawTextAtCenter(matrices: MatrixStack, text: Text, center: Int, @Suppress("SameParameterValue") y: Int) {
+    private fun drawTextAtCenter(drawContext: DrawContext, text: Text, center: Int, @Suppress("SameParameterValue") y: Int) {
         // draw text at the center
-        textRenderer.draw(matrices, text, center - textRenderer.getWidth(text) / 2.0f, y.toFloat(), 0xffffff)
+        drawContext.drawText(textRenderer, text, center - textRenderer.getWidth(text) / 2, y, 0xffffff, false)
     }
 
     companion object {

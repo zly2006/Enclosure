@@ -3,8 +3,8 @@ package com.github.zly2006.enclosure.gui
 import com.github.zly2006.enclosure.ReadOnlyEnclosureArea
 import com.github.zly2006.enclosure.command.CONSOLE
 import com.github.zly2006.enclosure.network.UUIDCacheS2CPacket
+import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.gui.screen.Screen
-import net.minecraft.client.util.math.MatrixStack
 import net.minecraft.nbt.NbtCompound
 import net.minecraft.text.Text
 import net.minecraft.util.Identifier
@@ -43,9 +43,9 @@ class PermissionScreen(
         client!!.setScreen(parent)
     }
 
-    override fun render(matrices: MatrixStack, mouseX: Int, mouseY: Int, delta: Float) {
-        renderBackground(matrices)
-        super.render(matrices, mouseX, mouseY, delta)
+    override fun render(drawContext: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
+        renderBackground(drawContext)
+        super.render(drawContext, mouseX, mouseY, delta)
         val title = Text.translatable("enclosure.widget.set_permission").append(" ")
         if (CONSOLE == uuid) {
             title.append(Text.translatable("enclosure.widget.global"))
@@ -58,7 +58,7 @@ class PermissionScreen(
             .append(Text.translatable("enclosure.widget.in_enclosure"))
             .append(" ")
             .append(fullName)
-        textRenderer.draw(matrices, title, 10f, 10f, 0xffffff)
+        drawContext.drawText(textRenderer, title, 10, 10, 0xffffff, true)
     }
 
     fun requestConfirm(readString: Text?) {
