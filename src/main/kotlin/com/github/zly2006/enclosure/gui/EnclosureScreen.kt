@@ -142,7 +142,20 @@ class EnclosureScreen(handler: EnclosureScreenHandler, inventory: PlayerInventor
         for (textWidget in subLandWidgets) {
             textWidget.y = renderBottom
         }
-        renderBottom += if (subLandWidgets.isEmpty()) 0 else 10
+        renderBottom += if (MinecraftClient.getInstance().player?.uuid == area.owner) {
+            transferButton.y = renderBottom
+            transferButton.render(matrices, mouseX, mouseY, delta)
+            25
+        } else 0
+        renderBottom += if (subLandWidgets.isNotEmpty()) {
+            var subLandsX = 5
+            for (textWidget in subLandWidgets) {
+                textWidget.x = subLandsX
+                textWidget.render(matrices, mouseX, mouseY, delta)
+                subLandsX += textWidget.width + 5
+            }
+            10
+        } else 0
         globalWidget.y = renderBottom
         playerWidget.y = renderBottom
         unlistedWidget.y = renderBottom
@@ -151,12 +164,6 @@ class EnclosureScreen(handler: EnclosureScreenHandler, inventory: PlayerInventor
         super.render(matrices, mouseX, mouseY, delta)
         for (textWidget in textWidgets) {
             textWidget.render(matrices, mouseX, mouseY, delta)
-        }
-        var subLandsX = 5
-        for (textWidget in subLandWidgets) {
-            textWidget.x = subLandsX
-            textWidget.render(matrices, mouseX, mouseY, delta)
-            subLandsX += textWidget.width + 5
         }
     }
 

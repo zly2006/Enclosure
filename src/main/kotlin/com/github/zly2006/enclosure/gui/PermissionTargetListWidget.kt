@@ -56,7 +56,7 @@ class PermissionTargetListWidget<Button: ClickableWidget>(
         mode = Mode.Players
         scrollAmount = 0.0
         addEntry(searchEntry)
-        area.permissionsMap.keys
+        area.permissionsMap.keys.asSequence()
             .filter { it != CONSOLE }
             .map { PlayerEntry(Text.of(UUIDCacheS2CPacket.getName(it)), it) }
             .sortedBy { it.name.string }
@@ -68,7 +68,7 @@ class PermissionTargetListWidget<Button: ClickableWidget>(
         mode = Mode.Unspecified
         scrollAmount = 0.0
         addEntry(searchEntry)
-        UUIDCacheS2CPacket.uuid2name.keys
+        UUIDCacheS2CPacket.uuid2name.keys.asSequence()
             .filter { it != CONSOLE }
             .filter { !area.permissionsMap.containsKey(it) }
             .map { PlayerEntry(Text.of(UUIDCacheS2CPacket.getName(it)), it) }
@@ -79,14 +79,8 @@ class PermissionTargetListWidget<Button: ClickableWidget>(
     abstract class Entry : ElementListWidget.Entry<Entry>()
     internal inner class PlayerEntry(val name: Text, val uuid: UUID) : Entry() {
         private val button: Button = buttonSupplier(uuid, this@PermissionTargetListWidget)
-
-        override fun selectableChildren(): List<Selectable?> {
-            return listOf(button)
-        }
-
-        override fun children(): List<Element?> {
-            return listOf(button)
-        }
+        override fun selectableChildren() = listOf(button)
+        override fun children() = listOf(button)
 
         override fun render(
             matrices: MatrixStack,
@@ -113,7 +107,7 @@ class PermissionTargetListWidget<Button: ClickableWidget>(
 
     @Environment(EnvType.CLIENT)
     inner class SearchEntry : Entry() {
-        private val searchWidget = TextFieldWidget(client.textRenderer, 0, 0, 100, 16, Text.of("search"))
+        private val searchWidget = TextFieldWidget(MinecraftClient.getInstance().textRenderer, 0, 0, 100, 16, Text.of("search"))
 
         init {
             searchWidget.setChangedListener { s: String? ->
