@@ -1,6 +1,6 @@
 package com.github.zly2006.enclosure.gui;
 
-import com.github.zly2006.enclosure.ReadOnlyEnclosureArea;
+import com.github.zly2006.enclosure.EnclosureView;
 import com.github.zly2006.enclosure.network.UUIDCacheS2CPacket;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.Element;
@@ -16,8 +16,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-public class EnclosureScreen extends HandledScreen<EnclosureScreenHandler> {
-    final ReadOnlyEnclosureArea area;
+public class EnclosureScreen extends HandledScreen<EnclosureScreenHandler> implements EnclosureGui {
+    final EnclosureView.ReadOnly area;
     PermissionTargetListWidget permissionTargetListWidget;
     ButtonWidget globalWidget;
     ButtonWidget playerWidget;
@@ -37,7 +37,13 @@ public class EnclosureScreen extends HandledScreen<EnclosureScreenHandler> {
         super.init();
         textWidgets.clear();
         subLandWidgets.clear();
-        permissionTargetListWidget = addDrawableChild(new PermissionTargetListWidget(client, area, handler.fullName, this, width, height, 60, height));
+        permissionTargetListWidget = addDrawableChild(new PermissionTargetListWidget<ButtonWidget>(client, area, handler.fullName, this, width, height, 60, height,
+                (widget, uuid) -> ButtonWidget.builder(Text.translatable("enclosure.widget.set"), button -> {
+                    if (client != null) {
+                        client.setScreen(new PermissionScreen(area, uuid, widget.fullName, widget.parent));
+                    }
+                }).size(40, 20).build()
+        ));
         globalWidget = addDrawableChild(ButtonWidget.builder(Text.translatable("enclosure.widget.global"), button -> {
                 assert client != null;
                 client.setScreen(new PermissionScreen(area, new UUID(0, 0), handler.fullName, this));

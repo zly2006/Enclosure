@@ -10,7 +10,7 @@ import net.minecraft.util.Identifier;
 
 import java.util.List;
 
-public class ConfirmScreen extends Screen {
+public class ConfirmScreen extends Screen implements EnclosureGui {
     private static final Identifier TEXTURE = new Identifier("textures/gui/demo_background.png");
     final Screen parent;
     final Text message;

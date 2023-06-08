@@ -1,6 +1,6 @@
 package com.github.zly2006.enclosure.gui;
 
-import com.github.zly2006.enclosure.ReadOnlyEnclosureArea;
+import com.github.zly2006.enclosure.EnclosureView;
 import com.github.zly2006.enclosure.network.UUIDCacheS2CPacket;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.util.math.MatrixStack;
@@ -16,15 +16,15 @@ import java.util.UUID;
 
 import static com.github.zly2006.enclosure.command.EnclosureCommandKt.CONSOLE;
 
-public class PermissionScreen extends Screen {
+public class PermissionScreen extends Screen implements EnclosureGui {
     public static final Identifier PERMISSION_SCREEN_ID = new Identifier("enclosure", "screen.permission");
 
-    final ReadOnlyEnclosureArea area;
+    final EnclosureView.ReadOnly area;
     public final UUID uuid;
     final String fullName;
     final Screen parent;
     PermissionListWidget permissionWidgetList;
-    public PermissionScreen(ReadOnlyEnclosureArea area, UUID uuid, String fullName, Screen parent) {
+    public PermissionScreen(EnclosureView.ReadOnly area, UUID uuid, String fullName, Screen parent) {
         super(Text.of("Set permission"));
         this.area = area;
         this.uuid = uuid;
@@ -55,7 +55,6 @@ public class PermissionScreen extends Screen {
 
     @Override
     public void close() {
-        super.close();
         assert client != null;
         client.setScreen(parent);
     }

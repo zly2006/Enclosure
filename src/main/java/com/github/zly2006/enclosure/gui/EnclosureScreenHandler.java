@@ -2,7 +2,7 @@ package com.github.zly2006.enclosure.gui;
 
 import com.github.zly2006.enclosure.Enclosure;
 import com.github.zly2006.enclosure.EnclosureArea;
-import com.github.zly2006.enclosure.ReadOnlyEnclosureArea;
+import com.github.zly2006.enclosure.EnclosureView;
 import com.github.zly2006.enclosure.utils.Serializable2Text;
 import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
 import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerFactory;
@@ -33,7 +33,7 @@ public class EnclosureScreenHandler extends ScreenHandler {
             Identifier worldId = buf.readIdentifier();
             NbtCompound compound = buf.readNbt();
             assert compound != null;
-            ReadOnlyEnclosureArea area = ReadOnlyEnclosureArea.Companion.fromTag(compound);
+            EnclosureView.ReadOnly area = EnclosureView.ReadOnly.Companion.readonly(compound);
             List<String> subAreaNames = new ArrayList<>();
             int size = buf.readVarInt();
             for (int i = 0; i < size; i++) {
@@ -41,13 +41,13 @@ public class EnclosureScreenHandler extends ScreenHandler {
             }
             return new EnclosureScreenHandler(syncId, area, fullName, fatherFullName, worldId, subAreaNames);
         });
-    public final ReadOnlyEnclosureArea area;
+    public final EnclosureView.ReadOnly area;
     public final String fullName;
     public final String fatherFullName;
     public final Identifier worldId;
     public final List<String> subAreaNames;
 
-    private EnclosureScreenHandler(int syncId, ReadOnlyEnclosureArea area, String fullName, String fatherFullName, Identifier worldId, List<String> subAreaNames) {
+    private EnclosureScreenHandler(int syncId, EnclosureView.ReadOnly area, String fullName, String fatherFullName, Identifier worldId, List<String> subAreaNames) {
         super(ENCLOSURE_SCREEN_HANDLER, syncId);
         this.area = area;
         this.fullName = fullName;

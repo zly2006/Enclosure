@@ -1,6 +1,6 @@
 package com.github.zly2006.enclosure.gui;
 
-import com.github.zly2006.enclosure.ReadOnlyEnclosureArea;
+import com.github.zly2006.enclosure.EnclosureView;
 import com.github.zly2006.enclosure.utils.Permission;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
@@ -29,11 +29,11 @@ import static com.github.zly2006.enclosure.command.EnclosureCommandKt.CONSOLE;
 public class PermissionListWidget extends ElementListWidget<PermissionListWidget.Entry> {
     private final Screen parent;
     private final String fullName;
-    private final ReadOnlyEnclosureArea area;
+    private final EnclosureView.ReadOnly area;
     private final UUID uuid;
     private final Permission.Target target;
 
-    public PermissionListWidget(MinecraftClient minecraftClient, Screen parent, String fullName, ReadOnlyEnclosureArea area, UUID uuid,
+    public PermissionListWidget(MinecraftClient minecraftClient, Screen parent, String fullName, EnclosureView.ReadOnly area, UUID uuid,
                                 int width, int height, int top, int bottom) {
         super(minecraftClient, width, height, top, bottom, 20);
         this.parent = parent;

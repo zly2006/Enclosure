@@ -10,7 +10,7 @@ import net.minecraft.util.Formatting;
 import java.util.ArrayList;
 import java.util.List;
 
-public class AboutScreen extends Screen {
+public class AboutScreen extends Screen implements EnclosureGui {
     final Screen parent;
     final List<ClickableTextWidget> textWidgets = new ArrayList<>();
     public static final String WIKI_ZH = "https://enclosure.fandom.com/zh/wiki/Enclosure_Wiki";

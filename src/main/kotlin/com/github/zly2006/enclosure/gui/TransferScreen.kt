@@ -10,7 +10,7 @@ class TransferScreen(
         area: EnclosureView.ReadOnly,
         fullName: String,
         parent: Screen
-): Screen(Text.literal("Transfer")), EnclosureGui {
+): Screen(Text.literal("Transfer")) {
     private val data = area.clone().apply {
         permissionsMap = UUIDCacheS2CPacket.uuid2name.keys.associateWith { mutableMapOf<String, Boolean>() }.toMutableMap()
     }

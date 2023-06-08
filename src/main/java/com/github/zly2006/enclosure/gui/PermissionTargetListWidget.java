@@ -1,8 +1,9 @@
 package com.github.zly2006.enclosure.gui;
 
-import com.github.zly2006.enclosure.ReadOnlyEnclosureArea;
+import com.github.zly2006.enclosure.EnclosureView;
 import com.github.zly2006.enclosure.network.UUIDCacheS2CPacket;
 import com.mojang.blaze3d.systems.RenderSystem;
+import kotlin.jvm.functions.Function2;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.MinecraftClient;
@@ -25,10 +26,12 @@ import java.util.stream.Stream;
 
 import static com.github.zly2006.enclosure.command.EnclosureCommandKt.CONSOLE;
 
-public class PermissionTargetListWidget extends ElementListWidget<PermissionTargetListWidget.Entry> {
-    final ReadOnlyEnclosureArea area;
+public class PermissionTargetListWidget<T extends ButtonWidget> extends ElementListWidget<PermissionTargetListWidget.Entry> {
+    final EnclosureView.ReadOnly area;
     final String fullName;
     final Screen parent;
+    private final Function2<PermissionTargetListWidget<T>, UUID, T> buttonFactory;
+
     enum Mode {
         Players,
         Unspecified,
@@ -36,11 +39,12 @@ public class PermissionTargetListWidget extends ElementListWidget<PermissionTarg
     Mode mode = Mode.Players;
     final SearchEntry searchEntry = new SearchEntry();
 
-    public PermissionTargetListWidget(MinecraftClient minecraftClient, ReadOnlyEnclosureArea area, String fullName, Screen parent, int width, int height, int top, int bottom) {
+    public PermissionTargetListWidget(MinecraftClient minecraftClient, EnclosureView.ReadOnly area, String fullName, Screen parent, int width, int height, int top, int bottom, Function2<PermissionTargetListWidget<T>, UUID, T> buttonFactory) {
         super(minecraftClient, width, height, top, bottom, 20);
         this.area = area;
         this.fullName = fullName;
         this.parent = parent;
+        this.buttonFactory = buttonFactory;
         setRenderBackground(false); // 不渲染背景
     }
 
@@ -88,17 +92,11 @@ public class PermissionTargetListWidget extends ElementListWidget<PermissionTarg
         final Text name;
         final UUID uuid;
         final ButtonWidget setButton;
-        private PermissionScreen screen = null;
 
         PlayerEntry(Text name, UUID uuid) {
             this.name = name;
             this.uuid = uuid;
-            this.setButton = ButtonWidget.builder(Text.translatable("enclosure.widget.set"), button -> {
-                if (screen == null) {
-                    screen = new PermissionScreen(area, uuid, fullName, parent);
-                }
-                client.setScreen(screen);
-            }).size(40, 20).build();
+            this.setButton = buttonFactory.invoke(PermissionTargetListWidget.this, uuid);
         }
 
         @Override
