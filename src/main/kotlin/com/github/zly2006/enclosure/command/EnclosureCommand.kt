@@ -309,8 +309,11 @@ private fun createEnclosure(context: CommandContext<ServerCommandSource>) {
 }
 
 private fun getOfflineUUID(context: CommandContext<ServerCommandSource>): UUID {
+    try {
+        return UUID.fromString(StringArgumentType.getString(context, "player"))
+    } catch (_: Exception) { }
     return Utils.getUUIDByName(StringArgumentType.getString(context, "player"))
-        ?: error(TrT.of("enclosure.message.player_not_found"), context)
+            ?: error(TrT.of("enclosure.message.player_not_found"), context)
 }
 
 fun BuilderScope<*>.registerConfirmCommand() {
@@ -486,22 +489,18 @@ fun register(dispatcher: CommandDispatcher<ServerCommandSource>): LiteralCommand
             literal("user") {
                 argument(offlinePlayerArgument()) {
                     executes {
-                        val uuid = Utils.getUUIDByName(StringArgumentType.getString(this, "player"))
-                        if (uuid == null) {
-                            error(TrT.of("enclosure.message.user_not_found"), this)
-                        } else {
-                            val list = ServerMain.getAllEnclosures(uuid)
-                            val ret = TrT.of("enclosure.message.list.user", Utils.getDisplayNameByUUID(uuid), list.size)
-                            list.forEach(Consumer { e: Enclosure ->
-                                ret.append("\n").append(
-                                    e.serialize(
-                                        SerializationSettings.Summarize,
-                                        source.player
-                                    )
+                        val uuid = getOfflineUUID(this)
+                        val list = ServerMain.getAllEnclosures(uuid)
+                        val ret = TrT.of("enclosure.message.list.user", Utils.getDisplayNameByUUID(uuid), list.size)
+                        list.forEach(Consumer { e: Enclosure ->
+                            ret.append("\n").append(
+                                e.serialize(
+                                    SerializationSettings.Summarize,
+                                    source.player
                                 )
-                            })
-                            source.sendMessage(ret)
-                        }
+                            )
+                        })
+                        source.sendMessage(ret)
                     }
                 }
             }
