@@ -19,7 +19,7 @@ public class ConfirmRequestS2CPacket implements ClientPlayNetworking.PlayChannel
                 responseSender.sendPacket(NetworkChannels.CONFIRM, PacketByteBufs.empty());
                 client.setScreen(new ConfirmScreen(client.currentScreen, message, () -> {
                     assert client.player != null;
-                    client.player.networkHandler.sendCommand("enclosure give $fullName $uuid");
+                    client.player.networkHandler.sendCommand("enclosure confirm");
                 }));
             });
         }

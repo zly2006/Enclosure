@@ -79,7 +79,7 @@ public class EnclosureScreen extends HandledScreen<EnclosureScreenHandler> imple
             .size(50, 20)
             .position(320, 35)
             .build());
-        if (area.getOwner().equals(client.player.getUuid())) {
+        if (area.getOwner().equals(client.player.getUuid()) || client.player.hasPermissionLevel(4)) {
             transferWidget = addDrawableChild(ButtonWidget.builder(Text.translatable("enclosure.widget.transfer"), button -> {
                 client.setScreen(new TransferScreen(area, handler.fullName, this));
             }).position(5, 0).build());
