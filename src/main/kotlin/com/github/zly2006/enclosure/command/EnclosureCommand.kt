@@ -5,7 +5,6 @@ import com.github.zly2006.enclosure.access.PlayerAccess
 import com.github.zly2006.enclosure.exceptions.PermissionTargetException
 import com.github.zly2006.enclosure.gui.EnclosureScreenHandler
 import com.github.zly2006.enclosure.network.EnclosureInstalledC2SPacket
-import com.github.zly2006.enclosure.network.NetworkChannels
 import com.github.zly2006.enclosure.utils.*
 import com.github.zly2006.enclosure.utils.Serializable2Text.SerializationSettings
 import com.mojang.brigadier.Command
@@ -21,8 +20,6 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType
 import com.mojang.brigadier.suggestion.SuggestionsBuilder
 import com.mojang.brigadier.tree.LiteralCommandNode
-import net.fabricmc.fabric.api.networking.v1.PacketByteBufs
-import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking
 import net.minecraft.command.CommandSource
 import net.minecraft.command.argument.BlockPosArgumentType
 import net.minecraft.command.argument.DimensionArgumentType
@@ -30,7 +27,6 @@ import net.minecraft.command.argument.TextArgumentType
 import net.minecraft.command.argument.UuidArgumentType
 import net.minecraft.server.command.CommandManager
 import net.minecraft.server.command.ServerCommandSource
-import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.text.*
 import net.minecraft.util.Formatting
 import net.minecraft.util.math.BlockPos
@@ -188,24 +184,6 @@ class BuilderScope<T: argT>(var parent: T) {
     }
 }
 
-object ConfirmManager {
-    val runnableMap: MutableMap<UUID, () -> Unit> = HashMap()
-    fun confirm(player: ServerPlayerEntity?, runnable: () -> Unit) {
-        val text = TrT.of("enclosure.message.dangerous")
-        text.style = Style.EMPTY
-            .hoverText(TrT.of("enclosure.message.confirm_event"))
-            .withClickEvent(ClickEvent(ClickEvent.Action.RUN_COMMAND, "/enclosure confirm"))
-            .withColor(Formatting.YELLOW)
-        if (player == null) {
-            runnableMap[CONSOLE] = runnable
-            minecraftServer.commandSource.sendMessage(TrT.of("enclosure.message.operation_confirm"))
-        } else {
-            runnableMap[player.uuid] = runnable
-            player.sendMessage(text)
-        }
-    }
-}
-
 private fun getEnclosure(context: CommandContext<ServerCommandSource>): EnclosureArea {
     return ServerMain.getEnclosure(StringArgumentType.getString(context, "land"))
         ?: error(TrT.of("enclosure.message.no_enclosure"), context)
@@ -338,7 +316,7 @@ private fun getOfflineUUID(context: CommandContext<ServerCommandSource>): UUID {
 fun BuilderScope<*>.registerConfirmCommand() {
     literal("confirm") {
         executes {
-            ConfirmManager.runnableMap.remove(source.uuid)?.run { invoke() }
+            ConfirmManager.runnableMap.remove(source.uuid)?.runnable?.let { it() }
                 ?: error(TrT.of("enclosure.message.no_task_to_confirm"), this)
         }
     }
@@ -584,21 +562,21 @@ fun register(dispatcher: CommandDispatcher<ServerCommandSource>): LiteralCommand
                             session.world = source.world
                             session.action(pos)
                             session.enable()
-                            source.sendMessage(TrT.of("enclosure.message.$name", pos.x, pos.y, pos.z))
+                            source.sendMessage(TrT.of("enclosure.message.set_$name", pos.x, pos.y, pos.z))
                             session.trySync()
                         }
                     }
                 }
             }
-            setPos("pos1") { pos1 = it }
-            setPos("pos2") { pos2 = it }
+            setPos("pos_1") { pos1 = it }
+            setPos("pos_2") { pos2 = it }
             literal("world") {
                 argument("world", DimensionArgumentType.dimension()) {
                     executes {
                         val world = DimensionArgumentType.getDimensionArgument(this, "world")
                         val session = sessionOf(source)
                         session.world = world
-                        source.sendMessage(TrT.of("enclosure.message.world", world.registryKey.value.toString()))
+                        source.sendMessage(TrT.of("enclosure.message.selected_world", world.registryKey.value.toString()))
                         session.trySync()
                     }
                 }
@@ -777,10 +755,7 @@ fun register(dispatcher: CommandDispatcher<ServerCommandSource>): LiteralCommand
                         val state = world.getBlockState(pos)
                         val up = world.getBlockState(pos.up())
                         if (!down.isFullCube(world, pos) || state.isFullCube(world, pos) && up.isFullCube(world, pos)) {
-                            source.sendMessage(
-                                TrT.of("enclosure.message.teleport_warning").formatted(Formatting.YELLOW)
-                            )
-                            ConfirmManager.confirm(source.player) { area.teleport(player) }
+                            ConfirmManager.confirm(TrT.of("enclosure.message.teleport_warning").formatted(Formatting.YELLOW), source.player) { area.teleport(player) }
                         } else {
                             area.teleport(player)
                         }
@@ -826,7 +801,7 @@ fun register(dispatcher: CommandDispatcher<ServerCommandSource>): LiteralCommand
                     if (!res.isOwner(source)) {
                         error(TrT.of("enclosure.message.not_owner"), this)
                     }
-                    ConfirmManager.confirm(source.player) {
+                    ConfirmManager.confirm(null, source.player) {
                         val list =
                             (res.father as? Enclosure)?.subEnclosures ?: ServerMain.getAllEnclosures(res.world)
                         val success = res.father?.let {
@@ -869,7 +844,7 @@ fun register(dispatcher: CommandDispatcher<ServerCommandSource>): LiteralCommand
                         if (!res.isOwner(source)) {
                             error(TrT.of("enclosure.message.not_owner"), this)
                         }
-                        ConfirmManager.confirm(source.player) {
+                        ConfirmManager.confirm(null, source.player) {
                             val limitsOfReceiver = ServerMain.limits
                             if (!source.hasPermissionLevel(4)) {
                                 val count = ServerMain.getAllEnclosures(uuid).size.toLong()
@@ -1059,15 +1034,7 @@ fun register(dispatcher: CommandDispatcher<ServerCommandSource>): LiteralCommand
                         TrT.of("enclosure.message.setting_multiple").formatted(Formatting.RED)
                     } else null
                     if (warning != null) {
-                        if (source.player != null && source.player!!.currentScreenHandler is EnclosureScreenHandler) {
-                            val buf = PacketByteBufs.create()
-                            buf.writeText(warning)
-                            ServerPlayNetworking.send(source.player, NetworkChannels.CONFIRM, buf)
-                            ConfirmManager.runnableMap[source.player!!.uuid] = action
-                        } else {
-                            source.sendMessage(warning)
-                            ConfirmManager.confirm(source.player, action)
-                        }
+                        ConfirmManager.confirm(warning, source.player, false, action)
                     } else {
                         action()
                     }

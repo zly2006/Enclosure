@@ -2,11 +2,11 @@ package com.github.zly2006.enclosure.gui;
 
 import com.github.zly2006.enclosure.EnclosureView;
 import com.github.zly2006.enclosure.network.UUIDCacheS2CPacket;
-import com.mojang.blaze3d.systems.RenderSystem;
 import kotlin.jvm.functions.Function2;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.Element;
 import net.minecraft.client.gui.PlayerSkinDrawer;
 import net.minecraft.client.gui.Selectable;
@@ -15,7 +15,6 @@ import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.gui.widget.ElementListWidget;
 import net.minecraft.client.gui.widget.TextFieldWidget;
 import net.minecraft.client.network.PlayerListEntry;
-import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.Text;
 
 import java.util.Comparator;
@@ -110,17 +109,16 @@ public class PermissionTargetListWidget<T extends ButtonWidget> extends ElementL
         }
 
         @Override
-        public void render(MatrixStack matrices, int index, int y, int x, int entryWidth, int entryHeight, int mouseX, int mouseY, boolean hovered, float tickDelta) {
-            client.textRenderer.draw(matrices, name, x + 20, y + 3, 0xffffff);
-            setButton.setX(x + entryWidth - setButton.getWidth());
+        public void render(DrawContext context, int index, int y, int x, int entryWidth, int entryHeight, int mouseX, int mouseY, boolean hovered, float tickDelta) {
+            context.drawText(client.textRenderer, name, x + 20, y + 3, 0xFFFFFF, false);
+            setButton.setX(x + entryWidth - 40);
             setButton.setY(y);
-            setButton.render(matrices, mouseX, mouseY, tickDelta);
+            setButton.render(context, mouseX, mouseY, tickDelta);
             assert client.player != null;
             Optional.ofNullable(client.player.networkHandler.getPlayerListEntry(uuid))
                     .map(PlayerListEntry::getSkinTexture)
                     .ifPresent(texture -> {
-                        RenderSystem.setShaderTexture(0, texture);
-                        PlayerSkinDrawer.draw(matrices, x, y, 16);
+                        PlayerSkinDrawer.draw(context, texture, x, y, 16);
                     });
         }
     }
@@ -148,12 +146,12 @@ public class PermissionTargetListWidget<T extends ButtonWidget> extends ElementL
         }
 
         @Override
-        public void render(MatrixStack matrices, int index, int y, int x, int entryWidth, int entryHeight, int mouseX, int mouseY, boolean hovered, float tickDelta) {
+        public void render(DrawContext context, int index, int y, int x, int entryWidth, int entryHeight, int mouseX, int mouseY, boolean hovered, float tickDelta) {
             searchWidget.setY(y);
             searchWidget.setX(x + 70);
             searchWidget.setWidth(entryWidth - 70 - 2);
-            searchWidget.render(matrices, mouseX, mouseY, tickDelta);
-            client.textRenderer.draw(matrices, Text.translatable("enclosure.widget.search"), x, y + 3, 0xFFFFFF);
+            searchWidget.render(context, mouseX, mouseY, tickDelta);
+            context.drawText(client.textRenderer, Text.translatable("enclosure.widget.search"), x, y + 3, 0xFFFFFF, false);
         }
 
         @Override

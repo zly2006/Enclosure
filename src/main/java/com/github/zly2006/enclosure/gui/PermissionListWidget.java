@@ -5,13 +5,13 @@ import com.github.zly2006.enclosure.utils.Permission;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.Element;
 import net.minecraft.client.gui.Selectable;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.gui.widget.ElementListWidget;
 import net.minecraft.client.gui.widget.TextFieldWidget;
-import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.item.ItemStack;
 import net.minecraft.text.Style;
 import net.minecraft.text.Text;
@@ -62,8 +62,8 @@ public class PermissionListWidget extends ElementListWidget<PermissionListWidget
     }
 
     @Override
-    public void render(MatrixStack matrices, int mouseX, int mouseY, float delta) {
-        super.render(matrices, mouseX, mouseY, delta);
+    public void render(DrawContext context, int mouseX, int mouseY, float delta) {
+        super.render(context, mouseX, mouseY, delta);
     }
 
     @Environment(EnvType.CLIENT)
@@ -99,31 +99,6 @@ public class PermissionListWidget extends ElementListWidget<PermissionListWidget
         }
 
         @Override
-        public void render(MatrixStack matrices, int index, int y, int x, int entryWidth, int entryHeight, int mouseX, int mouseY, boolean hovered, float tickDelta) {
-            buttonWidget.setY(y);
-            buttonWidget.setX(x + entryWidth - 40);
-            buttonWidget.setMessage(value());
-            buttonWidget.render(matrices, mouseX, mouseY, tickDelta);
-            client.textRenderer.draw(matrices, permission.getName(), x + 20, y + 3, 0xFFFFFF);
-            client.textRenderer.draw(matrices, permission.getDescription(), x + 140, y + 3, 0x999999);
-            permission.getIcon();
-            client.getItemRenderer().renderInGui(matrices, new ItemStack(permission.getIcon()), x, y);
-            if (buttonWidget.isHovered()) {
-                parent.renderTooltip(matrices, List.of(
-                    Text.translatable("enclosure.widget.click.left").styled(style -> style.withColor(Formatting.GREEN)),
-                    Text.translatable("enclosure.widget.click.right").styled(style -> style.withColor(Formatting.RED))
-                ), mouseX, mouseY);
-            }
-            else if (hovered) {
-                parent.renderTooltip(matrices,
-                    List.of(permission.getDescription(),
-                        Text.translatable("enclosure.widget.default_value_is").setStyle(Style.EMPTY.withColor(Formatting.GOLD))
-                            .append(" ").append(value(permission.getDefaultValue()))),
-                    mouseX, mouseY);
-            }
-        }
-
-        @Override
         public List<? extends Selectable> selectableChildren() {
             return List.of(buttonWidget);
         }
@@ -132,6 +107,32 @@ public class PermissionListWidget extends ElementListWidget<PermissionListWidget
         public List<? extends Element> children() {
             return List.of(buttonWidget);
         }
+
+        @Override
+        public void render(DrawContext context, int index, int y, int x, int entryWidth, int entryHeight, int mouseX, int mouseY, boolean hovered, float tickDelta) {
+            buttonWidget.setY(y);
+            buttonWidget.setX(x + entryWidth - 40);
+            buttonWidget.setMessage(value());
+            buttonWidget.render(context, mouseX, mouseY, tickDelta);
+            context.drawText(client.textRenderer, permission.getName(), x + 20, y + 3, 0xFFFFFF, false);
+            context.drawText(client.textRenderer, permission.getDescription(), x + 140, y + 3, 0x999999, false);
+            permission.getIcon();
+            context.drawItem(new ItemStack(permission.getIcon()), x, y);
+            if (buttonWidget.isHovered()) {
+                context.drawTooltip(client.textRenderer, List.of(
+                        Text.translatable("enclosure.widget.click.left").styled(style -> style.withColor(Formatting.GREEN)),
+                        Text.translatable("enclosure.widget.click.right").styled(style -> style.withColor(Formatting.RED))
+                ), mouseX, mouseY);
+            }
+            else if (hovered) {
+                context.drawTooltip(client.textRenderer,
+                        List.of(permission.getDescription(),
+                                Text.translatable("enclosure.widget.default_value_is").setStyle(Style.EMPTY.withColor(Formatting.GOLD))
+                                        .append(" ").append(value(permission.getDefaultValue()))),
+                        mouseX, mouseY);
+            }
+        }
+
         public class SetButtonWidget extends ButtonWidget {
             public SetButtonWidget(int x, int y, int width, int height, Text message, PressAction onPress, NarrationSupplier narrationSupplier) {
                 super(x, y, width, height, message, onPress, narrationSupplier);
@@ -198,12 +199,12 @@ public class PermissionListWidget extends ElementListWidget<PermissionListWidget
         }
 
         @Override
-        public void render(MatrixStack matrices, int index, int y, int x, int entryWidth, int entryHeight, int mouseX, int mouseY, boolean hovered, float tickDelta) {
+        public void render(DrawContext context, int index, int y, int x, int entryWidth, int entryHeight, int mouseX, int mouseY, boolean hovered, float tickDelta) {
             searchWidget.setY(y);
             searchWidget.setX(x + 70);
             searchWidget.setWidth(entryWidth - 70 - 2);
-            searchWidget.render(matrices, mouseX, mouseY, tickDelta);
-            client.textRenderer.draw(matrices, Text.translatable("enclosure.widget.search"), x, y + 3, 0xFFFFFF);
+            searchWidget.render(context, mouseX, mouseY, tickDelta);
+            context.drawText(client.textRenderer, Text.translatable("enclosure.widget.search"), x, y + 3, 0xFFFFFF, false);
         }
 
         @Override

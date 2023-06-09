@@ -3,10 +3,10 @@ package com.github.zly2006.enclosure.gui;
 import com.github.zly2006.enclosure.EnclosureView;
 import com.github.zly2006.enclosure.network.UUIDCacheS2CPacket;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.Element;
 import net.minecraft.client.gui.screen.ingame.HandledScreen;
 import net.minecraft.client.gui.widget.ButtonWidget;
-import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
@@ -148,8 +148,13 @@ public class EnclosureScreen extends HandledScreen<EnclosureScreenHandler> imple
     }
 
     @Override
-    public void render(MatrixStack matrices, int mouseX, int mouseY, float delta) {
-        renderBackground(matrices);
+    protected void drawBackground(DrawContext context, float delta, int mouseX, int mouseY) {
+
+    }
+
+    @Override
+    public void render(DrawContext context, int mouseX, int mouseY, float delta) {
+        renderBackground(context);
         renderBottom = 5;
         for (ClickableTextWidget textWidget : textWidgets) {
             textWidget.y = renderBottom;
@@ -162,7 +167,7 @@ public class EnclosureScreen extends HandledScreen<EnclosureScreenHandler> imple
             int subLandsX = 5;
             for (ClickableTextWidget textWidget : subLandWidgets) {
                 textWidget.x = subLandsX;
-                textWidget.render(matrices, mouseX, mouseY, delta);
+                textWidget.render(context, mouseX, mouseY, delta);
                 subLandsX += textWidget.width + 5;
             }
             renderBottom += 10;
@@ -178,9 +183,9 @@ public class EnclosureScreen extends HandledScreen<EnclosureScreenHandler> imple
         else {
             permissionTargetListWidget.setTop(renderBottom + 25);
         }
-        super.render(matrices, mouseX, mouseY, delta);
+        super.render(context, mouseX, mouseY, delta);
         for (ClickableTextWidget textWidget : textWidgets) {
-            textWidget.render(matrices, mouseX, mouseY, delta);
+            textWidget.render(context, mouseX, mouseY, delta);
         }
     }
 
@@ -208,15 +213,5 @@ public class EnclosureScreen extends HandledScreen<EnclosureScreenHandler> imple
             return false;
         }
         return getFocused().keyPressed(keyCode, scanCode, modifiers);
-    }
-
-    @Override
-    protected void drawForeground(MatrixStack matrices, int mouseX, int mouseY) {
-
-    }
-
-    @Override
-    protected void drawBackground(MatrixStack matrices, float delta, int mouseX, int mouseY) {
-
     }
 }

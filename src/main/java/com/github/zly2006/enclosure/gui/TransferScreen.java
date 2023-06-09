@@ -3,9 +3,9 @@ package com.github.zly2006.enclosure.gui;
 import com.github.zly2006.enclosure.EnclosureView;
 import com.github.zly2006.enclosure.command.EnclosureCommandKt;
 import com.github.zly2006.enclosure.network.UUIDCacheS2CPacket;
+import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.ButtonWidget;
-import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.Text;
 
 import java.util.HashMap;
@@ -44,9 +44,8 @@ public class TransferScreen extends Screen implements EnclosureGui {
     }
 
     @Override
-    public void render(MatrixStack matrices, int mouseX, int mouseY, float delta) {
-        renderBackground(matrices);
-        permissionTargetListWidget.render(matrices, mouseX, mouseY, delta);
-        super.render(matrices, mouseX, mouseY, delta);
+    public void render(DrawContext drawContext, int mouseX, int mouseY, float delta) {
+        renderBackground(drawContext);
+        super.render(drawContext, mouseX, mouseY, delta);
     }
 }
