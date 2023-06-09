@@ -9,6 +9,7 @@
   "enclosure.help.about": "Show the about information of Enclosure Mod",
   "enclosure.help.add_user": "Give a player basic permissions",
   "enclosure.help.admin": "Admin tools",
+  "enclosure.message.selected_world": "Selected world: %s",
   "enclosure.help.auto": "Automatically enclose the maximum enclosure within the size limit",
   "enclosure.help.check": "Show target permission status of the enclosure",
   "enclosure.help.confirm": "Confirm the operation",
@@ -212,6 +213,8 @@
   "enclosure.widget.set": "Set",
   "enclosure.widget.set_permission": "Setting permission for",
   "enclosure.widget.sub_land.hover": "Click to show sub lands",
+  "enclosure.widget.transfer": "Transfer",
+  "enclosure.widget.transfer_confirm": "Please confirm the transfer of the enclosure, THIS OPERATION CANNOT BE UNDONE!",
   "enclosure.widget.true": "True",
   "enclosure.widget.unspecified_player": "No specified perm",
   "enclosure.widget.yes": "Yes"
