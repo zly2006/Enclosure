@@ -63,7 +63,7 @@
     "MixinWitherEntity",
     "MixinWitherSkullBlock",
     "MixinAbstractSignBlock",
-    "MixinHorses",
+    "workaround.MixinRegistrySyncManager",
     "workaround.MixinServerPlayerInteractionManager",
     "workaround.MixinServerPlayNetworkHandler"
   ],
