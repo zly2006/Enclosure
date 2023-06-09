@@ -36,7 +36,8 @@ public class TransferScreen extends Screen implements EnclosureGui {
                     assert client != null;
                     assert client.player != null;
                     client.player.networkHandler.sendCommand("enclosure give " + fullName + " " + uuid);
-                }).size(40, 20).build());
+                    client.setScreen(parent);
+                }).size(80, 20).build());
         addDrawableChild(permissionTargetListWidget);
         permissionTargetListWidget.showPlayers();
         super.init();
@@ -45,6 +46,7 @@ public class TransferScreen extends Screen implements EnclosureGui {
     @Override
     public void render(MatrixStack matrices, int mouseX, int mouseY, float delta) {
         renderBackground(matrices);
+        permissionTargetListWidget.render(matrices, mouseX, mouseY, delta);
         super.render(matrices, mouseX, mouseY, delta);
     }
 }

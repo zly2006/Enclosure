@@ -562,21 +562,21 @@ fun register(dispatcher: CommandDispatcher<ServerCommandSource>): LiteralCommand
                             session.world = source.world
                             session.action(pos)
                             session.enable()
-                            source.sendMessage(TrT.of("enclosure.message.$name", pos.x, pos.y, pos.z))
+                            source.sendMessage(TrT.of("enclosure.message.set_$name", pos.x, pos.y, pos.z))
                             session.trySync()
                         }
                     }
                 }
             }
-            setPos("pos1") { pos1 = it }
-            setPos("pos2") { pos2 = it }
+            setPos("pos_1") { pos1 = it }
+            setPos("pos_2") { pos2 = it }
             literal("world") {
                 argument("world", DimensionArgumentType.dimension()) {
                     executes {
                         val world = DimensionArgumentType.getDimensionArgument(this, "world")
                         val session = sessionOf(source)
                         session.world = world
-                        source.sendMessage(TrT.of("enclosure.message.world", world.registryKey.value.toString()))
+                        source.sendMessage(TrT.of("enclosure.message.selected_world", world.registryKey.value.toString()))
                         session.trySync()
                     }
                 }
@@ -865,7 +865,7 @@ fun register(dispatcher: CommandDispatcher<ServerCommandSource>): LiteralCommand
                                 TrT.of("enclosure.message.received.1")
                                         .append(area.serialize(SerializationSettings.Name, source.player))
                                         .append(TrT.of("enclosure.message.received.2"))
-                                        .append(Utils.getDisplayNameByUUID(area.owner))
+                                        .append(source.displayName)
                         )
                     }
                 }

@@ -10,6 +10,7 @@ import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
+import org.jetbrains.annotations.Nullable;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -23,6 +24,7 @@ public class EnclosureScreen extends HandledScreen<EnclosureScreenHandler> imple
     ButtonWidget playerWidget;
     ButtonWidget unlistedWidget;
     ButtonWidget aboutWidget;
+    @Nullable
     ButtonWidget transferWidget;
     final List<ClickableTextWidget> textWidgets = new ArrayList<>();
     final List<ClickableTextWidget> subLandWidgets = new ArrayList<>();
@@ -77,9 +79,11 @@ public class EnclosureScreen extends HandledScreen<EnclosureScreenHandler> imple
             .size(50, 20)
             .position(320, 35)
             .build());
-        transferWidget = addDrawableChild(ButtonWidget.builder(Text.translatable("enclosure.widget.transfer"), button -> {
-            client.setScreen(new TransferScreen(area, handler.fullName, this));
-        }).position(5, 0).build());
+        if (area.getOwner().equals(client.player.getUuid())) {
+            transferWidget = addDrawableChild(ButtonWidget.builder(Text.translatable("enclosure.widget.transfer"), button -> {
+                client.setScreen(new TransferScreen(area, handler.fullName, this));
+            }).position(5, 0).build());
+        }
         String owner = UUIDCacheS2CPacket.getName(area.getOwner());
         assert client != null;
         if (!handler.fatherFullName.isEmpty()) {
@@ -167,8 +171,13 @@ public class EnclosureScreen extends HandledScreen<EnclosureScreenHandler> imple
         playerWidget.setY(renderBottom);
         unlistedWidget.setY(renderBottom);
         aboutWidget.setY(renderBottom);
-        transferWidget.setY(renderBottom + 20);
-        permissionTargetListWidget.setTop(renderBottom + 45);
+        if (transferWidget != null) {
+            transferWidget.setY(renderBottom + 20);
+            permissionTargetListWidget.setTop(renderBottom + 45);
+        }
+        else {
+            permissionTargetListWidget.setTop(renderBottom + 25);
+        }
         super.render(matrices, mouseX, mouseY, delta);
         for (ClickableTextWidget textWidget : textWidgets) {
             textWidget.render(matrices, mouseX, mouseY, delta);
@@ -209,13 +218,5 @@ public class EnclosureScreen extends HandledScreen<EnclosureScreenHandler> imple
     @Override
     protected void drawBackground(MatrixStack matrices, float delta, int mouseX, int mouseY) {
 
-    }
-
-    public void requestConfirm(Text readString) {
-        assert client != null;
-        client.execute(() -> client.setScreen(new ConfirmScreen(this, readString, () -> {
-            assert client.player != null;
-            client.player.networkHandler.sendCommand("enclosure confirm");
-        })));
     }
 }

@@ -112,7 +112,7 @@ public class PermissionTargetListWidget<T extends ButtonWidget> extends ElementL
         @Override
         public void render(MatrixStack matrices, int index, int y, int x, int entryWidth, int entryHeight, int mouseX, int mouseY, boolean hovered, float tickDelta) {
             client.textRenderer.draw(matrices, name, x + 20, y + 3, 0xffffff);
-            setButton.setX(x + entryWidth - 40);
+            setButton.setX(x + entryWidth - setButton.getWidth());
             setButton.setY(y);
             setButton.render(matrices, mouseX, mouseY, tickDelta);
             assert client.player != null;

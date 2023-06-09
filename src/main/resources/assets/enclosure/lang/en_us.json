@@ -9,6 +9,7 @@
   "enclosure.help.about": "Show the about information of Enclosure Mod",
   "enclosure.help.add_user": "Give a player basic permissions",
   "enclosure.help.admin": "Admin tools",
+  "enclosure.message.selected_world": "Selected world: %s",
   "enclosure.help.auto": "Automatically enclose the maximum enclosure within the size limit",
   "enclosure.help.check": "Show target permission status of the enclosure",
   "enclosure.help.confirm": "Confirm the operation",

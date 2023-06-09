@@ -79,14 +79,6 @@ public class PermissionScreen extends Screen implements EnclosureGui {
         textRenderer.draw(matrices, title, 10, 10, 0xffffff);
     }
 
-    public void requestConfirm(Text readString) {
-        assert client != null;
-        client.execute(() -> client.setScreen(new ConfirmScreen(this, readString, () -> {
-            assert client.player != null;
-            client.player.networkHandler.sendCommand("enclosure confirm");
-        })));
-    }
-
     public void syncPermission(@NotNull NbtCompound permission) {
         Map<String, Boolean> perms = new HashMap<>();
         for (String key : permission.getKeys()) {
