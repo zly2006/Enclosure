@@ -204,6 +204,9 @@ public class EnclosureScreen extends HandledScreen<EnclosureScreenHandler> imple
     }
 
     @Override
+    protected void drawForeground(DrawContext context, int mouseX, int mouseY) { }
+
+    @Override
     public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
         if (keyCode == 256 && this.shouldCloseOnEsc()) {
             this.close();
