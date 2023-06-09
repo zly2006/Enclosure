@@ -18,11 +18,12 @@ import java.util.UUID;
 
 public class EnclosureScreen extends HandledScreen<EnclosureScreenHandler> implements EnclosureGui {
     final EnclosureView.ReadOnly area;
-    PermissionTargetListWidget permissionTargetListWidget;
+    PermissionTargetListWidget<ButtonWidget> permissionTargetListWidget;
     ButtonWidget globalWidget;
     ButtonWidget playerWidget;
     ButtonWidget unlistedWidget;
     ButtonWidget aboutWidget;
+    ButtonWidget transferWidget;
     final List<ClickableTextWidget> textWidgets = new ArrayList<>();
     final List<ClickableTextWidget> subLandWidgets = new ArrayList<>();
     int renderBottom = 5;
@@ -76,6 +77,9 @@ public class EnclosureScreen extends HandledScreen<EnclosureScreenHandler> imple
             .size(50, 20)
             .position(320, 35)
             .build());
+        transferWidget = addDrawableChild(ButtonWidget.builder(Text.translatable("enclosure.widget.transfer"), button -> {
+            client.setScreen(new TransferScreen(area, handler.fullName, this));
+        }).position(5, 0).build());
         String owner = UUIDCacheS2CPacket.getName(area.getOwner());
         assert client != null;
         if (!handler.fatherFullName.isEmpty()) {
@@ -150,21 +154,24 @@ public class EnclosureScreen extends HandledScreen<EnclosureScreenHandler> imple
         for (ClickableTextWidget textWidget : subLandWidgets) {
             textWidget.y = renderBottom;
         }
-        renderBottom += subLandWidgets.isEmpty() ? 0 : 10;
+        if (!subLandWidgets.isEmpty()) {
+            int subLandsX = 5;
+            for (ClickableTextWidget textWidget : subLandWidgets) {
+                textWidget.x = subLandsX;
+                textWidget.render(matrices, mouseX, mouseY, delta);
+                subLandsX += textWidget.width + 5;
+            }
+            renderBottom += 10;
+        }
         globalWidget.setY(renderBottom);
         playerWidget.setY(renderBottom);
         unlistedWidget.setY(renderBottom);
         aboutWidget.setY(renderBottom);
-        permissionTargetListWidget.setTop(renderBottom + 25);
+        transferWidget.setY(renderBottom + 20);
+        permissionTargetListWidget.setTop(renderBottom + 45);
         super.render(matrices, mouseX, mouseY, delta);
         for (ClickableTextWidget textWidget : textWidgets) {
             textWidget.render(matrices, mouseX, mouseY, delta);
-        }
-        int subLandsX = 5;
-        for (ClickableTextWidget textWidget : subLandWidgets) {
-            textWidget.x = subLandsX;
-            textWidget.render(matrices, mouseX, mouseY, delta);
-            subLandsX += textWidget.width + 5;
         }
     }
 
