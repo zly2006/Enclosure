@@ -46,7 +46,6 @@ public class TransferScreen extends Screen implements EnclosureGui {
     @Override
     public void render(MatrixStack matrices, int mouseX, int mouseY, float delta) {
         renderBackground(matrices);
-        permissionTargetListWidget.render(matrices, mouseX, mouseY, delta);
         super.render(matrices, mouseX, mouseY, delta);
     }
 }
