@@ -71,6 +71,15 @@ public abstract class MixinServerPlayerEntity extends PlayerEntity implements Pl
         super(world, pos, yaw, gameProfile);
     }
 
+    @Inject(method = "openHorseInventory", at = @At("HEAD"), cancellable = true)
+    private void onOpenHorseInventory(CallbackInfo ci) {
+        EnclosureArea area = ServerMain.INSTANCE.getSmallestEnclosure((ServerWorld) this.getWorld(), getBlockPos());
+        if (area != null && !area.hasPerm((ServerPlayerEntity) (Object) this, Permission.CONTAINER)) {
+            sendMessage(Permission.CONTAINER.getNoPermissionMsg(this));
+            ci.cancel();
+        }
+    }
+
     @Inject(method = "damage", at = @At("HEAD"), cancellable = true)
     private void protectPVP(DamageSource source, float amount, CallbackInfoReturnable<Boolean> cir) {
         if (source.getAttacker() instanceof ServerPlayerEntity attacker) {
