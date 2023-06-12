@@ -63,8 +63,9 @@ interface PermissionHolder : Serializable2Text {
     }
 
     fun setPermission(source: ServerCommandSource?, uuid: UUID, perm: Permission, value: Boolean?) {
-        if (!permissionsMap.containsKey(uuid) && value != null) {
-            permissionsMap[uuid] = HashMap()
+        if (!permissionsMap.containsKey(uuid)) {
+            if (value != null) permissionsMap[uuid] = HashMap()
+            else return
         }
         if (uuid == CONSOLE && !perm.target.fitEnclosure()) {
             throw PermissionTargetException(

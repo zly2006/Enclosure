@@ -101,7 +101,7 @@ public class PermissionListWidget extends ElementListWidget<PermissionListWidget
         @Override
         public void render(MatrixStack matrices, int index, int y, int x, int entryWidth, int entryHeight, int mouseX, int mouseY, boolean hovered, float tickDelta) {
             buttonWidget.setY(y);
-            buttonWidget.setX(x + entryWidth - 40);
+            buttonWidget.setX(x + entryWidth - buttonWidget.getWidth());
             buttonWidget.setMessage(value());
             buttonWidget.render(matrices, mouseX, mouseY, tickDelta);
             client.textRenderer.draw(matrices, permission.getName(), x + 20, y + 3, 0xFFFFFF);
