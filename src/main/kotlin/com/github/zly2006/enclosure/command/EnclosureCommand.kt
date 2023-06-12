@@ -662,6 +662,7 @@ fun register(dispatcher: CommandDispatcher<ServerCommandSource>): LiteralCommand
                     session.pos1 = BlockPos(x1 - expandX, y1, z1 - expandZ)
                     session.pos2 = BlockPos(x2 + expandX, y2, z2 + expandZ)
                     session.trySync()
+                    source.sendMessage(TrT.of("enclosure.message.max_square"))
                 }
             }
             literal("land") {
