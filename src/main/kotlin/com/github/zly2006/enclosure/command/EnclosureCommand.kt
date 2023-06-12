@@ -313,7 +313,7 @@ private fun getOfflineUUID(context: CommandContext<ServerCommandSource>): UUID {
         return UUID.fromString(StringArgumentType.getString(context, "player"))
     } catch (_: Exception) { }
     return Utils.getUUIDByName(StringArgumentType.getString(context, "player"))
-        ?: error(TrT.of("enclosure.message.player_not_found"), context)
+            ?: error(TrT.of("enclosure.message.player_not_found"), context)
 }
 
 fun BuilderScope<*>.registerConfirmCommand() {
