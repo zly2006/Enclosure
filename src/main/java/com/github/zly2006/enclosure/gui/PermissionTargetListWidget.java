@@ -111,7 +111,7 @@ public class PermissionTargetListWidget<T extends ButtonWidget> extends ElementL
         @Override
         public void render(DrawContext context, int index, int y, int x, int entryWidth, int entryHeight, int mouseX, int mouseY, boolean hovered, float tickDelta) {
             context.drawText(client.textRenderer, name, x + 20, y + 3, 0xFFFFFF, false);
-            setButton.setX(x + entryWidth - 40);
+            setButton.setX(x + entryWidth - setButton.getWidth());
             setButton.setY(y);
             setButton.render(context, mouseX, mouseY, tickDelta);
             assert client.player != null;
