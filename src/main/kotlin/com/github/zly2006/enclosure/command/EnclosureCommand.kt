@@ -199,7 +199,7 @@ private fun permissionArgument(target: Permission.Target): RequiredArgumentBuild
 private fun offlinePlayerArgument(): RequiredArgumentBuilder<ServerCommandSource, String> {
     return CommandManager.argument("player", StringArgumentType.string())
         .suggests { _, builder ->
-            CommandSource.suggestMatching(byUuid.values, builder)
+            CommandSource.suggestMatching(minecraftServer.userCache.byName.keys, builder)
         }
 }
 

@@ -65,7 +65,7 @@ public class EnclosureInstalledC2SPacket implements ServerPlayNetworking.PlayCha
                 // send uuid data
                 PacketByteBuf buf2 = PacketByteBufs.create();
                 NbtCompound compound = new NbtCompound();
-                ServerMainKt.byUuid.forEach((uuid, s) -> compound.putUuid(s, uuid));
+                ServerMainKt.minecraftServer.getUserCache().byName.forEach((name, entry) -> compound.putUuid(name, entry.profile.getId()));
                 buf2.writeNbt(compound);
                 ServerPlayNetworking.send(player, NetworkChannels.SYNC_UUID, buf2);
             } else {
