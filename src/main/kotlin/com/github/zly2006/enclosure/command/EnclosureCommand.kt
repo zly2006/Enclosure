@@ -20,6 +20,10 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType
 import com.mojang.brigadier.suggestion.SuggestionsBuilder
 import com.mojang.brigadier.tree.LiteralCommandNode
+import me.lucko.fabric.api.permissions.v0.Options
+import me.lucko.fabric.api.permissions.v0.PermissionCheckEvent
+import me.lucko.fabric.api.permissions.v0.Permissions
+import net.fabricmc.fabric.api.util.TriState
 import net.minecraft.command.CommandSource
 import net.minecraft.command.argument.BlockPosArgumentType
 import net.minecraft.command.argument.DimensionArgumentType
@@ -182,6 +186,37 @@ class BuilderScope<T: argT>(var parent: T) {
             parent.then(node)
         }
     }
+
+
+    companion object {
+        enum class DefaultPermission {
+            TRUE, FALSE, OP
+        }
+
+        init {
+            PermissionCheckEvent.EVENT.register { source, permission ->
+                if (Options.get(source, permission).isPresent) TriState.DEFAULT
+                else map[permission]?.let {
+                    when (it) {
+                        DefaultPermission.TRUE -> TriState.TRUE
+                        DefaultPermission.FALSE -> TriState.FALSE
+                        DefaultPermission.OP -> if (source.hasPermissionLevel(4)) TriState.TRUE else TriState.FALSE
+                    }
+                } ?: TriState.DEFAULT
+            }
+        }
+
+        val map = mutableMapOf<String, DefaultPermission>()
+    }
+    fun permission(s: String, defaultPermission: DefaultPermission) {
+        val old = parent.requirement
+        if (!map.containsKey(s)) {
+            map[s] = defaultPermission
+        }
+        parent.requires { source ->
+            Permissions.check(source, s) && old.test(source)
+        }
+    }
 }
 
 private fun getEnclosure(context: CommandContext<ServerCommandSource>): EnclosureArea {
@@ -313,7 +348,7 @@ private fun getOfflineUUID(context: CommandContext<ServerCommandSource>): UUID {
         return UUID.fromString(StringArgumentType.getString(context, "player"))
     } catch (_: Exception) { }
     return Utils.getUUIDByName(StringArgumentType.getString(context, "player"))
-            ?: error(TrT.of("enclosure.message.player_not_found"), context)
+        ?: error(TrT.of("enclosure.message.player_not_found"), context)
 }
 
 fun BuilderScope<*>.registerConfirmCommand() {
@@ -329,6 +364,7 @@ fun register(dispatcher: CommandDispatcher<ServerCommandSource>): LiteralCommand
     val node = BuilderScope(CommandManager.literal("enclosure")).apply {
         registerConfirmCommand()
         literal("about") {
+            permission("enclosure.command.about", BuilderScope.Companion.DefaultPermission.TRUE)
             executes {
                 val player = source.player
                 source.sendMessage(TrT.of("enclosure.about.author"))
@@ -346,27 +382,29 @@ fun register(dispatcher: CommandDispatcher<ServerCommandSource>): LiteralCommand
         }
         literal("admin") {
             literal("reload") {
+                permission("enclosure.command.admin.reload", BuilderScope.Companion.DefaultPermission.OP)
                 literal("all") {
                     executes {
                         ServerMain.reloadCommon()
                         ServerMain.reloadLimits()
-                        source.sendMessage(Text.literal("Reloaded"))
+                        source.sendMessage(Text.literal("Reloaded, some config may not affect until restart"))
                     }
                 }
                 literal("common") {
                     executes {
                         ServerMain.reloadCommon()
-                        source.sendMessage(Text.literal("Reloaded"))
+                        source.sendMessage(Text.literal("Reloaded, some config may not affect until restart"))
                     }
                 }
                 literal("limits") {
                     executes {
                         ServerMain.reloadLimits()
-                        source.sendMessage(Text.literal("Reloaded"))
+                        source.sendMessage(Text.literal("Reloaded, some config may not affect until restart"))
                     }
                 }
             }
             literal("limit_exceeded") {
+                permission("enclosure.command.admin.limit_exceeded", BuilderScope.Companion.DefaultPermission.OP)
                 literal("size") {
                     executes {
                         ServerMain.getAllEnclosures().flatMap {
@@ -402,49 +440,55 @@ fun register(dispatcher: CommandDispatcher<ServerCommandSource>): LiteralCommand
                         }
                     }
                 }
-                literal("closest") {
-                    executes {
-                        val enclosure = ServerMain.getAllEnclosures(source.world).areas
-                            .minByOrNull {
-                                it.distanceTo(source.position).horizontalLength()
-                            }
-                        if (enclosure == null) {
-                            source.sendMessage(Text.literal("No enclosure found"))
-                        } else {
-                            source.sendMessage(
-                                Text.literal("Closest enclosure: " + enclosure.fullName + ", click to show info")
-                                    .styled {
-                                        it.withClickEvent(
-                                            ClickEvent(
-                                                ClickEvent.Action.RUN_COMMAND,
-                                                "/enclosure info " + enclosure.fullName
-                                            )
+            }
+            literal("closest") {
+                permission("enclosure.command.admin.closest", BuilderScope.Companion.DefaultPermission.OP)
+                executes {
+                    val enclosure = ServerMain.getAllEnclosures(source.world).areas
+                        .minByOrNull {
+                            it.distanceTo(source.position).horizontalLength()
+                        }
+                    if (enclosure == null) {
+                        source.sendMessage(Text.literal("No enclosure found"))
+                    } else {
+                        source.sendMessage(
+                            Text.literal("Closest enclosure: " + enclosure.fullName + ", click to show info")
+                                .styled {
+                                    it.withClickEvent(
+                                        ClickEvent(
+                                            ClickEvent.Action.RUN_COMMAND,
+                                            "/enclosure info " + enclosure.fullName
                                         )
-                                    })
-                        }
+                                    )
+                                })
                     }
                 }
-                literal("perm-info") {
-                    argument(permissionArgument(Permission.Target.Both)) {
-                        executes {
-                            val permission = Permission.getValue(StringArgumentType.getString(this, "permission"))
-                                ?: error(TrT.of("enclosure.message.invalid_permission"), this)
-                            source.sendMessage(
-                                Text.literal("Name: ${permission.name} Target: ${permission.target}\nDescription: ") + permission.description + Text.literal("\nDefault: ${permission.defaultValue}\nComponents: ${permission.permissions.joinToString()}")
-                            )
-                        }
-                    }
-                }
-                literal("clients") {
+            }
+            literal("perm-info") {
+                permission("enclosure.command.admin.perm_info", BuilderScope.Companion.DefaultPermission.OP)
+                argument(permissionArgument(Permission.Target.Both)) {
                     executes {
-                        EnclosureInstalledC2SPacket.installedClientMod.forEach {
-                            source.sendMessage(Text.literal(it.key.entityName + ": " + it.value.friendlyString))
-                        }
+                        val permission = Permission.getValue(StringArgumentType.getString(this, "permission"))
+                            ?: error(TrT.of("enclosure.message.invalid_permission"), this)
+                        source.sendMessage(
+                            Text.literal("Name: ${permission.name} Target: ${permission.target}\nDescription: ") + permission.description + Text.literal(
+                                "\nDefault: ${permission.defaultValue}\nComponents: ${permission.permissions.joinToString()}"
+                            )
+                        )
+                    }
+                }
+            }
+            literal("clients") {
+                permission("enclosure.command.admin.clients", BuilderScope.Companion.DefaultPermission.OP)
+                executes {
+                    EnclosureInstalledC2SPacket.installedClientMod.forEach {
+                        source.sendMessage(Text.literal(it.key.entityName + ": " + it.value.friendlyString))
                     }
                 }
             }
         }
         literal("flags") {
+            permission("enclosure.command.flags", BuilderScope.Companion.DefaultPermission.TRUE)
             paged({ "/enclosure flags" }) {
                 Permission.PERMISSIONS.values.map {
                     it.serialize(SerializationSettings.Full, null)
@@ -452,6 +496,7 @@ fun register(dispatcher: CommandDispatcher<ServerCommandSource>): LiteralCommand
             }
         }
         literal("limits") {
+            permission("enclosure.command.limits", BuilderScope.Companion.DefaultPermission.TRUE)
             executes {
                 val limits = ServerMain.limits
                 val translatable = TrT.of("enclosure.message.limit.header")
@@ -468,6 +513,7 @@ fun register(dispatcher: CommandDispatcher<ServerCommandSource>): LiteralCommand
             }
         }
         literal("list") {
+            permission("enclosure.command.list", BuilderScope.Companion.DefaultPermission.TRUE)
             paged({ "/enclosure list" }) {
                 ServerMain.getAllEnclosures().map {
                     it.serialize(SerializationSettings.Summarize, null)
@@ -506,6 +552,7 @@ fun register(dispatcher: CommandDispatcher<ServerCommandSource>): LiteralCommand
             }
         }
         literal("help") {
+            permission("enclosure.command.help", BuilderScope.Companion.DefaultPermission.TRUE)
             executes {
                 source.sendMessage(TrT.of("enclosure.help.header"))
                 dispatcher.getSmartUsage(dispatcher.root.getChild("enclosure"), source).forEach { (name, s) ->
@@ -532,6 +579,7 @@ fun register(dispatcher: CommandDispatcher<ServerCommandSource>): LiteralCommand
             }
         }
         literal("auto") {
+            permission("enclosure.command.auto", BuilderScope.Companion.DefaultPermission.TRUE)
             argument("name", StringArgumentType.word()) {
                 executes {
                     val pos = BlockPos.ofFloored(source.position)
@@ -552,6 +600,7 @@ fun register(dispatcher: CommandDispatcher<ServerCommandSource>): LiteralCommand
             }
         }
         literal("select") {
+            permission("enclosure.command.select", BuilderScope.Companion.DefaultPermission.TRUE)
             fun <T : argT> BuilderScope<T>.setPos(name: String, action: Session.(BlockPos) -> Unit) {
                 literal(name) {
                     argument("position", BlockPosArgumentType.blockPos()) {
@@ -705,7 +754,12 @@ fun register(dispatcher: CommandDispatcher<ServerCommandSource>): LiteralCommand
             }
         }
         literal("gui") {
-            parent.requires { it.isExecutedByPlayer }
+            // Note: this register block only runs once
+            BuilderScope.map["enclosure.gui"] = BuilderScope.Companion.DefaultPermission.TRUE
+            parent.requires {
+                it.isExecutedByPlayer &&
+                    Permissions.check(it, "enclosure.gui")
+            }
             optionalEnclosure {
                 val player = source.player!!
                 if (EnclosureInstalledC2SPacket.isInstalled(player)) {
@@ -714,11 +768,12 @@ fun register(dispatcher: CommandDispatcher<ServerCommandSource>): LiteralCommand
             }
         }
         literal("info") {
+            permission("enclosure.command.info", BuilderScope.Companion.DefaultPermission.TRUE)
             optionalEnclosure { area ->
                 val text = area.serialize(SerializationSettings.BarredFull, source.player)
                 if (EnclosureInstalledC2SPacket.isInstalled(source.player)) {
                     text.append(
-                        Text.literal("\n(*)").setStyle(
+                        Text.literal("(*)").setStyle(
                             Style.EMPTY.withColor(Formatting.AQUA)
                                 .hoverText(Text.translatable("enclosure.message.suggest_gui"))
                                 .clickRun("/enclosure gui ${area.fullName}")
@@ -728,47 +783,78 @@ fun register(dispatcher: CommandDispatcher<ServerCommandSource>): LiteralCommand
                 source.sendMessage(text)
             }
         }
-        literal("tp") {
-            argument(landArgument()) {
-                executes {
-                    val player = source.player!!
-                    val lastTeleportTimeSpan = System.currentTimeMillis() - (player as PlayerAccess).lastTeleportTime
-                    val cd = ServerMain.commonConfig.teleportCooldown
-                    if (!source.hasPermissionLevel(4) && cd > 0 && lastTeleportTimeSpan < cd) {
-                        error(
-                            TrT.of(
-                                "enclosure.message.teleport_too_fast",
-                                String.format("%.1f", (cd - lastTeleportTimeSpan) / 1000.0)
-                            ), this
-                        )
-                    }
-                    (player as PlayerAccess).lastTeleportTime = System.currentTimeMillis()
-                    val area = getEnclosure(this)
-                    if (!area.hasPerm(player, Permission.COMMAND_TP)) {
-                        player.sendMessage(Permission.COMMAND_TP.getNoPermissionMsg(player))
-                        return@executes
-                    }
-                    if (ServerMain.commonConfig.showTeleportWarning) {
-                        val world = area.world
-                        val pos = Utils.toBlockPos(area.teleportPos)
-                        val down = world.getBlockState(pos.down())
-                        val state = world.getBlockState(pos)
-                        val up = world.getBlockState(pos.up())
-                        if (!down.material.blocksMovement() || state.material.blocksMovement() && up.material.blocksMovement()) {
-                            source.sendMessage(
-                                TrT.of("enclosure.message.teleport_warning").formatted(Formatting.YELLOW)
+            literal("tp") {
+                permission("enclosure.command.tp", BuilderScope.Companion.DefaultPermission.TRUE)
+                argument(landArgument()) {
+                    executes {
+                        val player = source.player!!
+                        val lastTeleportTimeSpan =
+                            System.currentTimeMillis() - (player as PlayerAccess).lastTeleportTime
+                        val cd = ServerMain.commonConfig.teleportCooldown
+                        if (!source.hasPermissionLevel(4) && cd > 0 && lastTeleportTimeSpan < cd) {
+                            error(
+                                TrT.of(
+                                    "enclosure.message.teleport_too_fast",
+                                    String.format("%.1f", (cd - lastTeleportTimeSpan) / 1000.0)
+                                ), this
                             )
-                            ConfirmManager.confirm(null, source.player) { area.teleport(player) }
+                        }
+                        (player as PlayerAccess).lastTeleportTime = System.currentTimeMillis()
+                        val area = getEnclosure(this)
+                        if (!area.hasPerm(player, Permission.COMMAND_TP)) {
+                            player.sendMessage(Permission.COMMAND_TP.getNoPermissionMsg(player))
+                            return@executes
+                        }
+                        if (ServerMain.commonConfig.showTeleportWarning) {
+                            val world = area.world
+                            val pos = Utils.toBlockPos(area.teleportPos)
+                            val down = world.getBlockState(pos.down())
+                            val state = world.getBlockState(pos)
+                            val up = world.getBlockState(pos.up())
+                            if (!down.material.blocksMovement() || state.material.blocksMovement() && up.material.blocksMovement()) {
+                                source.sendMessage(
+                                    TrT.of("enclosure.message.teleport_warning").formatted(Formatting.YELLOW)
+                                )
+                                ConfirmManager.confirm(null, source.player) { area.teleport(player) }
+                            } else {
+                                area.teleport(player)
+                            }
                         } else {
                             area.teleport(player)
                         }
-                    } else {
-                        area.teleport(player)
                     }
                 }
             }
-        }
+            literal("settp") {
+                permission("enclosure.command.settp", BuilderScope.Companion.DefaultPermission.TRUE)
+                optionalEnclosure { area ->
+                    if (!source.hasPermissionLevel(4) && !area.hasPerm(source.player!!, Permission.ADMIN)) {
+                        error(Permission.ADMIN.getNoPermissionMsg(source.player), this)
+                    }
+                    if (!area.isInner(BlockPos.ofFloored(source.position))) {
+                        error(TrT.of("enclosure.message.res_settp_pos_error"), this)
+                    }
+                    area.setTeleportPos(source.position, source.rotation.y, source.rotation.x)
+                    source.sendMessage(
+                        TrT.of("enclosure.message.change_teleport_position.0")
+                            .append(area.serialize(SerializationSettings.Name, source.player))
+                            .append(TrT.of("enclosure.message.change_teleport_position.1"))
+                            .append(
+                                String.format(
+                                    "[%.2f, %.2f, %.2f](yaw: %.2f, pitch: %.2f)",
+                                    source.position.x,
+                                    source.position.y,
+                                    source.position.z,
+                                    source.rotation.y,
+                                    source.rotation.x
+                                )
+                            )
+                    )
+                }
+            }
+
         literal("create") {
+            permission("enclosure.command.create", BuilderScope.Companion.DefaultPermission.TRUE)
             argument("name", StringArgumentType.word()) {
                 executes {
                     createEnclosure(this)
@@ -776,6 +862,7 @@ fun register(dispatcher: CommandDispatcher<ServerCommandSource>): LiteralCommand
             }
         }
         literal("rename") {
+            permission("enclosure.command.rename", BuilderScope.Companion.DefaultPermission.TRUE)
             argument(landArgument()) {
                 argument("name", StringArgumentType.word()) {
                     executes {
@@ -798,6 +885,7 @@ fun register(dispatcher: CommandDispatcher<ServerCommandSource>): LiteralCommand
             }
         }
         literal("remove") {
+            permission("enclosure.command.remove", BuilderScope.Companion.DefaultPermission.TRUE)
             argument(landArgument()) {
                 executes {
                     val res = getEnclosure(this)
@@ -822,6 +910,7 @@ fun register(dispatcher: CommandDispatcher<ServerCommandSource>): LiteralCommand
             }
         }
         literal("trust") {
+            permission("enclosure.command.trust", BuilderScope.Companion.DefaultPermission.TRUE)
             optionalEnclosure({ area ->
                 val uuid = getOfflineUUID(this)
                 if (source.hasPermissionLevel(4) || area.hasPerm(source.player!!, Permission.ADMIN)) {
@@ -835,6 +924,7 @@ fun register(dispatcher: CommandDispatcher<ServerCommandSource>): LiteralCommand
             })
         }
         literal("give") {
+            permission("enclosure.command.give", BuilderScope.Companion.DefaultPermission.TRUE)
             argument(landArgument()) {
                 fun CommandContext<ServerCommandSource>.execute(area: EnclosureArea, uuid: UUID) {
                     val target = minecraftServer.playerManager.getPlayer(uuid)
@@ -885,33 +975,8 @@ fun register(dispatcher: CommandDispatcher<ServerCommandSource>): LiteralCommand
                 }
             }
         }
-        literal("settp") {
-            optionalEnclosure { area ->
-                if (!source.hasPermissionLevel(4) && !area.hasPerm(source.player!!, Permission.ADMIN)) {
-                    error(Permission.ADMIN.getNoPermissionMsg(source.player), this)
-                }
-                if (!area.isInner(BlockPos.ofFloored(source.position))) {
-                    error(TrT.of("enclosure.message.res_settp_pos_error"), this)
-                }
-                area.setTeleportPos(source.position, source.rotation.y, source.rotation.x)
-                source.sendMessage(
-                    TrT.of("enclosure.message.change_teleport_position.0")
-                        .append(area.serialize(SerializationSettings.Name, source.player))
-                        .append(TrT.of("enclosure.message.change_teleport_position.1"))
-                        .append(
-                            String.format(
-                                "[%.2f, %.2f, %.2f](yaw: %.2f, pitch: %.2f)",
-                                source.position.x,
-                                source.position.y,
-                                source.position.z,
-                                source.rotation.y,
-                                source.rotation.x
-                            )
-                        )
-                )
-            }
-        }
         literal("subzone") {
+            permission("enclosure.command.subzone", BuilderScope.Companion.DefaultPermission.TRUE)
             argument("name", StringArgumentType.string()) {
                 executes {
                     val name = StringArgumentType.getString(this, "name")
@@ -1010,6 +1075,7 @@ fun register(dispatcher: CommandDispatcher<ServerCommandSource>): LiteralCommand
                 }
             }
             literal("set") {
+                permission("enclosure.command.set", BuilderScope.Companion.DefaultPermission.TRUE)
                 tupa({ n, c -> n.then(optionalBooleanArgument().executes(c)) }) { area, uuid, permission ->
                     source.player?.let {
                         if (!area.hasPerm(it, Permission.ADMIN)) {
@@ -1047,6 +1113,7 @@ fun register(dispatcher: CommandDispatcher<ServerCommandSource>): LiteralCommand
                 }
             }
             literal("check") {
+                permission("enclosure.command.check", BuilderScope.Companion.DefaultPermission.TRUE)
                 tupa { area, uuid, permission ->
                     val textTrue = Text.literal("true").formatted(Formatting.GREEN)
                     val textFalse = Text.literal("false").formatted(Formatting.RED)
@@ -1064,8 +1131,9 @@ fun register(dispatcher: CommandDispatcher<ServerCommandSource>): LiteralCommand
             }
         }
         literal("message") {
+            permission("enclosure.command.message", BuilderScope.Companion.DefaultPermission.TRUE)
             fun <T : argT> BuilderScope<T>.withLeaveEnter(
-                builder: (argT, Command<ServerCommandSource>) -> Unit = {n, c -> n.executes(c)},
+                builder: (argT, Command<ServerCommandSource>) -> Unit = { n, c -> n.executes(c) },
                 action: CommandContext<ServerCommandSource>.(EnclosureArea, String) -> Unit
             ) {
                 optionalEnclosure(listOf("enter", "leave"), { l, c ->
@@ -1075,12 +1143,14 @@ fun register(dispatcher: CommandDispatcher<ServerCommandSource>): LiteralCommand
                 }, action)
             }
             fun delegate(area: EnclosureArea, l: String): ReadWriteProperty<Any?, String> {
-                return Delegates.observable(when(l) {
-                    "enter" -> area.enterMessage
-                    "leave" -> area.leaveMessage
-                    else -> error("Unknown arg type")
-                }) { _, _, new: String ->
-                    when(l) {
+                return Delegates.observable(
+                    when (l) {
+                        "enter" -> area.enterMessage
+                        "leave" -> area.leaveMessage
+                        else -> error("Unknown arg type")
+                    }
+                ) { _, _, new: String ->
+                    when (l) {
                         "enter" -> area.enterMessage = new
                         "leave" -> area.leaveMessage = new
                         else -> error("Unknown arg type")
@@ -1151,6 +1221,7 @@ fun register(dispatcher: CommandDispatcher<ServerCommandSource>): LiteralCommand
             }
         }
         literal("experimental") {
+            permission("enclosure.command.experimental", BuilderScope.Companion.DefaultPermission.OP)
             literal("backup") {
                 argument(landArgument()) {
                     executes {
