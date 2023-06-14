@@ -88,8 +88,6 @@ private val limitPath = Path.of("config", "enclosure", "limits.json")
 private val commonConfigPath = Path.of("config", "enclosure", "common.json")
 const val DATA_VERSION = 2
 lateinit var minecraftServer: MinecraftServer
-@JvmField
-var byUuid: MutableMap<UUID, String> = mutableMapOf()
 
 object ServerMain: DedicatedServerModInitializer {
     lateinit var backupManager: BackupManager
@@ -597,6 +595,7 @@ object ServerMain: DedicatedServerModInitializer {
                         for (i in version until DATA_VERSION) {
                             nbtCompound = DataUpdater.update(i, nbtCompound)
                         }
+                        update.plain = true
                         update.set(true)
                     }
                     val enclosureList = EnclosureList(nbtCompound, world, true)

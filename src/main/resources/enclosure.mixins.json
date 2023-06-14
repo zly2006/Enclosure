@@ -59,7 +59,6 @@
     "MixinTntBlock",
     "MixinTntMinecartEntity",
     "MixinTurtleEggBlock",
-    "MixinUserCache",
     "MixinWitherEntity",
     "MixinWitherSkullBlock",
     "MixinAbstractSignBlock",
