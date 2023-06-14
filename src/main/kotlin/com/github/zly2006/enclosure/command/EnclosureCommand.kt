@@ -234,7 +234,7 @@ private fun permissionArgument(target: Permission.Target): RequiredArgumentBuild
 private fun offlinePlayerArgument(): RequiredArgumentBuilder<ServerCommandSource, String> {
     return CommandManager.argument("player", StringArgumentType.string())
         .suggests { _, builder ->
-            CommandSource.suggestMatching(minecraftServer.userCache.byName.keys, builder)
+            CommandSource.suggestMatching(minecraftServer.userCache?.byName?.keys ?: emptySet(), builder)
         }
 }
 
@@ -915,7 +915,10 @@ fun register(dispatcher: CommandDispatcher<ServerCommandSource>): LiteralCommand
                 val uuid = getOfflineUUID(this)
                 if (source.hasPermissionLevel(4) || area.hasPerm(source.player!!, Permission.ADMIN)) {
                     area.setPermission(source, uuid, Permission.TRUSTED, true)
-                    source.sendFeedback(TrT.of("enclosure.message.added_user", Utils.getDisplayNameByUUID(uuid)), true)
+                    source.sendFeedback(
+                        { TrT.of("enclosure.message.added_user", Utils.getDisplayNameByUUID(uuid)) },
+                        true
+                    )
                 } else {
                     error(Permission.ADMIN.getNoPermissionMsg(source.player), this)
                 }
