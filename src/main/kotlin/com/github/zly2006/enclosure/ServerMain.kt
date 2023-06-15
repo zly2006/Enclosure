@@ -18,6 +18,7 @@ import com.google.gson.GsonBuilder
 import com.google.gson.JsonObject
 import com.mojang.brigadier.CommandDispatcher
 import com.mojang.brigadier.arguments.FloatArgumentType
+import me.lucko.fabric.api.permissions.v0.Permissions
 import net.fabricmc.api.DedicatedServerModInitializer
 import net.fabricmc.api.EnvType
 import net.fabricmc.api.Environment
@@ -336,7 +337,7 @@ object ServerMain: DedicatedServerModInitializer {
 
     @Environment(EnvType.SERVER)
     fun checkPermission(player: ServerPlayerEntity, permission: Permission, pos: BlockPos): Boolean {
-        if (player.commandSource.hasPermissionLevel(4) && permission.isIgnoreOp) return true
+        if (Permissions.check(player, "enclosure.bypass") && permission.isIgnoreOp) return true
         val enclosure = getAllEnclosures(player.getWorld()).getArea(pos)
         return enclosure?.areaOf(pos)?.hasPerm(player, permission) ?: true
     }

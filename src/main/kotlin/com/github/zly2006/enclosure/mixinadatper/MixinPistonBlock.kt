@@ -19,9 +19,8 @@ fun protectPiston(
     cir: CallbackInfoReturnable<Boolean>,
     pistonHandler: PistonHandler
 ) {
-    var positions = pistonHandler.brokenBlocks + pistonHandler.movedBlocks + pistonPos
-    positions = positions + positions.map { it.offset(if (extend) dir else dir.opposite) }
-    positions = positions.distinct()
+    val positions = (pistonHandler.brokenBlocks + pistonHandler.movedBlocks + pistonPos
+            + pistonHandler.movedBlocks.map { it.offset(pistonHandler.motionDirection) }).distinct()
     val areas = positions.map { ServerMain.getSmallestEnclosure(world, it) }
         .map { Optional.ofNullable(it) } // null is also considered as an "area"
         .distinct()
