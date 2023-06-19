@@ -274,24 +274,6 @@ object ServerMain: DedicatedServerModInitializer {
             }
         }
 
-    /**
-     * Checks if an operation is allowed through the boundaries of the enclosure.
-     *
-     * @return if true, pass on, otherwise, set return value to false and cancel this callback
-     */
-    fun checkPermissionInDifferentEnclosure(
-        world: ServerWorld,
-        pos1: BlockPos,
-        pos2: BlockPos,
-        permission: Permission
-    ): Boolean {
-        val from = getSmallestEnclosure(world, pos1)
-        val to = getSmallestEnclosure(world, pos2)
-        if (from === to) return true
-        return (from?.areaOf(pos1)?.hasPubPerm(permission) == true) &&
-                (to?.areaOf(pos2)?.hasPubPerm(permission) == true)
-    }
-
     fun checkPermission(world: World, pos: BlockPos, player: PlayerEntity?, permission: Permission): Boolean {
         if (world.isClient) return true
         val list = getAllEnclosures(world as ServerWorld)

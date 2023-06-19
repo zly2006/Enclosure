@@ -587,6 +587,7 @@ fun register(dispatcher: CommandDispatcher<ServerCommandSource>): LiteralCommand
                     val session = sessionOf(source)
                     val expandX = (limits.maxXRange - 1) / 2
                     val expandZ = (limits.maxZRange - 1) / 2
+                    session.enabled = true
                     session.world = source.world
                     session.pos1 = BlockPos(pos.x - expandX, limits.minY, pos.z - expandZ)
                     session.pos2 = BlockPos(
@@ -659,6 +660,9 @@ fun register(dispatcher: CommandDispatcher<ServerCommandSource>): LiteralCommand
                 executes {
                     val session = sessionOf(source)
                     session.enabled = false
+                    session.pos1 = BlockPos.ORIGIN
+                    session.pos2 = BlockPos.ORIGIN
+                    session.trySync()
                     source.sendMessage(TrT.of("enclosure.message.select.clear"))
                 }
             }
