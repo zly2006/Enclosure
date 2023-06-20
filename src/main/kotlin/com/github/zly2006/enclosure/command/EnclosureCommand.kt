@@ -587,6 +587,7 @@ fun register(dispatcher: CommandDispatcher<ServerCommandSource>): LiteralCommand
                     val session = sessionOf(source)
                     val expandX = (limits.maxXRange - 1) / 2
                     val expandZ = (limits.maxZRange - 1) / 2
+                    session.enabled = true
                     session.world = source.world
                     session.pos1 = BlockPos(pos.x - expandX, limits.minY, pos.z - expandZ)
                     session.pos2 = BlockPos(
@@ -659,6 +660,9 @@ fun register(dispatcher: CommandDispatcher<ServerCommandSource>): LiteralCommand
                 executes {
                     val session = sessionOf(source)
                     session.enabled = false
+                    session.pos1 = BlockPos.ORIGIN
+                    session.pos2 = BlockPos.ORIGIN
+                    session.trySync()
                     source.sendMessage(TrT.of("enclosure.message.select.clear"))
                 }
             }
@@ -828,7 +832,7 @@ fun register(dispatcher: CommandDispatcher<ServerCommandSource>): LiteralCommand
             literal("settp") {
                 permission("enclosure.command.settp", BuilderScope.Companion.DefaultPermission.TRUE)
                 optionalEnclosure { area ->
-                    if (!source.hasPermissionLevel(4) && !area.hasPerm(source.player!!, Permission.ADMIN)) {
+                    if (!area.hasPerm(source.player!!, Permission.ADMIN)) {
                         error(Permission.ADMIN.getNoPermissionMsg(source.player), this)
                     }
                     if (!area.isInner(BlockPos.ofFloored(source.position))) {
@@ -913,7 +917,7 @@ fun register(dispatcher: CommandDispatcher<ServerCommandSource>): LiteralCommand
             permission("enclosure.command.trust", BuilderScope.Companion.DefaultPermission.TRUE)
             optionalEnclosure({ area ->
                 val uuid = getOfflineUUID(this)
-                if (source.hasPermissionLevel(4) || area.hasPerm(source.player!!, Permission.ADMIN)) {
+                if (area.hasPerm(source.player!!, Permission.ADMIN)) {
                     area.setPermission(source, uuid, Permission.TRUSTED, true)
                     source.sendFeedback(
                         { TrT.of("enclosure.message.added_user", Utils.getDisplayNameByUUID(uuid)) },
@@ -1196,8 +1200,8 @@ fun register(dispatcher: CommandDispatcher<ServerCommandSource>): LiteralCommand
                         }
                         .executes(c))
                 }) { area, l ->
-                    if (!source.hasPermissionLevel(4) && !area.hasPerm(source.player!!, Permission.ADMIN)) {
-                        error(TrT.of("enclosure.message.no_permission"), this)
+                    if (!area.hasPerm(source.player!!, Permission.ADMIN)) {
+                        error(Permission.ADMIN.getNoPermissionMsg(source.player), this)
                     }
                     var str by delegate(area, l)
                     str = StringArgumentType.getString(this, "message").let {
@@ -1215,8 +1219,8 @@ fun register(dispatcher: CommandDispatcher<ServerCommandSource>): LiteralCommand
                 withLeaveEnter({ n, c ->
                     n.then(CommandManager.argument("message", TextArgumentType.text()).executes(c))
                 }) { area, l ->
-                    if (!source.hasPermissionLevel(4) && !area.hasPerm(source.player!!, Permission.ADMIN)) {
-                        error(TrT.of("enclosure.message.no_permission"), this)
+                    if (!area.hasPerm(source.player!!, Permission.ADMIN)) {
+                        error(Permission.ADMIN.getNoPermissionMsg(source.player), this)
                     }
                     var str by delegate(area, l)
                     val message = Text.Serializer.toJson(TextArgumentType.getTextArgument(this, "message"))
@@ -1231,8 +1235,8 @@ fun register(dispatcher: CommandDispatcher<ServerCommandSource>): LiteralCommand
                 argument(landArgument()) {
                     executes {
                         val area = getEnclosure(this)
-                        if (!source.hasPermissionLevel(4) && !area.hasPerm(source.player!!, Permission.ADMIN)) {
-                            error(TrT.of("enclosure.message.no_permission"), this)
+                        if (!area.hasPerm(source.player!!, Permission.ADMIN)) {
+                            error(Permission.ADMIN.getNoPermissionMsg(source.player), this)
                         }
                         if (ServerMain.backupManager.backup(area, source)) {
                             source.sendFeedback(

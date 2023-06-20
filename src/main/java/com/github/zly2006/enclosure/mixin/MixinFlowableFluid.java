@@ -1,5 +1,6 @@
 package com.github.zly2006.enclosure.mixin;
 
+import com.github.zly2006.enclosure.EnclosureArea;
 import com.github.zly2006.enclosure.ServerMain;
 import com.github.zly2006.enclosure.utils.Permission;
 import net.fabricmc.api.Environment;
@@ -24,8 +25,12 @@ public abstract class MixinFlowableFluid {
     @Inject(method = "canFlow", at = @At("HEAD"), cancellable = true)
     private void protectFluid(BlockView world, BlockPos fluidPos, BlockState fluidBlockState, Direction flowDirection, BlockPos flowTo, BlockState flowToBlockState, FluidState fluidState, Fluid fluid, CallbackInfoReturnable<Boolean> cir) {
         if (world instanceof ServerWorld serverWorld) {
-            if (!ServerMain.INSTANCE.checkPermissionInDifferentEnclosure(serverWorld, fluidPos, flowTo, Permission.FLUID)) {
-                cir.setReturnValue(false);
+            EnclosureArea from = ServerMain.INSTANCE.getSmallestEnclosure(serverWorld, fluidPos);
+            EnclosureArea to = ServerMain.INSTANCE.getSmallestEnclosure(serverWorld, flowTo);
+            if (to != null && to != from) {
+                if (!to.hasPubPerm(Permission.FLUID)) {
+                    cir.setReturnValue(false);
+                }
             }
         }
     }

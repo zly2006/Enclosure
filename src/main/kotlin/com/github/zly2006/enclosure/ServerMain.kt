@@ -18,6 +18,7 @@ import com.google.gson.GsonBuilder
 import com.google.gson.JsonObject
 import com.mojang.brigadier.CommandDispatcher
 import com.mojang.brigadier.arguments.FloatArgumentType
+import me.lucko.fabric.api.permissions.v0.Permissions
 import net.fabricmc.api.DedicatedServerModInitializer
 import net.fabricmc.api.EnvType
 import net.fabricmc.api.Environment
@@ -273,24 +274,6 @@ object ServerMain: DedicatedServerModInitializer {
             }
         }
 
-    /**
-     * Checks if an operation is allowed through the boundaries of the enclosure.
-     *
-     * @return if true, pass on, otherwise, set return value to false and cancel this callback
-     */
-    fun checkPermissionInDifferentEnclosure(
-        world: ServerWorld,
-        pos1: BlockPos,
-        pos2: BlockPos,
-        permission: Permission
-    ): Boolean {
-        val from = getSmallestEnclosure(world, pos1)
-        val to = getSmallestEnclosure(world, pos2)
-        if (from === to) return true
-        return (from?.areaOf(pos1)?.hasPubPerm(permission) == true) &&
-                (to?.areaOf(pos2)?.hasPubPerm(permission) == true)
-    }
-
     fun checkPermission(world: World, pos: BlockPos, player: PlayerEntity?, permission: Permission): Boolean {
         if (world.isClient) return true
         val list = getAllEnclosures(world as ServerWorld)
@@ -336,8 +319,8 @@ object ServerMain: DedicatedServerModInitializer {
 
     @Environment(EnvType.SERVER)
     fun checkPermission(player: ServerPlayerEntity, permission: Permission, pos: BlockPos): Boolean {
-        if (player.commandSource.hasPermissionLevel(4) && permission.isIgnoreOp) return true
-        val enclosure = getAllEnclosures(player.world as ServerWorld).getArea(pos)
+        if (Permissions.check(player, "enclosure.bypass") && permission.isIgnoreOp) return true
+        val enclosure = getAllEnclosures(player.getWorld() as ServerWorld).getArea(pos)
         return enclosure?.areaOf(pos)?.hasPerm(player, permission) ?: true
     }
 

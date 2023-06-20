@@ -7,6 +7,7 @@ import com.github.zly2006.enclosure.utils.Permission;
 import com.github.zly2006.enclosure.utils.TrT;
 import com.github.zly2006.enclosure.utils.Utils;
 import com.mojang.authlib.GameProfile;
+import me.lucko.fabric.api.permissions.v0.Permissions;
 import net.fabricmc.api.Environment;
 import net.minecraft.entity.ItemEntity;
 import net.minecraft.entity.damage.DamageSource;
@@ -82,13 +83,13 @@ public abstract class MixinServerPlayerEntity extends PlayerEntity implements Pl
     private void protectPVP(DamageSource source, float amount, CallbackInfoReturnable<Boolean> cir) {
         if (source.getAttacker() instanceof ServerPlayerEntity attacker) {
             //pvp
-            EnclosureArea area = ServerMain.INSTANCE.getAllEnclosures((ServerWorld) getWorld()).getArea(getBlockPos());
-            EnclosureArea attackerArea = ServerMain.INSTANCE.getAllEnclosures((ServerWorld) attacker.getWorld()).getArea(attacker.getBlockPos());
-            if (area != null && !area.areaOf(getBlockPos()).hasPubPerm(Permission.PVP)) {
+            EnclosureArea area = ServerMain.INSTANCE.getSmallestEnclosure(this.getWorld(), getBlockPos());
+            EnclosureArea attackerArea = ServerMain.INSTANCE.getSmallestEnclosure(attacker.getWorld(), attacker.getBlockPos());
+            if (area != null && !area.hasPubPerm(Permission.PVP)) {
                 cir.setReturnValue(false);
             }
-            if (attackerArea != null && !attackerArea.areaOf(attacker.getBlockPos()).hasPubPerm(Permission.PVP)
-                    && !attacker.getCommandSource().hasPermissionLevel(4)) {
+            if (attackerArea != null && !attackerArea.hasPubPerm(Permission.PVP)
+                    && Permissions.check(attacker, "enclosure.bypass")) {
                 attacker.sendMessage(PVP.getNoPermissionMsg(attacker));
                 cir.setReturnValue(false);
             }
@@ -107,8 +108,10 @@ public abstract class MixinServerPlayerEntity extends PlayerEntity implements Pl
                 cir.setReturnValue(null);
             }
             else {
-                this.sendMessageWithCD(TrT.of("enclosure.message.item_only_self_pickup"));
-                cir.getReturnValue().setOwner(getUuid());
+                if (cir.getReturnValue() != null) {
+                    this.sendMessageWithCD(TrT.of("enclosure.message.item_only_self_pickup"));
+                    cir.getReturnValue().setOwner(getUuid());
+                }
             }
         }
     }

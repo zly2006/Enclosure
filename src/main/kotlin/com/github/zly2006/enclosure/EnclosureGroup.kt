@@ -3,6 +3,7 @@ package com.github.zly2006.enclosure
 import com.github.zly2006.enclosure.utils.Serializable2Text.SerializationSettings
 import com.github.zly2006.enclosure.utils.Utils
 import com.github.zly2006.enclosure.utils.hoverText
+import me.lucko.fabric.api.permissions.v0.Permissions
 import net.minecraft.nbt.NbtCompound
 import net.minecraft.nbt.NbtList
 import net.minecraft.nbt.NbtString
@@ -51,7 +52,7 @@ class EnclosureGroup : PermissionHolder {
     }
 
     override fun isOwner(source: ServerCommandSource): Boolean {
-        return if (source.hasPermissionLevel(4)) {
+        return if (Permissions.check(source, "enclosure.bypass")) {
             true
         } else if (source.player != null) {
             source.player!!.uuid == owner

@@ -1,5 +1,6 @@
 package com.github.zly2006.enclosure.mixin;
 
+import com.github.zly2006.enclosure.EnclosureArea;
 import com.github.zly2006.enclosure.ServerMain;
 import com.github.zly2006.enclosure.utils.Permission;
 import net.fabricmc.api.Environment;
@@ -27,16 +28,24 @@ public abstract class MixinFallingBlockEntity extends Entity {
     @Shadow
     public abstract BlockPos getFallingBlockPos();
 
-    @Inject(at = @At(value = "INVOKE", target = "Lnet/minecraft/world/World;setBlockState(Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/BlockState;I)Z"), method = "tick", cancellable = true)
+    @Inject(
+            at = @At(
+                    value = "INVOKE",
+                    target = "Lnet/minecraft/world/World;setBlockState(Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/BlockState;I)Z"
+            ),
+            method = "tick",
+            cancellable = true
+    )
     private void protectFallingBlocks(CallbackInfo ci) {
         if (getWorld().isClient) {
             return;
         }
-        if (ServerMain.INSTANCE.getAllEnclosures((ServerWorld) getWorld()).getArea(getBlockPos()) == null) {
-            // not in any residence, do nothing
+        EnclosureArea currentArea = ServerMain.INSTANCE.getAllEnclosures((ServerWorld) world).getArea(getBlockPos());
+        EnclosureArea sourceArea = ServerMain.INSTANCE.getAllEnclosures((ServerWorld) world).getArea(getFallingBlockPos());
+        if (currentArea == null || sourceArea == currentArea) {
             return;
         }
-        if (!ServerMain.INSTANCE.checkPermissionInDifferentEnclosure((ServerWorld) getWorld(), getFallingBlockPos(), getBlockPos(), Permission.FALLING_BLOCK)) {
+        if (!currentArea.hasPubPerm(Permission.FALLING_BLOCK)) {
             discard();
             ci.cancel();
         }

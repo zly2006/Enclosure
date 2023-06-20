@@ -35,18 +35,11 @@ public class MixinPistonBlock extends FacingBlock {
         }
     }
 
-    @Inject(at = @At(value = "JUMP", ordinal = 7), locals = LocalCapture.CAPTURE_FAILSOFT, method = "move", cancellable = true)
-    private void protectPiston2(World world, BlockPos pos, Direction dir, boolean retract, CallbackInfoReturnable<Boolean> cir, BlockPos blockPos, PistonHandler pistonHandler) {
-        if (world instanceof ServerWorld serverWorld) {
-            MixinPistonBlockKt.protectPiston(serverWorld, pos, dir, retract, cir, pistonHandler);
-        }
-    }
-
     // Fix for iron-head bedrock breaking
     @Redirect(method = "onSyncedBlockEvent", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/World;removeBlock(Lnet/minecraft/util/math/BlockPos;Z)Z"))
     private boolean protectBlockEvent(World world, BlockPos pos, boolean move) {
-        if (world instanceof ServerWorld serverWorld && !serverWorld.getBlockState(pos).isOf(Blocks.MOVING_PISTON)) {
-            if (!ServerMain.INSTANCE.checkPermission(serverWorld, pos, null, Permission.BREAK_BLOCK) && !serverWorld.getBlockState(pos).isOf(Blocks.MOVING_PISTON)) {
+        if (world instanceof ServerWorld serverWorld && !serverWorld.getBlockState(pos).isOf(Blocks.PISTON_HEAD)) {
+            if (!ServerMain.INSTANCE.checkPermission(serverWorld, pos, null, Permission.BREAK_BLOCK)) {
                 serverWorld.getChunkManager().markForUpdate(pos);
                 return false;
             }

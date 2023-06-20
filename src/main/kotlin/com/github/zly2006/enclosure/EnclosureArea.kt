@@ -6,6 +6,7 @@ import com.github.zly2006.enclosure.gui.EnclosureScreenHandler
 import com.github.zly2006.enclosure.network.NetworkChannels
 import com.github.zly2006.enclosure.utils.*
 import com.github.zly2006.enclosure.utils.Serializable2Text.SerializationSettings
+import me.lucko.fabric.api.permissions.v0.Permissions
 import net.fabricmc.fabric.api.networking.v1.PacketByteBufs
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking
 import net.minecraft.nbt.NbtCompound
@@ -223,7 +224,7 @@ open class EnclosureArea : PersistentState, EnclosureView {
     }
 
     override fun isOwner(source: ServerCommandSource): Boolean {
-        if (source.hasPermissionLevel(4)) {
+        if (Permissions.check(source, "enclosure.bypass")) {
             return true
         }
         if (father != null && father!!.isOwner(source)) {
@@ -237,7 +238,7 @@ open class EnclosureArea : PersistentState, EnclosureView {
     }
 
     override fun isOwnerOrFatherAdmin(source: ServerCommandSource): Boolean {
-        if (source.hasPermissionLevel(4)) {
+        if (Permissions.check(source, "enclosure.bypass")) {
             return true
         }
         if (father != null && father!!.isOwnerOrFatherAdmin(source)) {
