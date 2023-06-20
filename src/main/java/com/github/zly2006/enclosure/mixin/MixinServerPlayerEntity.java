@@ -110,8 +110,10 @@ public abstract class MixinServerPlayerEntity extends PlayerEntity implements Pl
                 cir.setReturnValue(null);
             }
             else {
-                this.sendMessageWithCD(TrT.of("enclosure.message.item_only_self_pickup"));
-                cir.getReturnValue().setOwner(getUuid());
+                if (cir.getReturnValue() != null) {
+                    this.sendMessageWithCD(TrT.of("enclosure.message.item_only_self_pickup"));
+                    cir.getReturnValue().setOwner(getUuid());
+                }
             }
         }
     }
