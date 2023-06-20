@@ -40,8 +40,8 @@ public abstract class MixinFallingBlockEntity extends Entity {
         if (getWorld().isClient) {
             return;
         }
-        EnclosureArea currentArea = ServerMain.INSTANCE.getAllEnclosures((ServerWorld) world).getArea(getBlockPos());
-        EnclosureArea sourceArea = ServerMain.INSTANCE.getAllEnclosures((ServerWorld) world).getArea(getFallingBlockPos());
+        EnclosureArea currentArea = ServerMain.INSTANCE.getAllEnclosures((ServerWorld) getWorld()).getArea(getBlockPos());
+        EnclosureArea sourceArea = ServerMain.INSTANCE.getAllEnclosures((ServerWorld) getWorld()).getArea(getFallingBlockPos());
         if (currentArea == null || sourceArea == currentArea) {
             return;
         }

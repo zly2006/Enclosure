@@ -143,7 +143,7 @@ open class EnclosureArea : PersistentState, EnclosureView {
             centerY = maxY
         }
         createdOn = System.currentTimeMillis()
-        teleportPos = Vec3d(centerX.toDouble(), centerY.toDouble(), centerZ.toDouble())
+        teleportPos = Vec3d(centerX.toDouble() + 0.5, centerY.toDouble(), centerZ.toDouble() + 0.5)
         markDirty()
     }
 

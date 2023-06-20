@@ -83,8 +83,8 @@ public abstract class MixinServerPlayerEntity extends PlayerEntity implements Pl
     private void protectPVP(DamageSource source, float amount, CallbackInfoReturnable<Boolean> cir) {
         if (source.getAttacker() instanceof ServerPlayerEntity attacker) {
             //pvp
-            EnclosureArea area = ServerMain.INSTANCE.getSmallestEnclosure(this.getWorld(), getBlockPos());
-            EnclosureArea attackerArea = ServerMain.INSTANCE.getSmallestEnclosure(attacker.getWorld(), attacker.getBlockPos());
+            EnclosureArea area = ServerMain.INSTANCE.getSmallestEnclosure((ServerWorld) getWorld(), getBlockPos());
+            EnclosureArea attackerArea = ServerMain.INSTANCE.getSmallestEnclosure((ServerWorld) attacker.getWorld(), attacker.getBlockPos());
             if (area != null && !area.hasPubPerm(Permission.PVP)) {
                 cir.setReturnValue(false);
             }
