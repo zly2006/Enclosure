@@ -12,12 +12,13 @@ import net.minecraft.util.Formatting
 
 class Permission(
     val name: String,
-    val target: Target,
+    target: Target,
     val permissions: Set<String>,
     val defaultValue: Boolean,
     val isIgnoreOp: Boolean,
     val description: Text,
-    val icon: Item
+    val icon: Item,
+    val enabled: Boolean = true
 ) : Serializable2Text {
     constructor(name: String, target: Target = Target.Both, permissions: Set<String> = mutableSetOf(), defaultValue: Boolean = false, icon: Item):
             this(name, target, permissions, defaultValue, true, TrT.of("enclosure.permission.$name"), icon)
@@ -25,6 +26,7 @@ class Permission(
     constructor(name: String, target: Target = Target.Both, defaultValue: Boolean = false, icon: Item):
             this(name, target, setOf<String>(name), defaultValue, icon)
 
+    var target = target; private set
     fun getValue(map: Map<String, Boolean>): Boolean? {
         for (permission in permissions) {
             if (map.containsKey(permission)) {
@@ -110,7 +112,7 @@ class Permission(
         @JvmField val BED = Permission("bed", icon = Items.RED_BED).apply(::register)
         @JvmField val CAKE = Permission("cake", icon = Items.CAKE).apply(::register)
         @JvmField val TELEPORT = Permission("teleport", Target.Both, true, Items.ENDER_PEARL).apply(::register)
-        @JvmField val COMMAND_TP = Permission("cmd_tp", Target.Enclosure, true, Items.CHAIN_COMMAND_BLOCK).apply(::register)
+        @JvmField val COMMAND_TP = Permission("cmd_tp", Target.Both, true, Items.CHAIN_COMMAND_BLOCK).apply(::register)
         @JvmField val CONTAINER = Permission("container", icon = Items.CHEST).apply(::register)
         @JvmField val DYE = Permission("dye", icon = Items.BLUE_DYE).apply(::register)
         @JvmField val PICK_BERRIES = Permission("pick_berries", icon = Items.SWEET_BERRIES).apply(::register)

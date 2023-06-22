@@ -24,7 +24,7 @@ public class Converter {
     private static final Yaml YAML_INSTANCE = new Yaml();
     private static final Map<String, String> PERMISSION_MAP = new HashMap<>() {{
         /*
-         key为bukkit-enclosure插件的，value为fabric-enclosure mod的
+         key为bukkit-residence插件的，value为fabric-enclosure mod的
          如果value中带有!，则最终需要把权限进行反转（即读到true写false，反之亦然）
          */
         put("admin", "admin");
