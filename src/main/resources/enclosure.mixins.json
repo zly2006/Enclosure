@@ -67,6 +67,7 @@
     "workaround.MixinServerPlayNetworkHandler"
   ],
   "mixins": [
+    "MixinRaidManager",
     "MixinServerMetadata",
     "workaround.MixinRegistrySyncManager"
   ]
