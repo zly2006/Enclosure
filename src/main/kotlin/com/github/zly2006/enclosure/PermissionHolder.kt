@@ -1,12 +1,10 @@
 package com.github.zly2006.enclosure
 
-import com.github.zly2006.enclosure.command.BuilderScope
 import com.github.zly2006.enclosure.command.CONSOLE
 import com.github.zly2006.enclosure.exceptions.PermissionTargetException
 import com.github.zly2006.enclosure.utils.*
 import com.github.zly2006.enclosure.utils.Serializable2Text.SerializationSettings
 import com.mojang.datafixers.util.Pair
-import me.lucko.fabric.api.permissions.v0.Permissions
 import net.minecraft.server.command.ServerCommandSource
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.text.*
@@ -21,17 +19,11 @@ interface PermissionHolder : Serializable2Text {
     val fullName: String
         get() = name
 
-    companion object {
-        init {
-            BuilderScope.map["enclosure.bypass"] = BuilderScope.Companion.DefaultPermission.OP
-        }
-    }
-
     /**
      * 这个方法会判断默认权限，uuid那个不会
      */
     fun hasPerm(player: ServerPlayerEntity, perm: Permission): Boolean {
-        if (Permissions.check(player, "enclosure.bypass") && perm.isIgnoreOp) {
+        if (checkPermission(player, "enclosure.bypass") && perm.canBypass) {
             return true
         }
         return if (perm === Permission.ADMIN && isOwnerOrFatherAdmin(player.commandSource)) {
