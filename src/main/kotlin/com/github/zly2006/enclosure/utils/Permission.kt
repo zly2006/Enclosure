@@ -15,7 +15,7 @@ class Permission(
     val target: Target,
     val permissions: Set<String>,
     val defaultValue: Boolean,
-    val isIgnoreOp: Boolean,
+    val canBypass: Boolean,
     val description: Text,
     val icon: Item
 ) : Serializable2Text {
@@ -150,7 +150,7 @@ class Permission(
             target = Target.Enclosure,
             permissions = setOf("glowing"),
             defaultValue = false,
-            isIgnoreOp = false,
+            canBypass = false,
             description = TrT.of("enclosure.permission.glowing"),
             icon = Items.SPECTRAL_ARROW
         ).apply(::register)
@@ -179,7 +179,7 @@ class Permission(
 
         fun register(permission: Permission) {
             PERMISSIONS[permission.name] = permission
-            if (permission.target.fitPlayer() && permission.isIgnoreOp) {
+            if (permission.target.fitPlayer() && permission.canBypass) {
                 (ALL.permissions as MutableSet).addAll(permission.permissions)
                 (TRUSTED.permissions as MutableSet).addAll(permission.permissions)
             }

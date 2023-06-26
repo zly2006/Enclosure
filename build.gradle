@@ -95,7 +95,7 @@ dependencies {
     // Fabric Permissions API. To check the permissions
     include(modImplementation('me.lucko:fabric-permissions-api:0.2-SNAPSHOT'))
     // SQLite. To store the data
-    implementation("org.xerial:sqlite-jdbc:3.41.0.0")
+    implementation("org.xerial:sqlite-jdbc:3.41.2.1")
     // REI. To avoid the REI GUI overlap with the Enclosure GUI
     modCompileOnly "me.shedaniel:RoughlyEnoughItems-api-fabric:${project.rei_version}"
 

@@ -20,10 +20,6 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType
 import com.mojang.brigadier.suggestion.SuggestionsBuilder
 import com.mojang.brigadier.tree.LiteralCommandNode
-import me.lucko.fabric.api.permissions.v0.Options
-import me.lucko.fabric.api.permissions.v0.PermissionCheckEvent
-import me.lucko.fabric.api.permissions.v0.Permissions
-import net.fabricmc.fabric.api.util.TriState
 import net.minecraft.command.CommandSource
 import net.minecraft.command.argument.BlockPosArgumentType
 import net.minecraft.command.argument.DimensionArgumentType
@@ -190,23 +186,19 @@ class BuilderScope<T: argT>(var parent: T) {
 
     companion object {
         enum class DefaultPermission {
-            TRUE, FALSE, OP
+            TRUE, FALSE, OP;
+
+            fun get(source: ServerCommandSource) =
+                when (this) {
+                    TRUE -> true
+                    FALSE -> false
+                    OP -> source.hasPermissionLevel(4)
+                }
         }
 
-        init {
-            PermissionCheckEvent.EVENT.register { source, permission ->
-                if (Options.get(source, permission).isPresent) TriState.DEFAULT
-                else map[permission]?.let {
-                    when (it) {
-                        DefaultPermission.TRUE -> TriState.TRUE
-                        DefaultPermission.FALSE -> TriState.FALSE
-                        DefaultPermission.OP -> if (source.hasPermissionLevel(4)) TriState.TRUE else TriState.FALSE
-                    }
-                } ?: TriState.DEFAULT
-            }
-        }
-
-        val map = mutableMapOf<String, DefaultPermission>()
+        val map = mutableMapOf<String, DefaultPermission>(
+            "enclosure.bypass" to DefaultPermission.OP
+        )
     }
     fun permission(s: String, defaultPermission: DefaultPermission) {
         val old = parent.requirement
@@ -214,7 +206,7 @@ class BuilderScope<T: argT>(var parent: T) {
             map[s] = defaultPermission
         }
         parent.requires { source ->
-            Permissions.check(source, s) && old.test(source)
+            checkPermission(source, s) && old.test(source)
         }
     }
 }
@@ -762,7 +754,7 @@ fun register(dispatcher: CommandDispatcher<ServerCommandSource>): LiteralCommand
             BuilderScope.map["enclosure.gui"] = BuilderScope.Companion.DefaultPermission.TRUE
             parent.requires {
                 it.isExecutedByPlayer &&
-                    Permissions.check(it, "enclosure.gui")
+                    checkPermission(it, "enclosure.gui")
             }
             optionalEnclosure {
                 val player = source.player!!

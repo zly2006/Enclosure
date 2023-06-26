@@ -2,8 +2,12 @@ package com.github.zly2006.enclosure.utils
 
 import com.github.zly2006.enclosure.EnclosureArea
 import com.github.zly2006.enclosure.ServerMain
+import com.github.zly2006.enclosure.command.BuilderScope
+import me.lucko.fabric.api.permissions.v0.Permissions
 import net.minecraft.entity.Entity
 import net.minecraft.entity.vehicle.HopperMinecartEntity
+import net.minecraft.server.command.ServerCommandSource
+import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.server.world.ServerWorld
 import net.minecraft.text.*
 import net.minecraft.util.Formatting
@@ -111,3 +115,7 @@ fun formatSelection(
         TrT.of("enclosure.message.select.world") +
         literalText(worldId).green()
 
+fun checkPermission(player: ServerPlayerEntity, perm: String) = checkPermission(player.commandSource, perm)
+
+fun checkPermission(source: ServerCommandSource, perm: String) =
+    Permissions.check(source, perm, BuilderScope.map[perm]?.get(source) ?: false)

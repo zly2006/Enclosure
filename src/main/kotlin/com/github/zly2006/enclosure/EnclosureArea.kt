@@ -224,7 +224,7 @@ open class EnclosureArea : PersistentState, EnclosureView {
     }
 
     override fun isOwner(source: ServerCommandSource): Boolean {
-        if (Permissions.check(source, "enclosure.bypass")) {
+        if (checkPermission(source, "enclosure.bypass")) {
             return true
         }
         if (father != null && father!!.isOwner(source)) {
@@ -238,7 +238,7 @@ open class EnclosureArea : PersistentState, EnclosureView {
     }
 
     override fun isOwnerOrFatherAdmin(source: ServerCommandSource): Boolean {
-        if (Permissions.check(source, "enclosure.bypass")) {
+        if (checkPermission(source, "enclosure.bypass")) {
             return true
         }
         if (father != null && father!!.isOwnerOrFatherAdmin(source)) {

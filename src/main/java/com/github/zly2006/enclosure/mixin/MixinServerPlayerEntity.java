@@ -6,8 +6,8 @@ import com.github.zly2006.enclosure.access.PlayerAccess;
 import com.github.zly2006.enclosure.utils.Permission;
 import com.github.zly2006.enclosure.utils.TrT;
 import com.github.zly2006.enclosure.utils.Utils;
+import com.github.zly2006.enclosure.utils.UtilsKt;
 import com.mojang.authlib.GameProfile;
-import me.lucko.fabric.api.permissions.v0.Permissions;
 import net.fabricmc.api.Environment;
 import net.minecraft.entity.ItemEntity;
 import net.minecraft.entity.damage.DamageSource;
@@ -89,7 +89,7 @@ public abstract class MixinServerPlayerEntity extends PlayerEntity implements Pl
                 cir.setReturnValue(false);
             }
             if (attackerArea != null && !attackerArea.hasPubPerm(Permission.PVP)
-                    && Permissions.check(attacker, "enclosure.bypass")) {
+                    && UtilsKt.checkPermission(attacker, "enclosure.bypass")) {
                 attacker.sendMessage(PVP.getNoPermissionMsg(attacker));
                 cir.setReturnValue(false);
             }
