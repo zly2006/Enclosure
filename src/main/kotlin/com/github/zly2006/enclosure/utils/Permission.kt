@@ -63,7 +63,6 @@ class Permission(
                     TrT.of("enclosure.widget.default_value_is")
                         .append(" ").append(defaultValue.toString())
                 )
-
                 .append(" - ")
                 .append(description.copy().formatted(Formatting.GOLD))
 
@@ -110,7 +109,7 @@ class Permission(
         @JvmField val BED = Permission("bed", icon = Items.RED_BED).apply(::register)
         @JvmField val CAKE = Permission("cake", icon = Items.CAKE).apply(::register)
         @JvmField val TELEPORT = Permission("teleport", Target.Both, true, Items.ENDER_PEARL).apply(::register)
-        @JvmField val COMMAND_TP = Permission("cmd_tp", Target.Enclosure, true, Items.CHAIN_COMMAND_BLOCK).apply(::register)
+        @JvmField val COMMAND_TP = Permission("cmd_tp", Target.Both, true, Items.CHAIN_COMMAND_BLOCK).apply(::register)
         @JvmField val CONTAINER = Permission("container", icon = Items.CHEST).apply(::register)
         @JvmField val DYE = Permission("dye", icon = Items.BLUE_DYE).apply(::register)
         @JvmField val PICK_BERRIES = Permission("pick_berries", icon = Items.SWEET_BERRIES).apply(::register)

@@ -68,7 +68,7 @@ targetCompatibility = JavaVersion.VERSION_17
 
 archivesBaseName = project.archives_base_name
 if (project.archices_preview_version.empty) {
-    version = project.mod_version
+    version = project.mod_version + "+" + grgit.branch.current().name // usually branch name is the mc version
 } else {
     version = project.mod_version + "-" + project.archices_preview_version + "+" + grgit.branch.current().name + "-" + grgit.head().id.substring(0, 8)
 }
