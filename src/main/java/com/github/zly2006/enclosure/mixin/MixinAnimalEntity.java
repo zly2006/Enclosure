@@ -6,6 +6,7 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.passive.AnimalEntity;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
@@ -37,7 +38,7 @@ public abstract class MixinAnimalEntity extends Entity {
             return;
         }
         EnclosureArea area = ServerMain.INSTANCE.getSmallestEnclosure((ServerWorld) this.getWorld(), getBlockPos());
-        if (area != null && !area.hasPubPerm(FEED_ANIMAL)) {
+        if (area != null && !area.hasPerm((ServerPlayerEntity) player, FEED_ANIMAL)) {
             player.sendMessage(FEED_ANIMAL.getNoPermissionMsg(player));
             cir.setReturnValue(ActionResult.FAIL);
         }
