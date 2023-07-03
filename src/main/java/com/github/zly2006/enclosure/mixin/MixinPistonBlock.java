@@ -28,7 +28,16 @@ public class MixinPistonBlock extends FacingBlock {
         super(settings);
     }
 
-    @Inject(at = @At(value = "INVOKE", target = "Lcom/google/common/collect/Maps;newHashMap()Ljava/util/HashMap;"), locals = LocalCapture.CAPTURE_FAILSOFT, method = "move", cancellable = true)
+    @Inject(
+            method = "move",
+            at = @At(
+                    value = "INVOKE",
+                    target = "Lcom/google/common/collect/Maps;newHashMap()Ljava/util/HashMap;",
+                    remap = false
+            ),
+            locals = LocalCapture.CAPTURE_FAILSOFT,
+            cancellable = true
+    )
     private void protectPiston(World world, BlockPos pos, Direction dir, boolean retract, CallbackInfoReturnable<Boolean> cir, BlockPos blockPos, PistonHandler pistonHandler) {
         if (world instanceof ServerWorld serverWorld) {
             MixinPistonBlockKt.protectPiston(serverWorld, pos, dir, retract, cir, pistonHandler);
