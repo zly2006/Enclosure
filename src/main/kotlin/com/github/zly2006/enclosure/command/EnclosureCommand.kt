@@ -873,9 +873,11 @@ fun register(dispatcher: CommandDispatcher<ServerCommandSource>): LiteralCommand
                         val list =
                             (res.father as? Enclosure)?.subEnclosures ?: ServerMain.getAllEnclosures(res.world)
                         list.remove(res.name)
+                        val oldName = res.name
                         res.name = name
                         list.addArea(res)
                         res.markDirty()
+                        source.sendFeedback({ TrT.of("enclosure.message.renamed", oldName, name) }, false)
                     }
                 }
             }
