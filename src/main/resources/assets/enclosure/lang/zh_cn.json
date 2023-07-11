@@ -99,6 +99,7 @@
   "enclosure.message.received.2": " ，来自 ",
   "enclosure.message.register_text.0": "注册",
   "enclosure.message.register_text.1": "确认",
+  "enclosure.message.renamed": "重命名领地 %s 为 %s",
   "enclosure.message.res_name_invalid": "领地名称无效!",
   "enclosure.message.res_name_too_long": "领地名字过长!",
   "enclosure.message.res_settp_pos_error": "你不在领地中!",

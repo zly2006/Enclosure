@@ -99,6 +99,7 @@
   "enclosure.message.received.2": " from ",
   "enclosure.message.register_text.0": "register",
   "enclosure.message.register_text.1": "confirm",
+  "enclosure.message.renamed": "Renamed enclosure %s to %s",
   "enclosure.message.res_name_invalid": "Enclosure name is invalid!",
   "enclosure.message.res_name_too_long": "Your enclosure name is too long!",
   "enclosure.message.res_settp_pos_error": "You are not in the enclosure!",
