@@ -129,7 +129,7 @@ object ServerMain: DedicatedServerModInitializer {
     var operationItem: Item? = null
     var playerSessions: MutableMap<UUID, Session> = HashMap()
     lateinit var groups: EnclosureGroup.Groups
-    var limits: LandLimits by readWriteLazy {
+    var limits: LandLimits = run {
         try {
             val limits = GSON.fromJson(
                 Files.readString(limitPath),
@@ -144,7 +144,7 @@ object ServerMain: DedicatedServerModInitializer {
             limits
         }
     }
-    var commonConfig: Common by readWriteLazy {
+    var commonConfig: Common = run {
         try {
              val common = GSON.fromJson(
                 Files.readString(commonConfigPath),

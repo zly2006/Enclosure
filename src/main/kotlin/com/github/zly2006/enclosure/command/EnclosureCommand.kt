@@ -30,6 +30,7 @@ import net.minecraft.server.command.ServerCommandSource
 import net.minecraft.text.*
 import net.minecraft.util.Formatting
 import net.minecraft.util.math.BlockPos
+import net.minecraft.util.math.Box
 import net.minecraft.util.math.Direction
 import java.util.*
 import java.util.function.Consumer
@@ -790,6 +791,12 @@ fun register(dispatcher: CommandDispatcher<ServerCommandSource>): LiteralCommand
                         val lastTeleportTimeSpan =
                             System.currentTimeMillis() - (player as PlayerAccess).lastTeleportTime
                         val cd = ServerMain.commonConfig.teleportCooldown
+                        val area = getEnclosure(this)
+
+                        if (!area.hasPerm(player, Permission.COMMAND_TP)) {
+                            player.sendMessage(Permission.COMMAND_TP.getNoPermissionMsg(player))
+                            return@executes
+                        }
                         if (!source.hasPermissionLevel(4) && cd > 0 && lastTeleportTimeSpan < cd) {
                             error(
                                 TrT.of(
@@ -799,18 +806,30 @@ fun register(dispatcher: CommandDispatcher<ServerCommandSource>): LiteralCommand
                             )
                         }
                         (player as PlayerAccess).lastTeleportTime = System.currentTimeMillis()
-                        val area = getEnclosure(this)
-                        if (!area.hasPerm(player, Permission.COMMAND_TP)) {
-                            player.sendMessage(Permission.COMMAND_TP.getNoPermissionMsg(player))
-                            return@executes
-                        }
                         if (ServerMain.commonConfig.showTeleportWarning) {
                             val world = area.world
-                            val pos = Utils.toBlockPos(area.teleportPos)
-                            val down = world.getBlockState(pos.down())
-                            val state = world.getBlockState(pos)
-                            val up = world.getBlockState(pos.up())
-                            if (!down.isFullCube(world, pos) || state.isFullCube(world, pos) && up.isFullCube(world, pos)) {
+                            val collisionBox = Box(
+                                area.teleportPos!!.x - 0.3,
+                                area.teleportPos!!.y,
+                                area.teleportPos!!.z - 0.3,
+                                area.teleportPos!!.x + 0.3,
+                                area.teleportPos!!.y + 1.8,
+                                area.teleportPos!!.z + 0.3
+                            )
+                            val collisions = world.getCollisions(null, collisionBox)
+                            val hasCollision = collisions.count() != 0
+                            val supportingBox = Box(
+                                area.teleportPos!!.x - 0.3,
+                                area.teleportPos!!.y - 1e-6,
+                                area.teleportPos!!.z - 0.3,
+                                area.teleportPos!!.x + 0.3,
+                                area.teleportPos!!.y,
+                                area.teleportPos!!.z + 0.3
+                            )
+                            val supporting = world.getCollisions(null, supportingBox)
+                            val hasSupportingBlock = supporting.count() != 0
+                            val hasFluid = world.containsFluid(collisionBox)
+                            if (hasCollision || !hasSupportingBlock || hasFluid) {
                                 source.sendMessage(
                                     TrT.of("enclosure.message.teleport_warning").formatted(Formatting.YELLOW)
                                 )
@@ -851,7 +870,6 @@ fun register(dispatcher: CommandDispatcher<ServerCommandSource>): LiteralCommand
                     )
                 }
             }
-
         literal("create") {
             permission("enclosure.command.create", BuilderScope.Companion.DefaultPermission.TRUE)
             argument("name", StringArgumentType.word()) {
