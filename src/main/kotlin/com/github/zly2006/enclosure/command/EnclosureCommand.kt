@@ -78,9 +78,10 @@ class BuilderScope<T: argT>(var parent: T) {
         }
     }
 
-    fun paged(command: CommandContext<ServerCommandSource>.() -> String? = { null }, listSupplier: CommandContext<ServerCommandSource>.() -> List<Text>) {
+    fun paged(commandSupplier: CommandContext<ServerCommandSource>.() -> String? = { null }, listSupplier: CommandContext<ServerCommandSource>.() -> List<Text>) {
         val size = 5
         val action: CommandContext<ServerCommandSource>.(Int) -> Unit = { p ->
+            val command = commandSupplier()
             val list = listSupplier()
             val totalPage: Int = (list.size + size - 1) / size
             var page = p
@@ -103,23 +104,25 @@ class BuilderScope<T: argT>(var parent: T) {
                 i++
             }
 
-            ret.append(
-                TrT.of("enclosure.menu.previous").setStyle(
-                    if (firstPage) Style.EMPTY.withColor(Formatting.GRAY)
-                    else Style.EMPTY.withColor(Formatting.DARK_GREEN)
-                        .hoverText(Text.of("Page ${page - 1}"))
-                        .withClickEvent(ClickEvent(ClickEvent.Action.RUN_COMMAND, "$command ${page - 1}"))
+            if (command != null) {
+                ret.append(
+                    TrT.of("enclosure.menu.previous").setStyle(
+                        if (firstPage) Style.EMPTY.withColor(Formatting.GRAY)
+                        else Style.EMPTY.withColor(Formatting.DARK_GREEN)
+                            .hoverText(Text.of("Page ${page - 1}"))
+                            .withClickEvent(ClickEvent(ClickEvent.Action.RUN_COMMAND, "$command ${page - 1}"))
+                    )
                 )
-            )
-            ret.append("    ")
-            ret.append(
-                TrT.of("enclosure.menu.next").setStyle(
-                    if (lastPage) Style.EMPTY.withColor(Formatting.GRAY)
-                    else Style.EMPTY.withColor(Formatting.DARK_GREEN)
-                        .withHoverEvent(HoverEvent(HoverEvent.Action.SHOW_TEXT, Text.of("Page ${page + 1}")))
-                        .withClickEvent(ClickEvent(ClickEvent.Action.RUN_COMMAND, "$command ${page + 1}"))
+                ret.append("    ")
+                ret.append(
+                    TrT.of("enclosure.menu.next").setStyle(
+                        if (lastPage) Style.EMPTY.withColor(Formatting.GRAY)
+                        else Style.EMPTY.withColor(Formatting.DARK_GREEN)
+                            .withHoverEvent(HoverEvent(HoverEvent.Action.SHOW_TEXT, Text.of("Page ${page + 1}")))
+                            .withClickEvent(ClickEvent(ClickEvent.Action.RUN_COMMAND, "$command ${page + 1}"))
+                    )
                 )
-            )
+            }
             source.sendMessage(ret)
         }
         executes { action(0) }

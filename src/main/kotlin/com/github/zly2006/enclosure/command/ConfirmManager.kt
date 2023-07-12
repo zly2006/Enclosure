@@ -21,7 +21,7 @@ object ConfirmManager {
             val uuid = player.uuid
             val time = pendingMap[uuid]
             if (time != null) {
-                pendingMap.remove(uuid)
+                pendingMap -= uuid
             }
         }
         ServerTickEvents.START_SERVER_TICK.register {
