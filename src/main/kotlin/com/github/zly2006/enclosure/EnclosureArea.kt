@@ -6,7 +6,6 @@ import com.github.zly2006.enclosure.gui.EnclosureScreenHandler
 import com.github.zly2006.enclosure.network.NetworkChannels
 import com.github.zly2006.enclosure.utils.*
 import com.github.zly2006.enclosure.utils.Serializable2Text.SerializationSettings
-import me.lucko.fabric.api.permissions.v0.Permissions
 import net.fabricmc.fabric.api.networking.v1.PacketByteBufs
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking
 import net.minecraft.nbt.NbtCompound
@@ -143,7 +142,7 @@ open class EnclosureArea : PersistentState, EnclosureView {
             centerY = maxY
         }
         createdOn = System.currentTimeMillis()
-        teleportPos = Vec3d(centerX.toDouble(), centerY.toDouble(), centerZ.toDouble())
+        teleportPos = Vec3d(centerX.toDouble() + 0.5, centerY.toDouble(), centerZ.toDouble() + 0.5)
         markDirty()
     }
 
