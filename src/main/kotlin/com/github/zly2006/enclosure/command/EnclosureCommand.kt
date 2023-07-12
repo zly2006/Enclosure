@@ -880,7 +880,7 @@ fun register(dispatcher: CommandDispatcher<ServerCommandSource>): LiteralCommand
                         res.name = name
                         list.addArea(res)
                         res.markDirty()
-                        source.sendFeedback({ TrT.of("enclosure.message.renamed", oldName, name) }, false)
+                        source.sendFeedback(TrT.of("enclosure.message.renamed", oldName, name), false)
                     }
                 }
             }
