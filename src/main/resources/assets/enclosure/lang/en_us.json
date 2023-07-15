@@ -81,6 +81,7 @@
   "enclosure.message.name_in_use": "The new name is already in use!",
   "enclosure.message.no_enclosure": "This residence was not found!",
   "enclosure.message.no_father_enclosure": "Cannot find a father enclosure!",
+  "enclosure.message.no_limits_available": "No limits available. Please contract your server admin to configure limits.",
   "enclosure.message.no_permission": "You don't have permission: ",
   "enclosure.message.no_task_to_confirm": "No task to confirm!",
   "enclosure.message.no_world": "Cannot list enclosures: World not loaded or not found.",

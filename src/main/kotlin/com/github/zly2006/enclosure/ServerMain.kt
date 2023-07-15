@@ -1,6 +1,7 @@
 package com.github.zly2006.enclosure
 
 import com.github.zly2006.enclosure.backup.BackupManager
+import com.github.zly2006.enclosure.command.BuilderScope
 import com.github.zly2006.enclosure.command.CONSOLE
 import com.github.zly2006.enclosure.command.Session
 import com.github.zly2006.enclosure.command.register
@@ -73,8 +74,6 @@ import java.util.*
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.function.Consumer
 import java.util.function.Predicate
-import kotlin.properties.ReadWriteProperty
-import kotlin.reflect.KProperty
 
 const val MOD_ID = "enclosure" // 模组标识符
 @JvmField
@@ -129,16 +128,14 @@ object ServerMain: DedicatedServerModInitializer {
     var operationItem: Item? = null
     var playerSessions: MutableMap<UUID, Session> = HashMap()
     lateinit var groups: EnclosureGroup.Groups
-    var limits: LandLimits = run {
+    var limits: Map<String, LandLimits> = run {
         try {
-            val limits = GSON.fromJson(
-                Files.readString(limitPath),
-                LandLimits::class.java
-            )
+            val limits = reloadLimits()
             LOGGER.info("Loaded limits config")
             limits
         } catch (e: IOException) {
-            val limits = LandLimits()
+            val limits = mapOf("default" to LandLimits())
+            BuilderScope.map["enclosure.limits.default"] = BuilderScope.Companion.DefaultPermission.TRUE
             saveLimits(limits)
             LOGGER.info("Created limits config")
             limits
@@ -157,22 +154,6 @@ object ServerMain: DedicatedServerModInitializer {
             saveCommon(common)
             LOGGER.info("Created common config")
             common
-        }
-    }
-    private fun <T> readWriteLazy(initializer: () -> T): ReadWriteProperty<Any?, T> {
-        return object : ReadWriteProperty<Any?, T> {
-            private var value: T? = null
-
-            override fun getValue(thisRef: Any?, property: KProperty<*>): T {
-                if (value == null) {
-                    value = initializer()
-                }
-                return value!!
-            }
-
-            override fun setValue(thisRef: Any?, property: KProperty<*>, value: T) {
-                this.value = value
-            }
         }
     }
     val translation: JsonObject by lazy {
@@ -324,12 +305,19 @@ object ServerMain: DedicatedServerModInitializer {
         return enclosure?.areaOf(pos)?.hasPerm(player, permission) ?: true
     }
 
-    fun reloadLimits() {
+    fun reloadLimits(): Map<String, LandLimits> {
         limits = GSON.fromJson(
             Files.readString(limitPath),
-            LandLimits::class.java
-        )
+            JsonObject::class.java
+        ).asMap().mapValues { GSON.fromJson(it.value, LandLimits::class.java) }
+        return limits
     }
+
+    fun getLimitsForPlayer(player: ServerPlayerEntity) =
+        limits.asSequence()
+            .filter { checkPermission(player, "enclosure.limits.${it.key}") }
+            .sortedBy { -it.value.priority }
+            .firstOrNull()?.value
 
     fun reloadCommon() {
         commonConfig = GSON.fromJson(
@@ -338,7 +326,7 @@ object ServerMain: DedicatedServerModInitializer {
         )
     }
 
-    private fun saveLimits(limits: LandLimits) {
+    private fun saveLimits(limits: Map<String, LandLimits>) {
         try {
             val file = limitPath.toFile()
             if (!file.exists()) {

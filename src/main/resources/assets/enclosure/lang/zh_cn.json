@@ -81,6 +81,7 @@
   "enclosure.message.name_in_use": "这个名称已经被使用过啦!",
   "enclosure.message.no_enclosure": "找不到这个领地",
   "enclosure.message.no_father_enclosure": "找不到父领地!",
+  "enclosure.message.no_limits_available": "没有可用的限制，请联系管理员",
   "enclosure.message.no_permission": "你没有权限: ",
   "enclosure.message.no_task_to_confirm": "没有待确认的操作...",
   "enclosure.message.no_world": "由于该世界未知或尚未加载，因此无法列出这个世界的领地列表",
