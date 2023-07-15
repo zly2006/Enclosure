@@ -296,7 +296,7 @@ object ServerMain: DedicatedServerModInitializer {
     fun getSmallestEnclosure(world: ServerWorld, pos: BlockPos?): EnclosureArea? {
         return enclosures[world.registryKey]!!.areas
             .firstOrNull { area: EnclosureArea -> area.isInner(pos!!) }
-            ?.let { s: EnclosureArea -> s.areaOf(pos!!) }
+            ?.areaOf(pos!!)
     }
 
     @Environment(EnvType.SERVER)
