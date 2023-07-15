@@ -32,7 +32,7 @@
   "enclosure.help.settp": "设置指定领地的传送点位置",
   "enclosure.help.subzone": "在领地内创建一个子领地",
   "enclosure.help.tp": "传送到指定领地",
-  "enclosure.help.trust": "信任一个指定的玩家以给予 TA 你指定领地的除管理以外的所有权限 (需要你对指定领地有管理权限)",
+  "enclosure.help.trust": "信任一个指定的玩家以给予 TA 你指定领地的除管理以外的所有权限。",
   "enclosure.info.created_by": " 的创建者是: ",
   "enclosure.info.created_on": "创建时间: ",
   "enclosure.info.father_land": "父领地: ",
