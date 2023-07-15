@@ -21,10 +21,7 @@ import com.mojang.brigadier.exceptions.SimpleCommandExceptionType
 import com.mojang.brigadier.suggestion.SuggestionsBuilder
 import com.mojang.brigadier.tree.LiteralCommandNode
 import net.minecraft.command.CommandSource
-import net.minecraft.command.argument.BlockPosArgumentType
-import net.minecraft.command.argument.DimensionArgumentType
-import net.minecraft.command.argument.TextArgumentType
-import net.minecraft.command.argument.UuidArgumentType
+import net.minecraft.command.argument.*
 import net.minecraft.server.command.CommandManager
 import net.minecraft.server.command.ServerCommandSource
 import net.minecraft.text.*
@@ -286,9 +283,13 @@ private fun checkSession(context: CommandContext<ServerCommandSource>) {
     }
 }
 
+private fun getLimits(context: CommandContext<ServerCommandSource>) = ServerMain.getLimitsForPlayer(
+    context.source.player ?: throw EntityArgumentType.PLAYER_NOT_FOUND_EXCEPTION.create()
+) ?: error(TrT.of("enclosure.message.no_limits_available"), context)
+
 private fun checkSessionSize(session: Session, context: CommandContext<ServerCommandSource>) {
     if (!context.source.hasPermissionLevel(4)) {
-        val text = session.isValid(ServerMain.limits)
+        val text = session.isValid(getLimits(context))
         if (text != null && !context.source.hasPermissionLevel(4)) {
             throw SimpleCommandExceptionType(text).createWithContext(StringReader(context.input))
         }
@@ -316,7 +317,7 @@ private fun createEnclosure(context: CommandContext<ServerCommandSource>) {
         error(TrT.of("enclosure.message.intersected") + intersectArea.serialize(SerializationSettings.Name, context.source.player), context)
     }
     val enclosure = Enclosure(session, name)
-    val limits = ServerMain.limits
+    val limits = getLimits(context)
     if (!context.source.hasPermissionLevel(4)) {
         checkSessionSize(session, context)
         if (context.source.player != null) {
@@ -409,7 +410,7 @@ fun register(dispatcher: CommandDispatcher<ServerCommandSource>): LiteralCommand
                             val session = Session(null)
                             session.pos1 = BlockPos(it.minX, it.minY, it.minZ)
                             session.pos2 = BlockPos(it.maxX, it.maxY, it.maxZ)
-                            it to session.isValid(ServerMain.limits)
+                            it to session.isValid(getLimits(this))
                         }.filter { it.second != null }.forEach { (area, text) ->
                             source.sendMessage(
                                 Text.literal("Enclosure ")
@@ -425,7 +426,7 @@ fun register(dispatcher: CommandDispatcher<ServerCommandSource>): LiteralCommand
                         ServerMain.getAllEnclosures().groupBy {
                             it.owner
                         }.forEach { (owner, enclosures) ->
-                            if (enclosures.size > ServerMain.limits.maxLands) {
+                            if (enclosures.size > getLimits(this).maxLands) {
                                 source.sendMessage(
                                     Text.literal("Player ") +
                                             Utils.getDisplayNameByUUID(owner) +
@@ -579,7 +580,7 @@ fun register(dispatcher: CommandDispatcher<ServerCommandSource>): LiteralCommand
             argument("name", StringArgumentType.word()) {
                 executes {
                     val pos = BlockPos.ofFloored(source.position)
-                    val limits = ServerMain.limits
+                    val limits = getLimits(this)
                     val session = sessionOf(source)
                     val expandX = (limits.maxXRange - 1) / 2
                     val expandZ = (limits.maxZRange - 1) / 2
@@ -687,7 +688,7 @@ fun register(dispatcher: CommandDispatcher<ServerCommandSource>): LiteralCommand
             literal("max_height") {
                 executes {
                     val session = sessionOf(source)
-                    val limits = ServerMain.limits
+                    val limits = getLimits(this)
                     checkSession(this)
                     session.run {
                         pos1 = BlockPos(pos1.x, limits.minY, pos1.z)
@@ -703,7 +704,7 @@ fun register(dispatcher: CommandDispatcher<ServerCommandSource>): LiteralCommand
             }
             literal("max_square") {
                 executes {
-                    val limits = ServerMain.limits
+                    val limits = getLimits(this)
                     val session = sessionOf(source)
                     val (x1, y1, z1, x2, y2, z2) = session.ordered()
                     val expandX = (limits.maxXRange - x2 + x1 - 1) / 2
@@ -806,8 +807,9 @@ fun register(dispatcher: CommandDispatcher<ServerCommandSource>): LiteralCommand
                             )
                         }
                         (player as PlayerAccess).lastTeleportTime = System.currentTimeMillis()
+                        @Suppress("ReplaceSizeCheckWithIsNotEmpty")
                         if (ServerMain.commonConfig.showTeleportWarning) {
-                            val world = area.world
+                        val world = area.world
                             val collisionBox = Box(
                                 area.teleportPos!!.x - 0.3,
                                 area.teleportPos!!.y,
@@ -951,7 +953,7 @@ fun register(dispatcher: CommandDispatcher<ServerCommandSource>): LiteralCommand
                         error(TrT.of("enclosure.message.not_owner"), this)
                     }
                     ConfirmManager.confirm(null, source.player) {
-                        val limitsOfReceiver = ServerMain.limits
+                        val limitsOfReceiver = getLimits(this)
                         if (!source.hasPermissionLevel(4)) {
                             val count = ServerMain.getAllEnclosures(uuid).size.toLong()
                             if (count > limitsOfReceiver.maxLands) {
@@ -1021,7 +1023,7 @@ fun register(dispatcher: CommandDispatcher<ServerCommandSource>): LiteralCommand
                                 .append(intersectArea.serialize(SerializationSettings.Name, source.player)), this
                         )
                     }
-                    val limits = ServerMain.limits
+                    val limits = getLimits(this)
                     if (!source.hasPermissionLevel(4)) {
                         checkSessionSize(session, this)
                         val count = enclosure.subEnclosures.areas.size.toLong()
