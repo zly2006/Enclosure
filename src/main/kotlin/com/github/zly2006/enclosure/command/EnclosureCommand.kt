@@ -607,7 +607,7 @@ fun register(dispatcher: CommandDispatcher<ServerCommandSource>): LiteralCommand
                             session.world = source.world
                             session.action(pos)
                             session.enable()
-                            source.sendMessage(TrT.of("enclosure.message.set_$name", pos.x, pos.y, pos.z))
+                            source.sendMessage(TrT.of("enclosure.message.set_$name").append(pos.toShortString()))
                             session.trySync()
                         }
                     }
@@ -655,10 +655,10 @@ fun register(dispatcher: CommandDispatcher<ServerCommandSource>): LiteralCommand
             literal("clear") {
                 executes {
                     val session = sessionOf(source)
-                    session.enabled = false
                     session.pos1 = BlockPos.ORIGIN
                     session.pos2 = BlockPos.ORIGIN
                     session.trySync()
+                    session.enabled = false
                     source.sendMessage(TrT.of("enclosure.message.select.clear"))
                 }
             }
