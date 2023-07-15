@@ -32,7 +32,7 @@
   "enclosure.help.settp": "Set the teleport position of the target enclosure",
   "enclosure.help.subzone": "Create a subzone within the enclosure",
   "enclosure.help.tp": "Teleport to the target enclosure",
-  "enclosure.help.trust": "Trust the specified player to give him the full access to your current enclosure",
+  "enclosure.help.trust": "Trust the specified player to give him the full access to your current enclosure (excluding admin permission)",
   "enclosure.info.created_by": " created by ",
   "enclosure.info.created_on": "Created on: ",
   "enclosure.info.father_land": "Father land: ",
