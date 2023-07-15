@@ -20,6 +20,7 @@ import com.google.gson.GsonBuilder
 import com.google.gson.JsonObject
 import com.mojang.brigadier.CommandDispatcher
 import com.mojang.brigadier.arguments.FloatArgumentType
+import me.lucko.fabric.api.permissions.v0.Options
 import net.fabricmc.api.DedicatedServerModInitializer
 import net.fabricmc.api.EnvType
 import net.fabricmc.api.Environment
@@ -314,10 +315,7 @@ object ServerMain: DedicatedServerModInitializer {
     }
 
     fun getLimitsForPlayer(player: ServerPlayerEntity) =
-        limits.asSequence()
-            .filter { checkPermission(player, "enclosure.limits.${it.key}") }
-            .sortedBy { -it.value.priority }
-            .firstOrNull()?.value
+        limits[Options.get(player, "enclosure.limits", "default")]
 
     fun reloadCommon() {
         commonConfig = GSON.fromJson(
