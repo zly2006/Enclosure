@@ -495,7 +495,7 @@ fun register(dispatcher: CommandDispatcher<ServerCommandSource>): LiteralCommand
         literal("limits") {
             permission("enclosure.command.limits", BuilderScope.Companion.DefaultPermission.TRUE)
             executes {
-                val limits = ServerMain.limits
+                val limits = getLimits(this)
                 val translatable = TrT.of("enclosure.message.limit.header")
                 limits.javaClass.fields.mapNotNull { field ->
                     try {
