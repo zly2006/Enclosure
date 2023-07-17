@@ -24,11 +24,13 @@ import net.minecraft.command.CommandSource
 import net.minecraft.command.argument.*
 import net.minecraft.server.command.CommandManager
 import net.minecraft.server.command.ServerCommandSource
+import net.minecraft.server.world.ServerWorld
 import net.minecraft.text.*
 import net.minecraft.util.Formatting
 import net.minecraft.util.math.BlockPos
 import net.minecraft.util.math.Box
 import net.minecraft.util.math.Direction
+import net.minecraft.util.math.Vec3d
 import java.util.*
 import java.util.function.Consumer
 import kotlin.properties.Delegates
@@ -807,31 +809,8 @@ fun register(dispatcher: CommandDispatcher<ServerCommandSource>): LiteralCommand
                             )
                         }
                         (player as PlayerAccess).lastTeleportTime = System.currentTimeMillis()
-                        @Suppress("ReplaceSizeCheckWithIsNotEmpty")
                         if (ServerMain.commonConfig.showTeleportWarning) {
-                        val world = area.world
-                            val collisionBox = Box(
-                                area.teleportPos!!.x - 0.3,
-                                area.teleportPos!!.y,
-                                area.teleportPos!!.z - 0.3,
-                                area.teleportPos!!.x + 0.3,
-                                area.teleportPos!!.y + 1.8,
-                                area.teleportPos!!.z + 0.3
-                            )
-                            val collisions = world.getCollisions(null, collisionBox)
-                            val hasCollision = collisions.count() != 0
-                            val supportingBox = Box(
-                                area.teleportPos!!.x - 0.3,
-                                area.teleportPos!!.y - 1e-6,
-                                area.teleportPos!!.z - 0.3,
-                                area.teleportPos!!.x + 0.3,
-                                area.teleportPos!!.y,
-                                area.teleportPos!!.z + 0.3
-                            )
-                            val supporting = world.getCollisions(null, supportingBox)
-                            val hasSupportingBlock = supporting.count() != 0
-                            val hasFluid = world.containsFluid(collisionBox)
-                            if (hasCollision || !hasSupportingBlock || hasFluid) {
+                            if (!isPositionSafe(area.world, area.teleportPos!!)) {
                                 source.sendMessage(
                                     TrT.of("enclosure.message.teleport_warning").formatted(Formatting.YELLOW)
                                 )
@@ -855,6 +834,11 @@ fun register(dispatcher: CommandDispatcher<ServerCommandSource>): LiteralCommand
                         error(TrT.of("enclosure.message.res_settp_pos_error"), this)
                     }
                     area.setTeleportPos(source.position, source.rotation.y, source.rotation.x)
+                    if (ServerMain.commonConfig.showTeleportWarning && !isPositionSafe(area.world, area.teleportPos!!)) {
+                        source.sendMessage(
+                            TrT.of("enclosure.message.teleport_warning.on_set").formatted(Formatting.YELLOW)
+                        )
+                    }
                     source.sendMessage(
                         TrT.of("enclosure.message.change_teleport_position.0")
                             .append(area.serialize(SerializationSettings.Name, source.player))
@@ -1263,6 +1247,32 @@ fun register(dispatcher: CommandDispatcher<ServerCommandSource>): LiteralCommand
         }
     }
     return dispatcher.register(node.parent)
+}
+
+@Suppress("ReplaceSizeCheckWithIsNotEmpty")
+fun isPositionSafe(world: ServerWorld, teleportPos: Vec3d): Boolean {
+    val collisionBox = Box(
+        teleportPos.x - 0.3,
+        teleportPos.y,
+        teleportPos.z - 0.3,
+        teleportPos.x + 0.3,
+        teleportPos.y + 1.8,
+        teleportPos.z + 0.3
+    )
+    val collisions = world.getCollisions(null, collisionBox)
+    val hasCollision = collisions.count() != 0
+    val supportingBox = Box(
+        teleportPos.x - 0.3,
+        teleportPos.y - 1e-6,
+        teleportPos.z - 0.3,
+        teleportPos.x + 0.3,
+        teleportPos.y,
+        teleportPos.z + 0.3
+    )
+    val supporting = world.getCollisions(null, supportingBox)
+    val hasSupportingBlock = supporting.count() != 0
+    val hasFluid = world.containsFluid(collisionBox)
+    return hasSupportingBlock && !hasCollision && !hasFluid
 }
 
 fun Session.enable() {

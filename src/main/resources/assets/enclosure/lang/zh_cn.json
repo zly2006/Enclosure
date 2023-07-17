@@ -133,6 +133,7 @@
   "enclosure.message.suggest_gui": "你的客户端已经安装了领地mod，可以点击这里打开领地GUI",
   "enclosure.message.teleport_too_fast": "传送过于频繁，请等待 %s 秒",
   "enclosure.message.teleport_warning": "传送位置可能不安全，请确认您是否传送。",
+  "enclosure.message.teleport_warning.on_set": "这个位置可能是危险的(没有支撑方块/在墙里/有流体), 传送到你的领地的玩家将会被警告.",
   "enclosure.message.total_size": "领地总大小：",
   "enclosure.message.unexpected_info": "接收到意外的类型: 期望输入: enter|leave",
   "enclosure.message.unexpected_optional_boolean": "接收到意外的值: 期望输入: true | false | none",
