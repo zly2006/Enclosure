@@ -436,8 +436,7 @@ object ServerMain: DedicatedServerModInitializer {
                     null
                 )
                 val permissionList = USE_PREDICATES.entries.filter { it.value.test(context) }.map { it.key }.toList()
-                if (permissionList.isEmpty() && (context.item is BlockItem
-                            || context.item === Items.FLINT_AND_STEEL
+                if (permissionList.isEmpty() && (context.item === Items.FLINT_AND_STEEL
                             || context.item === Items.FIRE_CHARGE
                             || context.item === Items.ARMOR_STAND
                             || context.item === Items.END_CRYSTAL
