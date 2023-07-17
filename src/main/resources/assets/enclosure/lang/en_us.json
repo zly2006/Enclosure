@@ -133,6 +133,7 @@
   "enclosure.message.suggest_gui": "It seems that you have installed enclosure client mod, would you like to open the GUI? (click me)",
   "enclosure.message.teleport_too_fast": "You are teleporting too fast! Please wait for %s seconds.",
   "enclosure.message.teleport_warning": "This position may be dangerous, please confirm your teleportation.",
+  "enclosure.message.teleport_warning.on_set": "This position may be dangerous(has no supporting block/in the wall/has fluid), player teleporting to your enclosure will be warned.",
   "enclosure.message.total_size": "Total size: ",
   "enclosure.message.unexpected_info": "Unexpected type: only enter|leave are accepted.",
   "enclosure.message.unexpected_optional_boolean": "Unexpected value: please type  true | false | none",
