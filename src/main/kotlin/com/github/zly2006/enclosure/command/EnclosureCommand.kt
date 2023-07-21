@@ -24,13 +24,11 @@ import net.minecraft.command.CommandSource
 import net.minecraft.command.argument.*
 import net.minecraft.server.command.CommandManager
 import net.minecraft.server.command.ServerCommandSource
+import net.minecraft.server.world.ChunkTicketType
 import net.minecraft.server.world.ServerWorld
 import net.minecraft.text.*
 import net.minecraft.util.Formatting
-import net.minecraft.util.math.BlockPos
-import net.minecraft.util.math.Box
-import net.minecraft.util.math.Direction
-import net.minecraft.util.math.Vec3d
+import net.minecraft.util.math.*
 import java.util.*
 import java.util.function.Consumer
 import kotlin.properties.Delegates
@@ -810,6 +808,12 @@ fun register(dispatcher: CommandDispatcher<ServerCommandSource>): LiteralCommand
                         }
                         (player as PlayerAccess).lastTeleportTime = System.currentTimeMillis()
                         if (ServerMain.commonConfig.showTeleportWarning) {
+                            // Load chunk first
+                            val blockPos = with(area.teleportPos!!) {
+                                BlockPos(x.toInt(), y.toInt(), z.toInt())
+                            }
+                            val chunkPos = area.world.getChunk(blockPos).pos
+                            area.world.chunkManager.addTicket(ChunkTicketType.POST_TELEPORT, chunkPos, 1, player.id)
                             if (!isPositionSafe(area.world, area.teleportPos!!)) {
                                 source.sendMessage(
                                     TrT.of("enclosure.message.teleport_warning").formatted(Formatting.YELLOW)
