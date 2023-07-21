@@ -1251,6 +1251,9 @@ fun register(dispatcher: CommandDispatcher<ServerCommandSource>): LiteralCommand
 
 @Suppress("ReplaceSizeCheckWithIsNotEmpty")
 fun isPositionSafe(world: ServerWorld, teleportPos: Vec3d): Boolean {
+    // load chunks
+    val pos = BlockPos.ofFloored(teleportPos)
+    world.getChunk(pos)
     val collisionBox = Box(
         teleportPos.x - 0.3,
         teleportPos.y,
@@ -1263,7 +1266,7 @@ fun isPositionSafe(world: ServerWorld, teleportPos: Vec3d): Boolean {
     val hasCollision = collisions.count() != 0
     val supportingBox = Box(
         teleportPos.x - 0.3,
-        teleportPos.y - 1e-6,
+        teleportPos.y - 1e-4,
         teleportPos.z - 0.3,
         teleportPos.x + 0.3,
         teleportPos.y,
