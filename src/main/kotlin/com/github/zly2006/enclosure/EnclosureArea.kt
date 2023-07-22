@@ -385,6 +385,9 @@ open class EnclosureArea : PersistentState, EnclosureView {
     }
 
     fun teleport(player: ServerPlayerEntity) {
+        if (player.isSleeping) {
+            player.wakeUp()
+        }
         player.teleport(world, teleportPos!!.x, teleportPos!!.y, teleportPos!!.z, yaw, pitch)
     }
 
