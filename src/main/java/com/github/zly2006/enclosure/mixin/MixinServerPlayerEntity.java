@@ -34,6 +34,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
+import java.util.Collections;
 import java.util.Optional;
 
 import static com.github.zly2006.enclosure.command.EnclosureCommandKt.CONSOLE;
@@ -164,8 +165,8 @@ public abstract class MixinServerPlayerEntity extends PlayerEntity implements Pl
     }
     @Inject(method = "tick", at = @At("HEAD"))
     private void onTick(CallbackInfo ci) {
+        ServerPlayerEntity player = (ServerPlayerEntity) (Object) this;
         if (server.getTicks() % 10 == 0) {
-            ServerPlayerEntity player = (ServerPlayerEntity) (Object) this;
             EnclosureArea area = ServerMain.INSTANCE.getAllEnclosures((ServerWorld) getWorld()).getArea(getBlockPos());
             if (area != null) {
                 area = area.areaOf(getBlockPos());
@@ -178,13 +179,11 @@ public abstract class MixinServerPlayerEntity extends PlayerEntity implements Pl
             if (area != null) {
                 if (!area.hasPerm(player, MOVE)) {
                     player.sendMessage(MOVE.getNoPermissionMsg(player));
-                    if (area != lastArea && lastWorld != null && lastPos != null) {
-                        // teleport back
-                        player.teleport(lastWorld, lastPos.x, lastPos.y, lastPos.z, 0, 0);
-                    } else {
-                        // kick
-                        area.kickPlayer(player);
-                    }
+                    kickFrom(player, area);
+                }
+                if (player.hasVehicle() && !area.hasPerm(player, VEHICLE)) {
+                    player.sendMessage(VEHICLE.getNoPermissionMsg(player));
+                    area.kickPlayer(player);
                 }
                 if (area != lastArea) {
                     sendFormattedMessage(player, area, true);
@@ -197,6 +196,18 @@ public abstract class MixinServerPlayerEntity extends PlayerEntity implements Pl
             lastArea = area;
             lastPos = player.getPos();
             lastWorld = (ServerWorld) player.getWorld();
+        }
+    }
+
+    private void kickFrom(ServerPlayerEntity player, EnclosureArea area) {
+        if (area != lastArea && lastWorld != null && lastPos != null) {
+            // teleport back
+            (player.getVehicle() != null ? player.getVehicle() : player)
+                    .teleport(lastWorld, lastPos.x, lastPos.y, lastPos.z,
+                            Collections.emptySet(), 0, 0);
+        } else {
+            // kick
+            area.kickPlayer(player);
         }
     }
 

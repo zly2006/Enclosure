@@ -9,6 +9,7 @@ import com.github.zly2006.enclosure.utils.Serializable2Text.SerializationSetting
 import me.lucko.fabric.api.permissions.v0.Permissions
 import net.fabricmc.fabric.api.networking.v1.PacketByteBufs
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking
+import net.minecraft.entity.Entity
 import net.minecraft.nbt.NbtCompound
 import net.minecraft.nbt.NbtDouble
 import net.minecraft.nbt.NbtList
@@ -156,7 +157,14 @@ open class EnclosureArea : PersistentState, EnclosureView {
             minecraftServer.playerManager.respawnPlayer(player, true)
             minecraftServer.overworld.chunkManager.updatePosition(player)
         } else {
-            player.teleport(world, x.toDouble(), y.toDouble(), z.toDouble(), 0f, 0f)
+            val tpTarget: Entity
+            if (player.hasVehicle()) {
+                tpTarget = player.vehicle!!
+            } else {
+                tpTarget = player
+            }
+            tpTarget.teleport(world, x.toDouble(), y.toDouble(), z.toDouble(),
+                emptySet(), 0f, 0f)
         }
     }
 
