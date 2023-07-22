@@ -92,7 +92,7 @@ open class EnclosureArea : PersistentState, EnclosureView {
         maxY = compound.getInt("max_y")
         maxZ = compound.getInt("max_z")
         yaw = compound.getFloat("yaw")
-        pitch = compound.getInt("pitch").toFloat()
+        pitch = compound.getFloat("pitch")
         enterMessage = compound.getString("enter_msg")
         leaveMessage = compound.getString("leave_msg")
         createdOn = compound.getLong("created_on")
