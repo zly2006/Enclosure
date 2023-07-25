@@ -9,6 +9,7 @@ Please help improve our [wiki](https://enclosure.fandom.com/wiki/Enclosure_Wiki)
 
 ## Features
 - Exhaustive permission system
+- Fabric-permission-api support, manage groups and players easily
 - Vanilla, this mod will not break any vanilla features, unless in a player's enclosure.
 - Use GUI to configure permissions
 - Sub-enclosure support
@@ -30,8 +31,8 @@ Just install it as a normal Fabric mod. **This mod does not work in single playe
 
 | MC Version            | Latest Enclosure Version | Status      |
 |-----------------------|--------------------------|-------------|
-| 1.20, 1.19.4          | 0.2                      | Maintaining |
-| 1.18.2                | 0.1.1                    | Maintaining |
+| 1.20.1, 1.20, 1.19.4  | 0.3                      | Maintaining |
+| 1.18.2                | 0.1.1                    | Unsupported |
 | 1.19-1.19.3, \<1.18.2 | N/A                      | Unsupported |
 
 ## Our "Vanilla" Principle
