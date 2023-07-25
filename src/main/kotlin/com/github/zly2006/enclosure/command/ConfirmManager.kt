@@ -36,6 +36,22 @@ object ConfirmManager {
     val runnableMap: MutableMap<UUID, Entry> = HashMap()
     private val pendingMap: MutableMap<UUID, Long> = HashMap() // pending confirm request packets
     private const val TIMEOUT = 10000L
+
+    /**
+     * @param message  the message to send to the player.
+     *
+     * If null, a default message with translation key "enclosure.message.dangerous" will be sent.
+     *
+     * @param player  the player to send the message to.
+     *
+     * If null, the message will be sent to the server console.
+     *
+     * @param enforceCLI  whether to enforce the player to use the command line interface.
+     *
+     * If false, we will send a packet instead a chat message to the player.
+     *
+     * @param runnable  the code to run when the player confirms.
+     */
     fun confirm(message: Text?, player: ServerPlayerEntity?, enforceCLI: Boolean = false, runnable: () -> Unit) {
         val source = player?.commandSource ?: minecraftServer.commandSource
         val text = TrT.of("enclosure.message.dangerous")
