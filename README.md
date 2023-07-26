@@ -31,7 +31,7 @@ Just install it as a normal Fabric mod. **This mod does not work in single playe
 
 | MC Version            | Latest Enclosure Version | Status      |
 |-----------------------|--------------------------|-------------|
-| 1.20.1, 1.20, 1.19.4  | 0.3                      | Maintaining |
+| 1.20.1, 1.20, 1.19.4  | 0.3.1                    | Maintaining |
 | 1.18.2                | 0.1.1                    | Unsupported |
 | 1.19-1.19.3, \<1.18.2 | N/A                      | Unsupported |
 
