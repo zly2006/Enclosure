@@ -743,16 +743,30 @@ fun register(dispatcher: CommandDispatcher<ServerCommandSource>): LiteralCommand
                         }
                     }
                     val (minX, minY, minZ, maxX, maxY, maxZ) = session.ordered()
-                    area.minX = minX
-                    area.minY = minY
-                    area.minZ = minZ
-                    area.maxX = maxX
-                    area.maxY = maxY
-                    area.maxZ = maxZ
-                    source.sendFeedback(
-                        TrT.of("enclosure.message.resized")
-                            .append(area.serialize(SerializationSettings.Name, source.player)), false
-                    )
+                    ConfirmManager.confirm(
+                        TrT.of(
+                            "enclosure.message.resizing",
+                            area.fullName,
+                            minX - area.minX,
+                            minY - area.minY,
+                            minZ - area.minZ,
+                            maxX - area.maxX,
+                            maxY - area.maxY,
+                            maxZ - area.maxZ
+                        ),
+                        source.player
+                    ) {
+                        area.minX = minX
+                        area.minY = minY
+                        area.minZ = minZ
+                        area.maxX = maxX
+                        area.maxY = maxY
+                        area.maxZ = maxZ
+                        source.sendMessage(
+                            TrT.of("enclosure.message.resized")
+                                .append(area.serialize(SerializationSettings.Name, source.player))
+                        )
+                    }
                 }
             }
         }
