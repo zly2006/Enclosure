@@ -112,6 +112,7 @@
   "enclosure.message.resized.south": " blocks southwards.",
   "enclosure.message.resized.up": " blocks upwards.",
   "enclosure.message.resized.west": " blocks westwards.",
+  "enclosure.message.resizing": "You are going to apply new size to the enclosure named %s (The numbers are volumes of change): Min X %s blocks, Min Y %s blocks, Min Z %s blocks, Max X %s blocks, Max Y %s blocks, Max Z %s blocks",
   "enclosure.message.saved_backup": "Saved backup to %s",
   "enclosure.message.select.clear": "Selected areas has been reset",
   "enclosure.message.select.from": "Selection from ",
