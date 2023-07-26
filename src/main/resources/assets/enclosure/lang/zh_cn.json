@@ -112,6 +112,7 @@
   "enclosure.message.resized.south": "方块，向南",
   "enclosure.message.resized.up": "方块，向上",
   "enclosure.message.resized.west": "方块，向西",
+  "enclosure.message.resizing": "您正在应用新的大小到领地 %s (后面的数字为变更量): 最小 X %s 格，最小 Y %s 格，最小 Z %s 格，最大 X %s 格，最大 Y %s 格，最大 Z %s 格",
   "enclosure.message.saved_backup": "已保存备份文件到 %s",
   "enclosure.message.select.clear": "选区已重置",
   "enclosure.message.select.from": "选区从 ",
