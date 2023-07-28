@@ -9,6 +9,7 @@
   "server": [
     "MixinAbstractDecorationEntity",
     "MixinAbstractMinecartEntity",
+    "MixinAbstractSignBlock",
     "MixinAnimalEntity",
     "MixinArmorStandEntity",
     "MixinBlockItem",
@@ -61,7 +62,6 @@
     "MixinTurtleEggBlock",
     "MixinWitherEntity",
     "MixinWitherSkullBlock",
-    "MixinAbstractSignBlock",
     "workaround.MixinRegistrySyncManager",
     "workaround.MixinServerPlayerInteractionManager",
     "workaround.MixinServerPlayNetworkHandler"

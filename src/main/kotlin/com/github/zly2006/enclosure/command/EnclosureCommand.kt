@@ -367,7 +367,9 @@ fun register(dispatcher: CommandDispatcher<ServerCommandSource>): LiteralCommand
             executes {
                 val player = source.player
                 source.sendMessage(TrT.of("enclosure.about.author"))
-                source.sendMessage(TrT.of("enclosure.about.translator"))
+                source.sendMessage(TrT.of("enclosure.about.source").styled {
+                    it.withClickEvent(ClickEvent(ClickEvent.Action.OPEN_URL, "https://github.com/zly2006/Enclosure"))
+                })
                 source.sendMessage(TrT.of("enclosure.about.team_page"))
                 source.sendMessage(
                     TrT.of("enclosure.about.version.server").append(MOD_VERSION.friendlyString)

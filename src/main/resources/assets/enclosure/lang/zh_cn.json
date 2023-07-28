@@ -1,9 +1,9 @@
 {
   "enclosure.about.author": "Mod作者: zly2006, 贡献者: Disy920",
   "enclosure.about.click_to_open": "点击打开URL",
-  "enclosure.about.copyright": "版权所有 (c) 2022-2023, zly2006",
+  "enclosure.about.copyright": "版权所有 (c) 2022-2023, zly2006 和贡献者们",
+  "enclosure.about.source": "源码: https://github.com/zly2006/Enclosure",
   "enclosure.about.team_page": "团队官网: https://www.starlight.cool/",
-  "enclosure.about.translator": "翻译工作: ARtcgb, CrystalAura",
   "enclosure.about.version.client": "客户端版本: ",
   "enclosure.about.version.server": "服务端版本: ",
   "enclosure.help.about": "获取Enclosure Mod的关于信息",
