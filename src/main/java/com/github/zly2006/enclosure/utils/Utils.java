@@ -27,7 +27,8 @@ import static com.github.zly2006.enclosure.ServerMainKt.minecraftServer;
 
 public class Utils {
     public static boolean isAnimal(Entity entity) {
-        return entity instanceof PassiveEntity
+        return !(entity instanceof VillagerEntity) // we handle this as attack_villager
+                && entity instanceof PassiveEntity
                 || entity instanceof IronGolemEntity
                 || entity instanceof SnowGolemEntity
                 || entity instanceof AllayEntity;
