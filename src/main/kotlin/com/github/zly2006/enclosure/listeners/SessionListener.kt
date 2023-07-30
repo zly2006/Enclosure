@@ -11,6 +11,8 @@ import net.fabricmc.fabric.api.event.player.UseBlockCallback
 import net.fabricmc.fabric.api.networking.v1.PacketSender
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents
 import net.minecraft.entity.player.PlayerEntity
+import net.minecraft.item.HoeItem
+import net.minecraft.item.Items
 import net.minecraft.server.MinecraftServer
 import net.minecraft.server.network.ServerPlayNetworkHandler
 import net.minecraft.server.network.ServerPlayerEntity
@@ -49,7 +51,11 @@ class SessionListener private constructor() : ServerPlayConnectionEvents.Join,
             if (getSession(player)!!.pos2 != hitResult.blockPos) {
                 val session = getSession(player)
                 if (session!!.pos1 == BlockPos.ORIGIN) {
-                    return ActionResult.PASS
+                    if (ServerMain.operationItem is HoeItem) {
+                        when (world.getBlockState(hitResult.blockPos).block.asItem()) {
+                            Items.DIRT, Items.DIRT_PATH, Items.GRASS_BLOCK -> return ActionResult.PASS
+                        }
+                    }
                 }
                 session.syncDimension(player as ServerPlayerEntity)
                 session.pos2 = hitResult.blockPos
