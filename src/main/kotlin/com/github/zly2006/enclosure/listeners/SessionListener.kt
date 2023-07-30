@@ -53,7 +53,11 @@ class SessionListener private constructor() : ServerPlayConnectionEvents.Join,
                 if (session!!.pos1 == BlockPos.ORIGIN) {
                     if (ServerMain.operationItem is HoeItem) {
                         when (world.getBlockState(hitResult.blockPos).block.asItem()) {
-                            Items.DIRT, Items.DIRT_PATH, Items.GRASS_BLOCK -> return ActionResult.PASS
+                            Items.DIRT,
+                            Items.DIRT_PATH,
+                            Items.ROOTED_DIRT,
+                            Items.COARSE_DIRT,
+                            Items.GRASS_BLOCK -> return ActionResult.PASS
                         }
                     }
                 }
