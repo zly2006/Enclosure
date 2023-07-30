@@ -48,7 +48,10 @@ class SessionListener private constructor() : ServerPlayConnectionEvents.Join,
         if (player.mainHandStack.item === ServerMain.operationItem && hand == Hand.MAIN_HAND || player.offHandStack.item === ServerMain.operationItem && hand == Hand.OFF_HAND) {
             if (getSession(player)!!.pos2 != hitResult.blockPos) {
                 val session = getSession(player)
-                session!!.syncDimension(player as ServerPlayerEntity)
+                if (session!!.pos1 == BlockPos.ORIGIN) {
+                    return ActionResult.PASS
+                }
+                session.syncDimension(player as ServerPlayerEntity)
                 session.pos2 = hitResult.blockPos
                 session.enable()
                 session.trySync()
