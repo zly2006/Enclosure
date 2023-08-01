@@ -16,9 +16,6 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-import static net.fabricmc.api.EnvType.SERVER;
-
-@Environment(SERVER)
 @Mixin(value = FallingBlockEntity.class)
 public abstract class MixinFallingBlockEntity extends Entity {
     public MixinFallingBlockEntity(EntityType<?> type, World world) {

@@ -6,7 +6,10 @@
   "minVersion": "0.8",
   "package": "com.github.zly2006.enclosure.mixin",
   "required": true,
-  "server": [
+  "mixins": [
+    "MixinRaidManager",
+    "MixinServerMetadata",
+    "workaround.MixinRegistrySyncManager",
     "MixinAbstractDecorationEntity",
     "MixinAbstractMinecartEntity",
     "MixinAbstractSignBlock",
@@ -65,10 +68,5 @@
     "workaround.MixinRegistrySyncManager",
     "workaround.MixinServerPlayerInteractionManager",
     "workaround.MixinServerPlayNetworkHandler"
-  ],
-  "mixins": [
-    "MixinRaidManager",
-    "MixinServerMetadata",
-    "workaround.MixinRegistrySyncManager"
   ]
 }

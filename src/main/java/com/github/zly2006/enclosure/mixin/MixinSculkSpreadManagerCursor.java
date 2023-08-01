@@ -20,9 +20,6 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import java.util.Collection;
 
-import static net.fabricmc.api.EnvType.SERVER;
-
-@Environment(SERVER)
 @Mixin(SculkSpreadManager.Cursor.class)
 public class MixinSculkSpreadManagerCursor {
     @Inject(method = "canSpread(Lnet/minecraft/world/WorldAccess;Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/util/math/BlockPos;)Z", at = @At("HEAD"), cancellable = true)

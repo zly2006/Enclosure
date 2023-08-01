@@ -3,7 +3,6 @@ package com.github.zly2006.enclosure.mixin;
 import com.github.zly2006.enclosure.ServerMain;
 import com.github.zly2006.enclosure.mixinadatper.MixinPistonBlockKt;
 import com.github.zly2006.enclosure.utils.Permission;
-import net.fabricmc.api.Environment;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.FacingBlock;
 import net.minecraft.block.PistonBlock;
@@ -19,9 +18,6 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 
-import static net.fabricmc.api.EnvType.SERVER;
-
-@Environment(SERVER)
 @Mixin(PistonBlock.class)
 public class MixinPistonBlock extends FacingBlock {
     protected MixinPistonBlock(Settings settings) {

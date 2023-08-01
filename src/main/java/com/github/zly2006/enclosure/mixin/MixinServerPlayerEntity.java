@@ -8,7 +8,6 @@ import com.github.zly2006.enclosure.utils.TrT;
 import com.github.zly2006.enclosure.utils.Utils;
 import com.github.zly2006.enclosure.utils.UtilsKt;
 import com.mojang.authlib.GameProfile;
-import net.fabricmc.api.Environment;
 import net.minecraft.entity.ItemEntity;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.effect.StatusEffectInstance;
@@ -38,9 +37,7 @@ import java.util.Optional;
 
 import static com.github.zly2006.enclosure.command.EnclosureCommandKt.CONSOLE;
 import static com.github.zly2006.enclosure.utils.Permission.*;
-import static net.fabricmc.api.EnvType.SERVER;
 
-@Environment(SERVER)
 @Mixin(ServerPlayerEntity.class)
 public abstract class MixinServerPlayerEntity extends PlayerEntity implements PlayerAccess {
     @Shadow public ServerPlayNetworkHandler networkHandler;

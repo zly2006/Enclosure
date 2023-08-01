@@ -31,7 +31,6 @@ public class ClientMain implements ClientModInitializer {
 
     @Override
     public void onInitializeClient() {
-        EnclosureScreenHandler.register();
         UUIDCacheS2CPacket.register();
         SyncSelectionS2CPacket.register();
         ConfirmRequestS2CPacket.register();

@@ -25,7 +25,7 @@
   "icon": "assets/enclosure/icon.png",
   "environment": "*",
   "entrypoints": {
-    "server": [
+    "main": [
       {
         "adapter": "kotlin",
         "value": "com.github.zly2006.enclosure.ServerMain"

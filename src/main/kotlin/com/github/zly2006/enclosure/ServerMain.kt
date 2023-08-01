@@ -21,9 +21,9 @@ import com.google.gson.JsonObject
 import com.mojang.brigadier.CommandDispatcher
 import com.mojang.brigadier.arguments.FloatArgumentType
 import me.lucko.fabric.api.permissions.v0.Options
-import net.fabricmc.api.DedicatedServerModInitializer
 import net.fabricmc.api.EnvType
 import net.fabricmc.api.Environment
+import net.fabricmc.api.ModInitializer
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents.ServerStarting
@@ -90,7 +90,7 @@ private val commonConfigPath = Path.of("config", "enclosure", "common.json")
 const val DATA_VERSION = 2
 lateinit var minecraftServer: MinecraftServer
 
-object ServerMain: DedicatedServerModInitializer {
+object ServerMain: ModInitializer {
     lateinit var backupManager: BackupManager
         private set
     init {
@@ -299,7 +299,6 @@ object ServerMain: DedicatedServerModInitializer {
             ?.areaOf(pos!!)
     }
 
-    @Environment(EnvType.SERVER)
     fun checkPermission(player: ServerPlayerEntity, permission: Permission, pos: BlockPos): Boolean {
         if (checkPermission(player, "enclosure.bypass") && permission.canBypass) return true
         val enclosure = getAllEnclosures(player.getServerWorld()).getArea(pos)
@@ -348,7 +347,7 @@ object ServerMain: DedicatedServerModInitializer {
         }
     }
 
-    override fun onInitializeServer() {
+    override fun onInitialize() {
         operationItem = Items.WOODEN_HOE
 
         ServerPlayConnectionEvents.JOIN.register(ServerPlayConnectionEvents.Join { handler: ServerPlayNetworkHandler, _, _ ->
@@ -567,7 +566,6 @@ object ServerMain: DedicatedServerModInitializer {
                         update.set(true)
                     }
                     val enclosureList = EnclosureList(nbtCompound, world, true)
-                    enclosures
                     if (update.get()) {
                         enclosureList.markDirty()
                     }
@@ -593,6 +591,7 @@ object ServerMain: DedicatedServerModInitializer {
         ServerLifecycleEvents.SERVER_STOPPING.register {
             checkUpdateThread.interrupt()
             playerSessions.clear()
+            enclosures.clear()
         }
 
         LOGGER.info("Enclosure enabled now!")
