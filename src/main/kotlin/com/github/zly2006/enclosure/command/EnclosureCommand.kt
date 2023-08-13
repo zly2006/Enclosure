@@ -307,9 +307,9 @@ private fun createEnclosure(context: CommandContext<ServerCommandSource>) {
         if (name.length > ServerMain.commonConfig.maxEnclosureNameLength) {
             error(TrT.of("enclosure.message.res_name_too_long"), context)
         }
-        if (name.chars().anyMatch { c: Int -> !Character.isLetterOrDigit(c) && c != '_'.code }) {
-            error(TrT.of("enclosure.message.res_name_invalid"), context)
-        }
+    }
+    if (name.chars().anyMatch { c: Int -> !Character.isLetterOrDigit(c) && c != '_'.code }) {
+        error(TrT.of("enclosure.message.res_name_invalid"), context)
     }
     val session = sessionOf(context.source)
     checkSession(context)
@@ -1006,6 +1006,9 @@ fun register(dispatcher: CommandDispatcher<ServerCommandSource>): LiteralCommand
                     val name = StringArgumentType.getString(this, "name")
                     if (name.length > ServerMain.commonConfig.maxEnclosureNameLength) {
                         error(TrT.of("enclosure.message.res_name_too_long"), this)
+                    }
+                    if (name.chars().anyMatch { c: Int -> !Character.isLetterOrDigit(c) && c != '_'.code }) {
+                        error(TrT.of("enclosure.message.res_name_invalid"), this)
                     }
                     val session = sessionOf(source)
                     val list = ServerMain.getAllEnclosures(sessionOf(source).world)
