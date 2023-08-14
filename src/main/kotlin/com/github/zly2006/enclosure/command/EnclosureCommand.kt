@@ -887,6 +887,12 @@ fun register(dispatcher: CommandDispatcher<ServerCommandSource>): LiteralCommand
                     executes {
                         val res = getEnclosure(this)
                         val name = StringArgumentType.getString(this, "name")
+                        if (name.length > ServerMain.commonConfig.maxEnclosureNameLength) {
+                            error(TrT.of("enclosure.message.res_name_too_long"), this)
+                        }
+                        if (name.chars().anyMatch { c: Int -> !Character.isLetterOrDigit(c) && c != '_'.code }) {
+                            error(TrT.of("enclosure.message.res_name_invalid"), this)
+                        }
                         if (!source.hasPermissionLevel(4) && source.player != null && !res.isOwner(source)) {
                             error(TrT.of("enclosure.message.not_owner"), this)
                         }
