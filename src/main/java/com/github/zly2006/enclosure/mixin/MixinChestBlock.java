@@ -15,10 +15,12 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 public class MixinChestBlock {
     @Inject(method = "getNeighborChestDirection", at = @At("HEAD"), cancellable = true)
     private void getNeighborChestDirection(ItemPlacementContext ctx, Direction dir, CallbackInfoReturnable<Direction> cir) {
-        EnclosureArea area1 = ServerMain.INSTANCE.getSmallestEnclosure((ServerWorld) ctx.getWorld(), ctx.getBlockPos());
-        EnclosureArea area2 = ServerMain.INSTANCE.getSmallestEnclosure((ServerWorld) ctx.getWorld(), ctx.getBlockPos().offset(dir));
-        if (area1 != area2) {
-            cir.setReturnValue(null);
+        if (ctx.getWorld() instanceof ServerWorld serverWorld) {
+            EnclosureArea area1 = ServerMain.INSTANCE.getSmallestEnclosure(serverWorld, ctx.getBlockPos());
+            EnclosureArea area2 = ServerMain.INSTANCE.getSmallestEnclosure(serverWorld, ctx.getBlockPos().offset(dir));
+            if (area1 != area2) {
+                cir.setReturnValue(null);
+            }
         }
     }
 }
