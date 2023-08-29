@@ -21,8 +21,6 @@ import com.google.gson.JsonObject
 import com.mojang.brigadier.CommandDispatcher
 import com.mojang.brigadier.arguments.FloatArgumentType
 import me.lucko.fabric.api.permissions.v0.Options
-import net.fabricmc.api.EnvType
-import net.fabricmc.api.Environment
 import net.fabricmc.api.ModInitializer
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents
@@ -41,7 +39,9 @@ import net.minecraft.entity.Entity
 import net.minecraft.entity.Saddleable
 import net.minecraft.entity.decoration.ArmorStandEntity
 import net.minecraft.entity.decoration.ItemFrameEntity
-import net.minecraft.entity.passive.*
+import net.minecraft.entity.passive.AllayEntity
+import net.minecraft.entity.passive.AnimalEntity
+import net.minecraft.entity.passive.SheepEntity
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.item.*
 import net.minecraft.network.packet.s2c.play.EntityTrackerUpdateS2CPacket
@@ -586,7 +586,7 @@ object ServerMain: ModInitializer {
                     EnclosureGroup.GROUPS_KEY
                 )
             Converter.convert()
-            checkUpdateThread.start()
+            runCatching { checkUpdateThread.start() }
         }
         ServerLifecycleEvents.SERVER_STOPPING.register {
             checkUpdateThread.interrupt()
