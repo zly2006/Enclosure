@@ -32,10 +32,10 @@ class SessionListener private constructor() : ServerPlayConnectionEvents.Join,
     }
 
     override fun interact(player: PlayerEntity, world: World, hand: Hand, pos: BlockPos, direction: Direction): ActionResult {
-        if (player.getStackInHand(hand).item === ServerMain.operationItem) {
+        if (player.getStackInHand(hand).item === ServerMain.operationItem && player is ServerPlayerEntity) {
             if (getSession(player)!!.pos1 != pos) {
                 val session = getSession(player)
-                session!!.syncDimension(player as ServerPlayerEntity)
+                session!!.syncDimension(player)
                 session.pos1 = pos
                 session.enable()
                 session.trySync()
@@ -47,27 +47,29 @@ class SessionListener private constructor() : ServerPlayConnectionEvents.Join,
     }
 
     override fun interact(player: PlayerEntity, world: World, hand: Hand, hitResult: BlockHitResult): ActionResult {
-        if (player.mainHandStack.item === ServerMain.operationItem && hand == Hand.MAIN_HAND || player.offHandStack.item === ServerMain.operationItem && hand == Hand.OFF_HAND) {
-            if (getSession(player)!!.pos2 != hitResult.blockPos) {
-                val session = getSession(player)
-                if (session!!.pos1 == BlockPos.ORIGIN) {
-                    if (ServerMain.operationItem is HoeItem) {
-                        when (world.getBlockState(hitResult.blockPos).block.asItem()) {
-                            Items.DIRT,
-                            Items.DIRT_PATH,
-                            Items.ROOTED_DIRT,
-                            Items.COARSE_DIRT,
-                            Items.GRASS_BLOCK -> return ActionResult.PASS
+        if (player is ServerPlayerEntity) {
+            if (player.mainHandStack.item === ServerMain.operationItem && hand == Hand.MAIN_HAND || player.offHandStack.item === ServerMain.operationItem && hand == Hand.OFF_HAND) {
+                if (getSession(player)!!.pos2 != hitResult.blockPos) {
+                    val session = getSession(player)
+                    if (session!!.pos1 == BlockPos.ORIGIN) {
+                        if (ServerMain.operationItem is HoeItem) {
+                            when (world.getBlockState(hitResult.blockPos).block.asItem()) {
+                                Items.DIRT,
+                                Items.DIRT_PATH,
+                                Items.ROOTED_DIRT,
+                                Items.COARSE_DIRT,
+                                Items.GRASS_BLOCK -> return ActionResult.PASS
+                            }
                         }
                     }
+                    session.syncDimension(player)
+                    session.pos2 = hitResult.blockPos
+                    session.enable()
+                    session.trySync()
+                    player.sendMessage(TrT.of("enclosure.message.set_pos_2").append(hitResult.blockPos.toShortString()))
                 }
-                session.syncDimension(player as ServerPlayerEntity)
-                session.pos2 = hitResult.blockPos
-                session.enable()
-                session.trySync()
-                player.sendMessage(TrT.of("enclosure.message.set_pos_2").append(hitResult.blockPos.toShortString()))
+                return ActionResult.FAIL
             }
-            return ActionResult.FAIL
         }
         return ActionResult.PASS
     }
