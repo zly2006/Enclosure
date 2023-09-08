@@ -67,10 +67,16 @@ sourceCompatibility = JavaVersion.VERSION_17
 targetCompatibility = JavaVersion.VERSION_17
 
 archivesBaseName = project.archives_base_name
+// Compilation failed
+//if (project.archices_preview_version.empty) {
+//     version = project.mod_version + "+" + grgit.branch.current().name // usually branch name is the mc version
+//} else {
+//    version = project.mod_version + "-" + project.archices_preview_version + "+" + grgit.branch.current().name + "-" + grgit.head().id.substring(0, 8)
+//}
 if (project.archices_preview_version.empty) {
-    version = project.mod_version + "+" + grgit.branch.current().name // usually branch name is the mc version
+    version = project.mod_version + "+" + "1.20"
 } else {
-    version = project.mod_version + "-" + project.archices_preview_version + "+" + grgit.branch.current().name + "-" + grgit.head().id.substring(0, 8)
+    version = project.mod_version + "-" + project.archices_preview_version + "+" + "1.20"
 }
 group = project.maven_group
 
