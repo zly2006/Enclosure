@@ -591,6 +591,8 @@ object ServerMain: ModInitializer {
         ServerLifecycleEvents.SERVER_STOPPING.register {
             checkUpdateThread.interrupt()
             playerSessions.clear()
+        }
+        ServerLifecycleEvents.SERVER_STOPPED.register {
             enclosures.clear()
         }
 
