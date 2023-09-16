@@ -3,7 +3,7 @@ package com.github.zly2006.enclosure.config;
 import com.github.zly2006.enclosure.*;
 import com.mojang.authlib.GameProfile;
 import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtInt;
+import net.minecraft.nbt.NbtDouble;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.server.world.ServerWorld;
@@ -154,16 +154,15 @@ public class Converter {
                         throw new RuntimeException("Incorrect area positions pattern");
                     }
                     NbtList nbtTpPos = new NbtList();
-                    nbtTpPos.add(NbtInt.of((int) Double.parseDouble(teleportPosition[0])));
-                    nbtTpPos.add(NbtInt.of((int) Double.parseDouble(teleportPosition[1])));
-                    nbtTpPos.add(NbtInt.of((int) Double.parseDouble(teleportPosition[2])));
+                    nbtTpPos.add(NbtDouble.of(Double.parseDouble(teleportPosition[0])));
+                    nbtTpPos.add(NbtDouble.of(Double.parseDouble(teleportPosition[1])));
+                    nbtTpPos.add(NbtDouble.of(Double.parseDouble(teleportPosition[2])));
                     nbt.put("tp_pos", nbtTpPos);
-                }
-                else {
+                } else {
                     NbtList nbtTpPos = new NbtList();
-                    nbtTpPos.add(NbtInt.of(Integer.parseInt(landPosition[0])));
-                    nbtTpPos.add(NbtInt.of(Integer.parseInt(landPosition[1])));
-                    nbtTpPos.add(NbtInt.of(Integer.parseInt(landPosition[2])));
+                    nbtTpPos.add(NbtDouble.of(Double.parseDouble(landPosition[0])));
+                    nbtTpPos.add(NbtDouble.of(Double.parseDouble(landPosition[1])));
+                    nbtTpPos.add(NbtDouble.of(Double.parseDouble(landPosition[2])));
                     nbt.put("tp_pos", nbtTpPos);
                 }
 
@@ -191,18 +190,15 @@ public class Converter {
                     for (EnclosureArea area : enclosureList.getAreas()) {
                         if (enclosure.equals(area)) {
                             status = Text.literal(ServerMain.INSTANCE.getTranslation().get("enclosure.message.existed").getAsString());
-                        }
-                        else if (enclosure.intersect(area)) {
+                        } else if (enclosure.intersect(area)) {
                             status = Text.literal(ServerMain.INSTANCE.getTranslation().get("enclosure.message.intersected").getAsString()).append(area.getFullName());
-                        }
-                        else if (enclosure.getName().equals(area.getName())) {
+                        } else if (enclosure.getName().equals(area.getName())) {
                             status = Text.literal(ServerMain.INSTANCE.getTranslation().get("enclosure.message.name_in_use").getAsString());
                         }
                     }
                     if (status == null) {
                         enclosureList.addArea(enclosure);
-                    }
-                    else {
+                    } else {
                         LOGGER.error("There was a error land which named \"" + enclosure.getFullName() + "\" while converting.");
                         LOGGER.error("Error type:" + status);
                     }
