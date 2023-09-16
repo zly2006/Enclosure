@@ -591,7 +591,6 @@ object ServerMain: ModInitializer {
         ServerLifecycleEvents.SERVER_STOPPING.register {
             checkUpdateThread.interrupt()
             playerSessions.clear()
-            enclosures.clear()
         }
 
         LOGGER.info("Enclosure enabled now!")
