@@ -592,7 +592,7 @@ object ServerMain: ModInitializer {
             checkUpdateThread.interrupt()
             playerSessions.clear()
         }
-        ServerLifecycleEvents.SERVER_STARTED.register {
+        ServerLifecycleEvents.SERVER_STOPPED.register {
             enclosures.clear()
         }
 
