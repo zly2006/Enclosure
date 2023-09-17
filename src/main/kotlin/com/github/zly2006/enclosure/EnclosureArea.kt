@@ -6,7 +6,6 @@ import com.github.zly2006.enclosure.gui.EnclosureScreenHandler
 import com.github.zly2006.enclosure.network.NetworkChannels
 import com.github.zly2006.enclosure.utils.*
 import com.github.zly2006.enclosure.utils.Serializable2Text.SerializationSettings
-import me.lucko.fabric.api.permissions.v0.Permissions
 import net.fabricmc.fabric.api.networking.v1.PacketByteBufs
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking
 import net.minecraft.nbt.NbtCompound
@@ -48,6 +47,7 @@ open class EnclosureArea : PersistentState, EnclosureView {
             }
         }
     }
+
     private var locked = false
     final override var minX by lockChecker(0)
     final override var minY by lockChecker(0)
@@ -153,8 +153,11 @@ open class EnclosureArea : PersistentState, EnclosureView {
         val y = world.getTopY(Heightmap.Type.MOTION_BLOCKING_NO_LEAVES, x, z)
         if (y == world.bottomY) {
             // this player is alive, but in a void
-            minecraftServer.playerManager.respawnPlayer(player, true)
-            minecraftServer.overworld.chunkManager.updatePosition(player)
+            val overworld = player.server.overworld
+            val spawnPos = overworld.spawnPos
+            player.teleport(
+                overworld, spawnPos.x.toDouble() + 0.5, spawnPos.y.toDouble(), spawnPos.z.toDouble() + 0.5, 0f, 0f
+            )
         } else {
             player.teleport(world, x.toDouble(), y.toDouble(), z.toDouble(), 0f, 0f)
         }
