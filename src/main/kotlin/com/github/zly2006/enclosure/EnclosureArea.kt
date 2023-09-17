@@ -156,7 +156,7 @@ open class EnclosureArea : PersistentState, EnclosureView {
             val overworld = player.server.overworld
             val spawnPos = overworld.spawnPos
             player.teleport(
-                overworld, spawnPos.x.toDouble() + 0.5, spawnPos.y.toDouble() + 0.5, spawnPos.z.toDouble() + 0.5, 0f, 0f
+                overworld, spawnPos.x.toDouble() + 0.5, spawnPos.y.toDouble(), spawnPos.z.toDouble() + 0.5, 0f, 0f
             )
         } else {
             player.teleport(world, x.toDouble(), y.toDouble(), z.toDouble(), 0f, 0f)
