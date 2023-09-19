@@ -32,6 +32,8 @@ public class Common {
     public boolean showMessagePrefix = false;
     @SerializedName("teleport_cooldown")
     public int teleportCooldown = 10000;
+    @SerializedName("use_actionbar_message")
+    public boolean useActionBarMessage = false;
     @SerializedName("enter_message_header")
     public String enterMessageHeader = "";
     @SerializedName("leave_message_header")

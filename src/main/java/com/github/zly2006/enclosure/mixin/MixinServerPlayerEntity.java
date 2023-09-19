@@ -157,7 +157,7 @@ public abstract class MixinServerPlayerEntity extends PlayerEntity implements Pl
                 text.append(formatMessage(area.getLeaveMessage(), area, player));
             }
         }
-        player.sendMessage(text);
+        player.sendMessage(text, ServerMain.INSTANCE.getCommonConfig().useActionBarMessage);
     }
     @Inject(method = "tick", at = @At("HEAD"))
     private void onTick(CallbackInfo ci) {
