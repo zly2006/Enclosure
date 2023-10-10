@@ -35,6 +35,7 @@ import net.fabricmc.loader.api.FabricLoader
 import net.fabricmc.loader.api.Version
 import net.minecraft.block.*
 import net.minecraft.command.argument.Vec3ArgumentType
+import net.minecraft.datafixer.DataFixTypes
 import net.minecraft.entity.Entity
 import net.minecraft.entity.Saddleable
 import net.minecraft.entity.decoration.ArmorStandEntity
@@ -63,6 +64,7 @@ import net.minecraft.util.TypedActionResult
 import net.minecraft.util.hit.BlockHitResult
 import net.minecraft.util.hit.HitResult
 import net.minecraft.util.math.BlockPos
+import net.minecraft.world.PersistentState
 import net.minecraft.world.RaycastContext
 import net.minecraft.world.World
 import org.slf4j.Logger
@@ -542,49 +544,44 @@ object ServerMain: ModInitializer {
         RequestOpenScreenC2SPPacket.register()
 
         // initialize enclosures
+
         ServerWorldEvents.LOAD.register(ServerWorldEvents.Load { _, world: ServerWorld ->
             LOGGER.info(
                 "Loading enclosures in {}...",
                 world.registryKey.value
             )
             val update = AtomicBoolean(false)
-            world.chunkManager
-                .persistentStateManager
-                .getOrCreate({
-                    var nbtCompound = it
-                    val version = nbtCompound.getInt(DATA_VERSION_KEY)
-                    if (version != DATA_VERSION) {
-                        LOGGER.info(
-                            "Updating enclosure data from version {} to {}",
-                            version,
-                            DATA_VERSION
-                        )
-                        for (i in version until DATA_VERSION) {
-                            nbtCompound = DataUpdater.update(i, nbtCompound)
-                        }
-                        update.plain = true
-                        update.set(true)
+            val type = PersistentState.Type({
+                val enclosureList = EnclosureList(world, true)
+                enclosureList.markDirty()
+                enclosureList
+            }, {
+                var nbtCompound = it
+                val version = nbtCompound.getInt(DATA_VERSION_KEY)
+                if (version != DATA_VERSION) {
+                    LOGGER.info(
+                        "Updating enclosure data from version {} to {}",
+                        version,
+                        DATA_VERSION
+                    )
+                    for (i in version until DATA_VERSION) {
+                        nbtCompound = DataUpdater.update(i, nbtCompound)
                     }
-                    val enclosureList = EnclosureList(nbtCompound, world, true)
-                    if (update.get()) {
-                        enclosureList.markDirty()
-                    }
-                    enclosureList
-                }, {
-                    val enclosureList = EnclosureList(world, true)
+                    update.plain = true
+                    update.set(true)
+                }
+                val enclosureList = EnclosureList(nbtCompound, world, true)
+                if (update.get()) {
                     enclosureList.markDirty()
-                    enclosureList
-                }, ENCLOSURE_LIST_KEY)
+                }
+                enclosureList
+            }, null)
+            world.chunkManager.persistentStateManager.getOrCreate(type, ENCLOSURE_LIST_KEY)
         })
         ServerLifecycleEvents.SERVER_STARTED.register { server ->
             //backupManager = BackupManager()
             playerSessions[CONSOLE] = Session(null)
-            groups = server.overworld.persistentStateManager
-                .getOrCreate(
-                    { EnclosureGroup.Groups(it) },
-                    { EnclosureGroup.Groups() },
-                    EnclosureGroup.GROUPS_KEY
-                )
+            groups = EnclosureGroup.Groups()
             Converter.convert()
             runCatching { checkUpdateThread.start() }
         }

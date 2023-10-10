@@ -41,7 +41,7 @@ public class ConfirmScreen extends Screen {
     @Override
     public void render(DrawContext context, int mouseX, int mouseY, float delta) {
         parent.render(context, 0, 0, delta);
-        renderBackground(context);
+        renderInGameBackground(context);
         int height = 150;
         int x = (parent.width - 200) / 2;
         int y = (parent.height - height) / 2;

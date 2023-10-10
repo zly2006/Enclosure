@@ -45,7 +45,7 @@ public class TransferScreen extends Screen implements EnclosureGui {
 
     @Override
     public void render(DrawContext drawContext, int mouseX, int mouseY, float delta) {
-        renderBackground(drawContext);
+        renderInGameBackground(drawContext);
         super.render(drawContext, mouseX, mouseY, delta);
     }
 }

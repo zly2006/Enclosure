@@ -154,7 +154,6 @@ public class EnclosureScreen extends HandledScreen<EnclosureScreenHandler> imple
 
     @Override
     public void render(DrawContext context, int mouseX, int mouseY, float delta) {
-        renderBackground(context);
         renderBottom = 5;
         for (ClickableTextWidget textWidget : textWidgets) {
             textWidget.y = renderBottom;

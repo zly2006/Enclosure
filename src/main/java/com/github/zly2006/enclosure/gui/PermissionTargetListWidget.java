@@ -116,7 +116,7 @@ public class PermissionTargetListWidget<T extends ButtonWidget> extends ElementL
             setButton.render(context, mouseX, mouseY, tickDelta);
             assert client.player != null;
             Optional.ofNullable(client.player.networkHandler.getPlayerListEntry(uuid))
-                    .map(PlayerListEntry::getSkinTexture)
+                    .map(PlayerListEntry::getSkinTextures)
                     .ifPresent(texture -> {
                         PlayerSkinDrawer.draw(context, texture, x, y, 16);
                     });

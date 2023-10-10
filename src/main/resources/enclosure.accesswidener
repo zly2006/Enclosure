@@ -11,3 +11,4 @@ accessible field net/minecraft/entity/ItemEntity owner Ljava/util/UUID;
 accessible class net/minecraft/util/UserCache$Entry
 accessible field net/minecraft/util/UserCache$Entry profile Lcom/mojang/authlib/GameProfile;
 accessible field net/minecraft/util/UserCache byName Ljava/util/Map;
+extendable class net/minecraft/datafixer/DataFixTypes

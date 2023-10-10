@@ -48,7 +48,6 @@ public class PermissionListWidget extends ElementListWidget<PermissionListWidget
                 .sorted(Comparator.comparing(Permission::getName))
                 .forEach(permission -> addEntry(new PermissionEntry(permission)));
         setRenderBackground(false); // 不渲染背景
-        setRenderHorizontalShadows(true); // 渲染上下两道杠
     }
 
     @Override

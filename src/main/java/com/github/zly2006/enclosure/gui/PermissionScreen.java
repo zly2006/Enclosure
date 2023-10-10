@@ -62,7 +62,7 @@ public class PermissionScreen extends Screen implements EnclosureGui {
 
     @Override
     public void render(DrawContext context, int mouseX, int mouseY, float delta) {
-        renderBackground(context);
+        renderInGameBackground(context);
         super.render(context, mouseX, mouseY, delta);
         MutableText title = Text.translatable("enclosure.widget.set_permission").append(" ");
         if (CONSOLE.equals(uuid)) {
