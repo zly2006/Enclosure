@@ -35,7 +35,6 @@ import net.fabricmc.loader.api.FabricLoader
 import net.fabricmc.loader.api.Version
 import net.minecraft.block.*
 import net.minecraft.command.argument.Vec3ArgumentType
-import net.minecraft.datafixer.DataFixTypes
 import net.minecraft.entity.Entity
 import net.minecraft.entity.Saddleable
 import net.minecraft.entity.decoration.ArmorStandEntity
@@ -578,7 +577,7 @@ object ServerMain: ModInitializer {
             }, null)
             world.chunkManager.persistentStateManager.getOrCreate(type, ENCLOSURE_LIST_KEY)
         })
-        ServerLifecycleEvents.SERVER_STARTED.register { server ->
+        ServerLifecycleEvents.SERVER_STARTED.register {
             //backupManager = BackupManager()
             playerSessions[CONSOLE] = Session(null)
             groups = EnclosureGroup.Groups()
