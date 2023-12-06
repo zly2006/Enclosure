@@ -35,7 +35,7 @@ public class PermissionListWidget extends ElementListWidget<PermissionListWidget
 
     public PermissionListWidget(MinecraftClient minecraftClient, Screen parent, String fullName, EnclosureView.ReadOnly area, UUID uuid,
                                 int width, int height, int top, int bottom) {
-        super(minecraftClient, width, height, top, bottom, 20);
+        super(minecraftClient, width, height, top, 20);
         this.parent = parent;
         this.fullName = fullName;
         this.area = area;
@@ -58,11 +58,6 @@ public class PermissionListWidget extends ElementListWidget<PermissionListWidget
     @Override
     protected int getScrollbarPositionX() {
         return width - 15;
-    }
-
-    @Override
-    public void render(DrawContext context, int mouseX, int mouseY, float delta) {
-        super.render(context, mouseX, mouseY, delta);
     }
 
     @Environment(EnvType.CLIENT)

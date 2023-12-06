@@ -483,7 +483,7 @@ fun register(dispatcher: CommandDispatcher<ServerCommandSource>): LiteralCommand
                 permission("enclosure.command.admin.clients", BuilderScope.Companion.DefaultPermission.OP)
                 executes {
                     EnclosureInstalledC2SPacket.installedClientMod.forEach {
-                        source.sendMessage(Text.literal(it.key.entityName + ": " + it.value.friendlyString))
+                        source.sendMessage(Text.literal(it.key.nameForScoreboard + ": " + it.value.friendlyString))
                     }
                 }
             }
@@ -1249,7 +1249,7 @@ fun register(dispatcher: CommandDispatcher<ServerCommandSource>): LiteralCommand
                         error(Permission.ADMIN.getNoPermissionMsg(source.player), this)
                     }
                     var str by delegate(area, l)
-                    val message = Text.Serializer.toJson(TextArgumentType.getTextArgument(this, "message"))
+                    val message = Text.Serialization.toJsonTree(TextArgumentType.getTextArgument(this, "message"))
                     str = "#rich:$message"
                     source.sendMessage(TrT.of("enclosure.message.set_message", l))
                 }

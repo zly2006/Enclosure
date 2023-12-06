@@ -23,7 +23,7 @@ public class MixinRaidManager {
             BlockPos pos = raid.getCenter();
             EnclosureArea area = ServerMain.INSTANCE.getSmallestEnclosure(player.getServerWorld(), pos);
             if (area != null) {
-                LOGGER.info("Raid " + raid.getRaidId() + " started by " + player.getEntityName() + " in enclosure " + area.getName() + " at " + pos.getX() + " " + pos.getY() + " " + pos.getZ() + ".");
+                LOGGER.info("Raid " + raid.getRaidId() + " started by " + player.getNameForScoreboard() + " in enclosure " + area.getName() + " at " + pos.getX() + " " + pos.getY() + " " + pos.getZ() + ".");
             }
         }
     }

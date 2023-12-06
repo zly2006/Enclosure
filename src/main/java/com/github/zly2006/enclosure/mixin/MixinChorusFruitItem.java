@@ -20,9 +20,9 @@ import static com.github.zly2006.enclosure.utils.Permission.TELEPORT;
 @Mixin(ChorusFruitItem.class)
 public class MixinChorusFruitItem {
     @Inject(method = "finishUsing", locals = LocalCapture.CAPTURE_FAILSOFT, at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/LivingEntity;teleport(DDDZ)Z"), cancellable = true)
-    private void tp(ItemStack stack, World world, LivingEntity user, CallbackInfoReturnable<ItemStack> cir, ItemStack itemStack, double d, double e, double f, int i, double g, double h, double j, Vec3d vec3d) {
+    private void tp(ItemStack stack, World world, LivingEntity user, CallbackInfoReturnable<ItemStack> cir, ItemStack itemStack, int i, double d, double e, double f, Vec3d vec3d) {
         if (user instanceof ServerPlayerEntity player) {
-            BlockPos pos = Utils.toBlockPos(g, h, j);
+            BlockPos pos = Utils.toBlockPos(d, e, f);
             if (!ServerMain.INSTANCE.checkPermission(player, TELEPORT, pos)) {
                 player.sendMessage(TELEPORT.getNoPermissionMsg(player));
                 cir.setReturnValue(stack);

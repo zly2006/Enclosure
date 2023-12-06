@@ -435,8 +435,8 @@ open class EnclosureArea : PersistentState, EnclosureView {
     }
 
     fun toBox() = Box(
-        BlockPos(minX, minY, minZ),
-        BlockPos(maxX + 1, maxY + 1, maxZ + 1)
+        Vec3d.of(BlockPos(minX, minY, minZ)),
+        Vec3d.of(BlockPos(maxX + 1, maxY + 1, maxZ + 1))
     )
 }
 

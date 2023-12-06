@@ -7,6 +7,7 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.fabricmc.loader.api.Version;
 import net.minecraft.screen.ScreenTexts;
 import net.minecraft.server.ServerMetadata;
+import net.minecraft.text.TextCodecs;
 import net.minecraft.util.dynamic.Codecs;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -27,7 +28,7 @@ public abstract class MixinServerMetadata implements ServerMetadataAccess {
     @Inject(method = "<clinit>", at = @At("RETURN"))
     private static void afterStaticInit(CallbackInfo ci) {
         CODEC = RecordCodecBuilder.create(instance -> instance.group(
-                Codecs.TEXT.optionalFieldOf("description", ScreenTexts.EMPTY)
+                TextCodecs.CODEC.optionalFieldOf("description", ScreenTexts.EMPTY)
                         .forGetter(ServerMetadata::description),
                 ServerMetadata.Players.CODEC.optionalFieldOf("players")
                         .forGetter(ServerMetadata::players),

@@ -39,7 +39,7 @@ public class PermissionTargetListWidget<T extends ButtonWidget> extends ElementL
     final SearchEntry searchEntry = new SearchEntry();
 
     public PermissionTargetListWidget(MinecraftClient minecraftClient, EnclosureView.ReadOnly area, String fullName, Screen parent, int width, int height, int top, int bottom, Function2<PermissionTargetListWidget<T>, UUID, T> buttonFactory) {
-        super(minecraftClient, width, height, top, bottom, 20);
+        super(minecraftClient, width, height, top, 20);
         this.area = area;
         this.fullName = fullName;
         this.parent = parent;
@@ -83,7 +83,7 @@ public class PermissionTargetListWidget<T extends ButtonWidget> extends ElementL
     }
 
     public void setTop(int top) {
-        this.top = top;
+        this.setY(top);
     }
 
     abstract static class Entry extends ElementListWidget.Entry<Entry> { }

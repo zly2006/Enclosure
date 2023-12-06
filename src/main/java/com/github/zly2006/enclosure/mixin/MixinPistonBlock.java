@@ -19,7 +19,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 
 @Mixin(PistonBlock.class)
-public class MixinPistonBlock extends FacingBlock {
+public abstract class MixinPistonBlock extends FacingBlock {
     protected MixinPistonBlock(Settings settings) {
         super(settings);
     }
