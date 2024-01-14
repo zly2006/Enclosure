@@ -23,7 +23,7 @@ public class MixinServerEntry {
     @Shadow @Final private MultiplayerScreen screen;
     @Shadow @Final private ServerInfo server;
     @Shadow @Final private MinecraftClient client;
-    Identifier NOTIFY_TEXTURE = new Identifier("realms", "textures/gui/realms/trial_icon.png");
+    private static final Identifier NOTIFY_TEXTURE = new Identifier("icon/trial_available");
     @Inject(method = "render", at = @At("RETURN"))
     private void onRender(DrawContext context, int index, int y, int x, int entryWidth, int entryHeight, int mouseX, int mouseY, boolean hovered, float tickDelta, CallbackInfo ci) {
         ServerMetadataAccess access = (ServerMetadataAccess) server;
@@ -38,7 +38,7 @@ public class MixinServerEntry {
                     );
                 }
             }
-            context.drawTexture(NOTIFY_TEXTURE, x + 24, y + 24, 0, offset, 8, 8, 8, 16);
+            context.drawGuiTexture(NOTIFY_TEXTURE, x + 24, y + 24, 0, offset, 8, 8, 8, 16);
         }
     }
 }

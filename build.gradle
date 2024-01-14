@@ -86,8 +86,6 @@ loom {
 }
 
 dependencies {
-    modRuntimeOnly "maven.modrinth:luckperms:v5.4.83-fabric"
-
     // SnakeYAML. To convert the old config
     include(modImplementation("org.yaml:snakeyaml:1.33"))
 
