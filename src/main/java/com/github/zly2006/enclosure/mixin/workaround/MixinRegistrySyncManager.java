@@ -21,7 +21,7 @@ public class MixinRegistrySyncManager {
                     target = "Lnet/fabricmc/fabric/impl/registry/sync/packet/RegistryPacketHandler;sendPacket(Ljava/util/function/Consumer;Ljava/util/Map;)V"
             )
     )
-    private static Map<Identifier, Object2IntMap<Identifier>> modifyIds(Map<Identifier, Object2IntMap<Identifier>> ids) {
+    private Map<Identifier, Object2IntMap<Identifier>> modifyIds(Map<Identifier, Object2IntMap<Identifier>> ids) {
         Object2IntMap<Identifier> map = ids.get(Registries.SCREEN_HANDLER.getKey().getValue());
         map.removeInt(EnclosureScreenHandler.ENCLOSURE_SCREEN_ID);
         return ids;
