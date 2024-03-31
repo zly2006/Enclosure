@@ -27,6 +27,7 @@ import net.minecraft.server.command.ServerCommandSource
 import net.minecraft.server.world.ServerWorld
 import net.minecraft.text.*
 import net.minecraft.util.Formatting
+import net.minecraft.util.Identifier
 import net.minecraft.util.math.BlockPos
 import net.minecraft.util.math.Box
 import net.minecraft.util.math.Direction
@@ -71,7 +72,7 @@ class BuilderScope<T: argT>(var parent: T) {
                 error(e.text, it)
             } catch (e: CommandSyntaxException) {
                 throw e
-            } catch (e: java.lang.Exception) {
+            } catch (e: Exception) {
                 LOGGER.error("Error while executing command: " + it.input, e)
                 error(TrT.of("enclosure.message.error").append(e.message), it)
             }
@@ -502,13 +503,11 @@ fun register(dispatcher: CommandDispatcher<ServerCommandSource>): LiteralCommand
                 val limits = getLimits(this)
                 val translatable = TrT.of("enclosure.message.limit.header")
                 limits.javaClass.fields.mapNotNull { field ->
-                    try {
+                    runCatching {
                         Text.literal("\n")
                             .append(TrT.limit(field).append(": ").gold())
                             .append(field[limits].toString())
-                    } catch (ignored: IllegalAccessException) {
-                        null
-                    }
+                    }.getOrNull()
                 }.forEach { text -> translatable.append(text) }
                 source.sendMessage(translatable)
             }
@@ -523,8 +522,8 @@ fun register(dispatcher: CommandDispatcher<ServerCommandSource>): LiteralCommand
             literal("world") {
                 argument("world", DimensionArgumentType.dimension()) {
                     paged({
-                        val world = DimensionArgumentType.getDimensionArgument(this, "world")
-                        "/enclosure list world ${world.registryKey.value}"
+                        val world = getArgument("world", Identifier::class.java)
+                        "/enclosure list world $world"
                     }, {
                         val world = DimensionArgumentType.getDimensionArgument(this, "world")
                         ServerMain.getAllEnclosures(world).areas.map {
