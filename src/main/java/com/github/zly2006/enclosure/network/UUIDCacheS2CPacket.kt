@@ -1,39 +1,47 @@
-package com.github.zly2006.enclosure.network;
+package com.github.zly2006.enclosure.network
 
-import com.github.zly2006.enclosure.client.ClientMain;
-import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
-import net.fabricmc.fabric.api.networking.v1.PacketSender;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.network.ClientPlayNetworkHandler;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.network.PacketByteBuf;
+import com.github.zly2006.enclosure.LOGGER
+import com.github.zly2006.enclosure.client.ClientMain
+import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking
+import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry
+import net.minecraft.nbt.NbtCompound
+import net.minecraft.network.PacketByteBuf
+import net.minecraft.network.codec.PacketCodec
+import net.minecraft.network.packet.CustomPayload
+import net.minecraft.util.Identifier
+import java.util.*
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
+class UUIDCacheS2CPacket(
+    val cache: NbtCompound
+)  : CustomPayload {
+    constructor(buf: PacketByteBuf): this(buf.readNbt()!!)
 
-import static com.github.zly2006.enclosure.ServerMainKt.LOGGER;
+    fun write(buf: PacketByteBuf) {
+        buf.writeNbt(cache)
+    }
 
-public class UUIDCacheS2CPacket implements ClientPlayNetworking.PlayChannelHandler {
-    public static final Map<UUID, String> uuid2name = new HashMap<>();
-    public static String getName(UUID uuid) {
-        if (uuid2name.containsKey(uuid)) {
-            return uuid2name.get(uuid);
+    override fun getId() = ID
+
+    companion object {
+        val uuid2name: MutableMap<UUID, String> = HashMap()
+        fun getName(uuid: UUID): String? {
+            if (uuid2name.containsKey(uuid)) {
+                return uuid2name[uuid]
+            }
+            return uuid.toString()
         }
-        return uuid.toString();
-    }
-
-    private UUIDCacheS2CPacket() {}
-    @Override
-    public void receive(MinecraftClient client, ClientPlayNetworkHandler handler, PacketByteBuf buf, PacketSender responseSender) {
-        NbtCompound compound = buf.readNbt();
-        assert compound != null;
-        compound.getKeys().forEach(key -> uuid2name.put(compound.getUuid(key), key));
-        LOGGER.info("Received UUID cache from server.");
-        ClientMain.isEnclosureInstalled = true;
-    }
-
-    public static void register() {
-        ClientPlayNetworking.registerGlobalReceiver(NetworkChannels.SYNC_UUID, new UUIDCacheS2CPacket());
+        val ID = CustomPayload.Id<UUIDCacheS2CPacket>(Identifier("enclosure:uuid_cache"))
+        val CODEC: PacketCodec<PacketByteBuf, UUIDCacheS2CPacket?> = CustomPayload.codecOf(
+            { obj, buf -> obj!!.write(buf) },
+            { buf -> UUIDCacheS2CPacket(buf) })
+        fun register() {
+            PayloadTypeRegistry.configurationS2C().register(ID, CODEC)
+            ClientPlayNetworking.registerGlobalReceiver(ID) { payload, _ ->
+                uuid2name.clear()
+                payload.cache.keys.forEach { key -> uuid2name[payload.cache.getUuid(key)!!] = key }
+                LOGGER.info("Received UUID cache from server.")
+                ClientMain.isEnclosureInstalled = true
+            }
+        }
     }
 }

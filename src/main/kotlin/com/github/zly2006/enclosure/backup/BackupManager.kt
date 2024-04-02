@@ -40,7 +40,7 @@ class BackupManager {
                         }
                         if (block.hasBlockEntity()) {
                             val stream = ByteArrayOutputStream()
-                            NbtIo.writeCompressed(area.world.getBlockEntity(BlockPos(x, y, z))!!.createNbt(), stream)
+                            NbtIo.writeCompressed(area.world.getBlockEntity(BlockPos(x, y, z))!!.createNbt(area.world.registryManager), stream)
                             setBytes(5, stream.toByteArray())
                         }
                     }.execute()

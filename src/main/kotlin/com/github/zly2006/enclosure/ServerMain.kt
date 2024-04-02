@@ -129,7 +129,6 @@ object ServerMain: ModInitializer {
     internal val enclosures: MutableMap<RegistryKey<World>, EnclosureList> = HashMap()
     var operationItem: Item? = null
     var playerSessions: MutableMap<UUID, Session> = HashMap()
-    lateinit var groups: EnclosureGroup.Groups
     var limits: Map<String, LandLimits> = run {
         try {
             val limits = reloadLimits()
@@ -365,8 +364,8 @@ object ServerMain: ModInitializer {
             }
         })
 
-        CommandRegistrationCallback.EVENT.register(CommandRegistrationCallback { dispatcher: CommandDispatcher<ServerCommandSource>, _, _ ->
-            val node = register(dispatcher)
+        CommandRegistrationCallback.EVENT.register(CommandRegistrationCallback { dispatcher: CommandDispatcher<ServerCommandSource>, access, _ ->
+            val node = register(dispatcher, access)
             if (commonConfig.developMode) {
                 dispatcher.register(
                     CommandManager.literal("notify_update")
@@ -526,7 +525,7 @@ object ServerMain: ModInitializer {
                             player.currentScreenHandler.syncState()
                             player.sendMessage(permission.getNoPermissionMsg(player))
                             player.networkHandler.sendPacket(EntityTrackerUpdateS2CPacket(
-                                entity.id, entity.dataTracker.entries.map { it.value.toSerialized() }
+                                entity.id, entity.dataTracker.entries.map { it.toSerialized() }
                             ))
                             ActionResult.FAIL
                         }
@@ -554,7 +553,7 @@ object ServerMain: ModInitializer {
                 val enclosureList = EnclosureList(world, true)
                 enclosureList.markDirty()
                 enclosureList
-            }, {
+            }, { it, _ ->
                 var nbtCompound = it
                 val version = nbtCompound.getInt(DATA_VERSION_KEY)
                 if (version != DATA_VERSION) {
@@ -580,7 +579,6 @@ object ServerMain: ModInitializer {
         ServerLifecycleEvents.SERVER_STARTED.register {
             //backupManager = BackupManager()
             playerSessions[CONSOLE] = Session(null)
-            groups = EnclosureGroup.Groups()
             Converter.convert()
             runCatching { checkUpdateThread.start() }
         }

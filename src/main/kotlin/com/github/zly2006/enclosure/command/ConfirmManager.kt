@@ -2,11 +2,10 @@ package com.github.zly2006.enclosure.command
 
 import com.github.zly2006.enclosure.gui.EnclosureScreenHandler
 import com.github.zly2006.enclosure.minecraftServer
-import com.github.zly2006.enclosure.network.NetworkChannels
+import com.github.zly2006.enclosure.network.ConfirmRequestS2CPacket
 import com.github.zly2006.enclosure.utils.TrT
 import com.github.zly2006.enclosure.utils.hoverText
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents
-import net.fabricmc.fabric.api.networking.v1.PacketByteBufs
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.text.ClickEvent
@@ -17,8 +16,8 @@ import java.util.*
 
 object ConfirmManager {
     init {
-        ServerPlayNetworking.registerGlobalReceiver(NetworkChannels.CONFIRM) { _, player, _, _, _ ->
-            val uuid = player.uuid
+        ServerPlayNetworking.registerGlobalReceiver(ConfirmRequestS2CPacket.ID) { _, context ->
+            val uuid = context.player().uuid
             val time = pendingMap[uuid]
             if (time != null) {
                 pendingMap -= uuid
@@ -62,9 +61,7 @@ object ConfirmManager {
         val entry = Entry(message, runnable, enforceCLI)
         runnableMap[player?.uuid ?: CONSOLE] = entry
         if (!enforceCLI && player != null && player.currentScreenHandler is EnclosureScreenHandler) {
-            val buf = PacketByteBufs.create()
-            buf.writeText(message ?: text)
-            ServerPlayNetworking.send(source.player, NetworkChannels.CONFIRM, buf)
+            ServerPlayNetworking.send(source.player, ConfirmRequestS2CPacket(message ?: text))
             pendingMap[player.uuid] = System.currentTimeMillis()
         } else message?.let { source.sendMessage(it) }
         source.sendMessage(text)

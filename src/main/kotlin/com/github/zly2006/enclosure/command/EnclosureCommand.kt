@@ -20,8 +20,10 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType
 import com.mojang.brigadier.suggestion.SuggestionsBuilder
 import com.mojang.brigadier.tree.LiteralCommandNode
+import net.minecraft.command.CommandRegistryAccess
 import net.minecraft.command.CommandSource
 import net.minecraft.command.argument.*
+import net.minecraft.registry.DynamicRegistryManager
 import net.minecraft.server.command.CommandManager
 import net.minecraft.server.command.ServerCommandSource
 import net.minecraft.server.world.ServerWorld
@@ -151,9 +153,7 @@ class BuilderScope<T: argT>(var parent: T) {
                     action(enclosure)
                 } else {
                     val blockPos = BlockPos.ofFloored(source.position)
-                    ServerMain.getAllEnclosures(source.world).getArea(
-                        blockPos
-                    )?.areaOf(blockPos)?.let { action(it) }
+                    ServerMain.getSmallestEnclosure(source.world, blockPos)?.let { action(it) }
                         ?: error(TrT.of("enclosure.message.no_enclosure"), this)
                 }
             }
@@ -360,7 +360,7 @@ fun BuilderScope<*>.registerConfirmCommand() {
     }
 }
 
-fun register(dispatcher: CommandDispatcher<ServerCommandSource>): LiteralCommandNode<ServerCommandSource>? {
+fun register(dispatcher: CommandDispatcher<ServerCommandSource>, access: CommandRegistryAccess): LiteralCommandNode<ServerCommandSource>? {
     val node = BuilderScope(CommandManager.literal("enclosure")).apply {
         registerConfirmCommand()
         literal("about") {
@@ -377,7 +377,7 @@ fun register(dispatcher: CommandDispatcher<ServerCommandSource>): LiteralCommand
                 )
                 if (player != null && EnclosureInstalledC2SPacket.isInstalled(player)) {
                     val version = EnclosureInstalledC2SPacket.clientVersion(player)
-                    source.sendMessage(TrT.of("enclosure.about.version.client").append(version.friendlyString))
+                    source.sendMessage(TrT.of("enclosure.about.version.client").append(version?.friendlyString.toString()))
                 }
                 source.sendMessage(TrT.of("enclosure.about.copyright"))
             }
@@ -1242,13 +1242,13 @@ fun register(dispatcher: CommandDispatcher<ServerCommandSource>): LiteralCommand
             literal("rich") {
                 parent.requires { ServerMain.commonConfig.allowRichMessage }
                 withLeaveEnter({ n, c ->
-                    n.then(CommandManager.argument("message", TextArgumentType.text()).executes(c))
+                    n.then(CommandManager.argument("message", TextArgumentType.text(access)).executes(c))
                 }) { area, l ->
                     if (!area.hasPerm(source.player!!, Permission.ADMIN)) {
                         error(Permission.ADMIN.getNoPermissionMsg(source.player), this)
                     }
                     var str by delegate(area, l)
-                    val message = Text.Serialization.toJsonTree(TextArgumentType.getTextArgument(this, "message"))
+                    val message = Text.Serialization.toJsonString(TextArgumentType.getTextArgument(this, "message"), DynamicRegistryManager.EMPTY)
                     str = "#rich:$message"
                     source.sendMessage(TrT.of("enclosure.message.set_message", l))
                 }

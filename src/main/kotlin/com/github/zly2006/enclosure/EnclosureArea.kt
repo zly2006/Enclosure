@@ -3,7 +3,7 @@ package com.github.zly2006.enclosure
 import com.github.zly2006.enclosure.command.CONSOLE
 import com.github.zly2006.enclosure.command.Session
 import com.github.zly2006.enclosure.gui.EnclosureScreenHandler
-import com.github.zly2006.enclosure.network.NetworkChannels
+import com.github.zly2006.enclosure.network.SyncPermissionS2CPacket
 import com.github.zly2006.enclosure.utils.*
 import com.github.zly2006.enclosure.utils.Serializable2Text.SerializationSettings
 import net.fabricmc.fabric.api.networking.v1.PacketByteBufs
@@ -11,6 +11,7 @@ import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking
 import net.minecraft.nbt.NbtCompound
 import net.minecraft.nbt.NbtDouble
 import net.minecraft.nbt.NbtList
+import net.minecraft.registry.RegistryWrapper
 import net.minecraft.server.command.ServerCommandSource
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.server.world.ServerWorld
@@ -163,7 +164,7 @@ open class EnclosureArea : PersistentState, EnclosureView {
         }
     }
 
-    override fun writeNbt(nbt: NbtCompound): NbtCompound {
+    override fun writeNbt(nbt: NbtCompound, registryLookup: RegistryWrapper.WrapperLookup?): NbtCompound {
         nbt.putString("name", name)
         nbt.putInt("min_x", minX)
         nbt.putInt("min_y", minY)
@@ -278,7 +279,7 @@ open class EnclosureArea : PersistentState, EnclosureView {
                 val buf = PacketByteBufs.create()
                 buf.writeUuid(uuid)
                 buf.writeNbt(permissionsMap[uuid].toNbt())
-                ServerPlayNetworking.send(it, NetworkChannels.SYNC_PERMISSION, buf)
+                ServerPlayNetworking.send(it, SyncPermissionS2CPacket(uuid, permissionsMap[uuid].toNbt()))
             }
         }
         markDirty()

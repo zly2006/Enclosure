@@ -8,8 +8,6 @@ import net.minecraft.client.MinecraftClient
 import net.minecraft.client.render.*
 import net.minecraft.client.util.math.MatrixStack
 import net.minecraft.util.math.Vec3d
-import org.joml.Matrix3f
-import org.joml.Matrix4f
 import kotlin.math.max
 import kotlin.math.min
 
@@ -21,7 +19,7 @@ object EnclosureWorldRenderer {
             if (client.options.hudHidden) return@a true
             val session = ClientMain.clientSession ?: return@a true
             val cameraPos = context.camera().pos
-            drawSessionOutline(context.matrixStack(), session, cameraPos, context.tickDelta(), context.consumers())
+            drawSessionOutline(context.matrixStack()!!, session, cameraPos, context.tickDelta(), context.consumers())
             true
         }
         WorldRenderEvents.AFTER_TRANSLUCENT.register a@{ context: WorldRenderContext ->
@@ -30,7 +28,7 @@ object EnclosureWorldRenderer {
             val session = ClientMain.clientSession ?: return@a
             val cameraPos = context.camera().pos
             RenderSystem.enableBlend()
-            drawSessionFaces(context.matrixStack(), session, cameraPos, context.tickDelta())
+            drawSessionFaces(context.matrixStack()!!, session, cameraPos, context.tickDelta())
             RenderSystem.disableBlend()
         }
     }
@@ -53,8 +51,7 @@ object EnclosureWorldRenderer {
         val green = 1f
         val blue = 1f
         val alpha = 1f
-        val matrix4f = matrices.peek().positionMatrix
-        val matrix3f = matrices.peek().normalMatrix
+        val matrix = matrices.peek()
         // Render two points
         WorldRenderer.drawBox(
             matrices, linesBuffer,
@@ -77,18 +74,18 @@ object EnclosureWorldRenderer {
             0.25f, 0.25f, 1f, alpha
         )
         // Render the outline of the box
-        renderLine(linesBuffer, matrix4f, matrix3f, minX, minY, minZ, 0, maxX, red, 0f, 0f, alpha)
-        renderLine(linesBuffer, matrix4f, matrix3f, minX, minY, maxZ, 0, maxX, red, 0f, 0f, alpha)
-        renderLine(linesBuffer, matrix4f, matrix3f, minX, maxY, maxZ, 0, maxX, red, 0f, 0f, alpha)
-        renderLine(linesBuffer, matrix4f, matrix3f, minX, maxY, minZ, 0, maxX, red, 0f, 0f, alpha)
-        renderLine(linesBuffer, matrix4f, matrix3f, minX, minY, minZ, 1, maxY, 0f, green, 0f, alpha)
-        renderLine(linesBuffer, matrix4f, matrix3f, minX, minY, maxZ, 1, maxY, 0f, green, 0f, alpha)
-        renderLine(linesBuffer, matrix4f, matrix3f, maxX, minY, maxZ, 1, maxY, 0f, green, 0f, alpha)
-        renderLine(linesBuffer, matrix4f, matrix3f, maxX, minY, minZ, 1, maxY, 0f, green, 0f, alpha)
-        renderLine(linesBuffer, matrix4f, matrix3f, minX, minY, minZ, 2, maxZ, 0f, 0f, blue, alpha)
-        renderLine(linesBuffer, matrix4f, matrix3f, minX, maxY, minZ, 2, maxZ, 0f, 0f, blue, alpha)
-        renderLine(linesBuffer, matrix4f, matrix3f, maxX, maxY, minZ, 2, maxZ, 0f, 0f, blue, alpha)
-        renderLine(linesBuffer, matrix4f, matrix3f, maxX, minY, minZ, 2, maxZ, 0f, 0f, blue, alpha)
+        renderLine(linesBuffer, matrix, minX, minY, minZ, 0, maxX, red, 0f, 0f, alpha)
+        renderLine(linesBuffer, matrix, minX, minY, maxZ, 0, maxX, red, 0f, 0f, alpha)
+        renderLine(linesBuffer, matrix, minX, maxY, maxZ, 0, maxX, red, 0f, 0f, alpha)
+        renderLine(linesBuffer, matrix, minX, maxY, minZ, 0, maxX, red, 0f, 0f, alpha)
+        renderLine(linesBuffer, matrix, minX, minY, minZ, 1, maxY, 0f, green, 0f, alpha)
+        renderLine(linesBuffer, matrix, minX, minY, maxZ, 1, maxY, 0f, green, 0f, alpha)
+        renderLine(linesBuffer, matrix, maxX, minY, maxZ, 1, maxY, 0f, green, 0f, alpha)
+        renderLine(linesBuffer, matrix, maxX, minY, minZ, 1, maxY, 0f, green, 0f, alpha)
+        renderLine(linesBuffer, matrix, minX, minY, minZ, 2, maxZ, 0f, 0f, blue, alpha)
+        renderLine(linesBuffer, matrix, minX, maxY, minZ, 2, maxZ, 0f, 0f, blue, alpha)
+        renderLine(linesBuffer, matrix, maxX, maxY, minZ, 2, maxZ, 0f, 0f, blue, alpha)
+        renderLine(linesBuffer, matrix, maxX, minY, minZ, 2, maxZ, 0f, 0f, blue, alpha)
     }
 
     private fun drawSessionFaces(matrices: MatrixStack, session: ClientSession, cameraPos: Vec3d, delta: Float) {
@@ -140,7 +137,7 @@ object EnclosureWorldRenderer {
      * @param alpha 0-1
      */
     private fun renderLine(
-        linesBuffer: VertexConsumer, matrix4f: Matrix4f, matrix3f: Matrix3f,
+        linesBuffer: VertexConsumer, matrix: MatrixStack.Entry,
         x1: Float, y1: Float, z1: Float,
         way: Int, to: Float,
         red: Float, green: Float, blue: Float, alpha: Float
@@ -153,15 +150,15 @@ object EnclosureWorldRenderer {
                 min = x1
                 max = to
                 while (min < max - 64) {
-                    linesBuffer.vertex(matrix4f, min, y1, z1).color(red, green, blue, alpha)
-                        .normal(matrix3f, 1f, 0f, 0f).next()
-                    linesBuffer.vertex(matrix4f, min + 64, y1, z1).color(red, green, blue, alpha)
-                        .normal(matrix3f, 1f, 0f, 0f).next()
+                    linesBuffer.vertex(matrix.positionMatrix, min, y1, z1).color(red, green, blue, alpha)
+                        .normal(matrix, 1f, 0f, 0f).next()
+                    linesBuffer.vertex(matrix.positionMatrix, min + 64, y1, z1).color(red, green, blue, alpha)
+                        .normal(matrix, 1f, 0f, 0f).next()
                     min += 64f
                 }
-                linesBuffer.vertex(matrix4f, min, y1, z1).color(red, green, blue, alpha).normal(matrix3f, 1f, 0f, 0f)
+                linesBuffer.vertex(matrix.positionMatrix, min, y1, z1).color(red, green, blue, alpha).normal(matrix, 1f, 0f, 0f)
                     .next()
-                linesBuffer.vertex(matrix4f, max, y1, z1).color(red, green, blue, alpha).normal(matrix3f, 1f, 0f, 0f)
+                linesBuffer.vertex(matrix.positionMatrix, max, y1, z1).color(red, green, blue, alpha).normal(matrix, 1f, 0f, 0f)
                     .next()
             }
 
@@ -169,15 +166,15 @@ object EnclosureWorldRenderer {
                 min = y1
                 max = to
                 while (min < max - 64) {
-                    linesBuffer.vertex(matrix4f, x1, min, z1).color(red, green, blue, alpha)
-                        .normal(matrix3f, 0f, 1f, 0f).next()
-                    linesBuffer.vertex(matrix4f, x1, min + 64, z1).color(red, green, blue, alpha)
-                        .normal(matrix3f, 0f, 1f, 0f).next()
+                    linesBuffer.vertex(matrix.positionMatrix, x1, min, z1).color(red, green, blue, alpha)
+                        .normal(matrix, 0f, 1f, 0f).next()
+                    linesBuffer.vertex(matrix.positionMatrix, x1, min + 64, z1).color(red, green, blue, alpha)
+                        .normal(matrix, 0f, 1f, 0f).next()
                     min += 64f
                 }
-                linesBuffer.vertex(matrix4f, x1, min, z1).color(red, green, blue, alpha).normal(matrix3f, 0f, 1f, 0f)
+                linesBuffer.vertex(matrix.positionMatrix, x1, min, z1).color(red, green, blue, alpha).normal(matrix, 0f, 1f, 0f)
                     .next()
-                linesBuffer.vertex(matrix4f, x1, max, z1).color(red, green, blue, alpha).normal(matrix3f, 0f, 1f, 0f)
+                linesBuffer.vertex(matrix.positionMatrix, x1, max, z1).color(red, green, blue, alpha).normal(matrix, 0f, 1f, 0f)
                     .next()
             }
 
@@ -185,15 +182,15 @@ object EnclosureWorldRenderer {
                 min = z1
                 max = to
                 while (min < max - 64) {
-                    linesBuffer.vertex(matrix4f, x1, y1, min).color(red, green, blue, alpha)
-                        .normal(matrix3f, 0f, 0f, 1f).next()
-                    linesBuffer.vertex(matrix4f, x1, y1, min + 64).color(red, green, blue, alpha)
-                        .normal(matrix3f, 0f, 0f, 1f).next()
+                    linesBuffer.vertex(matrix.positionMatrix, x1, y1, min).color(red, green, blue, alpha)
+                        .normal(matrix, 0f, 0f, 1f).next()
+                    linesBuffer.vertex(matrix.positionMatrix, x1, y1, min + 64).color(red, green, blue, alpha)
+                        .normal(matrix, 0f, 0f, 1f).next()
                     min += 64f
                 }
-                linesBuffer.vertex(matrix4f, x1, y1, min).color(red, green, blue, alpha).normal(matrix3f, 0f, 0f, 1f)
+                linesBuffer.vertex(matrix.positionMatrix, x1, y1, min).color(red, green, blue, alpha).normal(matrix, 0f, 0f, 1f)
                     .next()
-                linesBuffer.vertex(matrix4f, x1, y1, max).color(red, green, blue, alpha).normal(matrix3f, 0f, 0f, 1f)
+                linesBuffer.vertex(matrix.positionMatrix, x1, y1, max).color(red, green, blue, alpha).normal(matrix, 0f, 0f, 1f)
                     .next()
             }
 

@@ -5,10 +5,10 @@ import com.github.zly2006.enclosure.ServerMain.getAllEnclosures
 import net.minecraft.nbt.NbtCompound
 import net.minecraft.nbt.NbtList
 import net.minecraft.nbt.NbtString
+import net.minecraft.registry.RegistryWrapper
 import net.minecraft.server.world.ServerWorld
 import net.minecraft.util.math.BlockPos
 import net.minecraft.world.PersistentState
-import java.io.File
 
 class EnclosureList(world: ServerWorld, isRoot: Boolean) : PersistentState() {
     private val areaMap: MutableMap<String, EnclosureArea> = HashMap()
@@ -36,12 +36,12 @@ class EnclosureList(world: ServerWorld, isRoot: Boolean) : PersistentState() {
         }
     }
 
-    override fun writeNbt(nbt: NbtCompound): NbtCompound {
+    override fun writeNbt(nbt: NbtCompound, registryLookup: RegistryWrapper.WrapperLookup?): NbtCompound {
         val list = NbtList()
         for (area in areaMap.values) {
             list.add(NbtString.of(area.name))
             val compound = NbtCompound()
-            area.writeNbt(compound)
+            area.writeNbt(compound, null)
             nbt.put(area.name, compound)
         }
         nbt.put(ENCLOSURE_LIST_KEY, list)
@@ -84,10 +84,6 @@ class EnclosureList(world: ServerWorld, isRoot: Boolean) : PersistentState() {
     fun addArea(area: EnclosureArea) {
         areaMap[area.name] = area
         markDirty()
-    }
-
-    override fun save(file: File) {
-        super.save(file)
     }
 }
 

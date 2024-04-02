@@ -1,76 +1,63 @@
-package com.github.zly2006.enclosure.network;
+package com.github.zly2006.enclosure.network
 
-import com.github.zly2006.enclosure.ServerMainKt;
-import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
-import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
-import net.fabricmc.fabric.api.networking.v1.PacketSender;
-import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
-import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
-import net.fabricmc.loader.api.SemanticVersion;
-import net.fabricmc.loader.api.Version;
-import net.fabricmc.loader.api.VersionParsingException;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.network.PacketByteBuf;
-import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.network.ServerPlayNetworkHandler;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.Text;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import com.github.zly2006.enclosure.MOD_VERSION
+import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking
+import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry
+import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents
+import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking
+import net.fabricmc.loader.api.Version
+import net.minecraft.network.PacketByteBuf
+import net.minecraft.network.codec.PacketCodec
+import net.minecraft.network.packet.CustomPayload
+import net.minecraft.server.MinecraftServer
+import net.minecraft.server.network.ServerPlayNetworkHandler
+import net.minecraft.server.network.ServerPlayerEntity
+import net.minecraft.util.Identifier
 
-import java.util.HashMap;
-import java.util.Map;
+class EnclosureInstalledC2SPacket(
+    val version: Version
+) : CustomPayload {
 
-import static com.github.zly2006.enclosure.ServerMainKt.MOD_VERSION;
+    constructor(buf: PacketByteBuf?) : this(Version.parse(buf!!.readString()))
 
-public class EnclosureInstalledC2SPacket implements ServerPlayNetworking.PlayChannelHandler {
-    public static final Map<ServerPlayerEntity, Version> installedClientMod = new HashMap<>();
-
-    private EnclosureInstalledC2SPacket() {
-        ServerPlayConnectionEvents.DISCONNECT.register((handler, server) ->
-                installedClientMod.remove(handler.player));
+    private fun write(buf: PacketByteBuf) {
+        buf.writeString(version.friendlyString)
     }
 
-    public static boolean isInstalled(@Nullable ServerPlayerEntity player) {
-        if (player == null) return false;
-        return installedClientMod.containsKey(player);
-    }
 
-    public static Version clientVersion(ServerPlayerEntity connection) {
-        return installedClientMod.get(connection);
-    }
+    override fun getId() = ID
 
-    public static void register() {
-        EnclosureInstalledC2SPacket listener = new EnclosureInstalledC2SPacket();
-        ServerPlayNetworking.registerGlobalReceiver(NetworkChannels.ENCLOSURE_INSTALLED, listener);
-    }
+    companion object {
+        val installedClientMod: MutableMap<ServerPlayerEntity, Version> = HashMap()
+        val ID: CustomPayload.Id<EnclosureInstalledC2SPacket?> = CustomPayload.Id(Identifier("enclosure:installed"))
+        val CODEC: PacketCodec<PacketByteBuf, EnclosureInstalledC2SPacket?> = CustomPayload.codecOf(
+            { obj, buf -> obj!!.write(buf) },
+            { buf -> EnclosureInstalledC2SPacket(buf) })
 
-    public static void send() {
-        PacketByteBuf buf = PacketByteBufs.create();
-        buf.writeString(MOD_VERSION.getFriendlyString());
-        ClientPlayNetworking.send(NetworkChannels.ENCLOSURE_INSTALLED, buf);
-    }
+        @JvmStatic
+        fun isInstalled(player: ServerPlayerEntity?): Boolean {
+            if (player == null) return false
+            return installedClientMod.containsKey(player)
+        }
 
-    @Override
-    public void receive(MinecraftServer server, ServerPlayerEntity player, ServerPlayNetworkHandler handler, @NotNull PacketByteBuf buf, PacketSender responseSender) {
-        Version version;
-        try {
-            version = Version.parse(buf.readString());
-            if (version instanceof SemanticVersion clientVersion && MOD_VERSION instanceof SemanticVersion serverVersion &&
-                    clientVersion.getVersionComponent(0) == serverVersion.getVersionComponent(0) &&
-                    clientVersion.getVersionComponent(1) >= serverVersion.getVersionComponent(1)) {
-                ServerMainKt.LOGGER.info(player.getName().getString() + " joined with a matching enclosure client.");
-                installedClientMod.put(player, version);
+        fun clientVersion(connection: ServerPlayerEntity): Version? {
+            return installedClientMod[connection]
+        }
 
-                // send uuid data
-                PacketByteBuf buf2 = PacketByteBufs.create();
-                NbtCompound compound = new NbtCompound();
-                ServerMainKt.minecraftServer.getUserCache().byName.forEach((name, entry) -> compound.putUuid(name, entry.profile.getId()));
-                buf2.writeNbt(compound);
-                ServerPlayNetworking.send(player, NetworkChannels.SYNC_UUID, buf2);
-            } else {
-                player.sendMessage(Text.translatable("enclosure.message.outdated", MOD_VERSION.getFriendlyString(), version.getFriendlyString()), false);
+        fun register() {
+            PayloadTypeRegistry.configurationC2S().register(ID, CODEC)
+            ServerPlayNetworking.registerGlobalReceiver<EnclosureInstalledC2SPacket?>(ID) { payload: EnclosureInstalledC2SPacket?, context: ServerPlayNetworking.Context ->
+                val player = context.player() as ServerPlayerEntity
+                installedClientMod[player] = payload!!.version
             }
-        } catch (VersionParsingException ignored) { }
+            ServerPlayConnectionEvents.DISCONNECT.register(ServerPlayConnectionEvents.Disconnect { handler: ServerPlayNetworkHandler, server: MinecraftServer? ->
+                installedClientMod.remove(handler.player)
+            })
+        }
+
+        @JvmStatic
+        fun send() {
+            ClientPlayNetworking.send(EnclosureInstalledC2SPacket(MOD_VERSION))
+        }
     }
 }

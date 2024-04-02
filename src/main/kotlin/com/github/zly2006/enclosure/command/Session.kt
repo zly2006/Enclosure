@@ -2,15 +2,13 @@ package com.github.zly2006.enclosure.command
 
 import com.github.zly2006.enclosure.EnclosureArea
 import com.github.zly2006.enclosure.EnclosureList
-import com.github.zly2006.enclosure.ServerMain
 import com.github.zly2006.enclosure.config.LandLimits
 import com.github.zly2006.enclosure.minecraftServer
 import com.github.zly2006.enclosure.network.EnclosureInstalledC2SPacket
-import com.github.zly2006.enclosure.network.NetworkChannels
+import com.github.zly2006.enclosure.network.SyncSelectionS2CPacket
 import com.github.zly2006.enclosure.utils.TrT
 import com.github.zly2006.enclosure.utils.Utils
 import com.github.zly2006.enclosure.utils.component6
-import net.fabricmc.fabric.api.networking.v1.PacketByteBufs
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.server.world.ServerWorld
@@ -32,13 +30,7 @@ class Session(
         }
         val player = world.server.playerManager?.getPlayer(owner) ?: return
         if (EnclosureInstalledC2SPacket.isInstalled(player)) {
-            val session = ServerMain.playerSessions[player.uuid]
-            if (session != null) {
-                val buf = PacketByteBufs.create()
-                buf.writeBlockPos(session.pos1)
-                buf.writeBlockPos(session.pos2)
-                ServerPlayNetworking.send(player, NetworkChannels.SYNC_SELECTION, buf)
-            }
+            ServerPlayNetworking.send(player, SyncSelectionS2CPacket(pos1, pos2))
         }
     }
 
