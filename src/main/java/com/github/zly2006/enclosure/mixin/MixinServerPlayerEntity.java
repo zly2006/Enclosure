@@ -14,6 +14,7 @@ import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
+import net.minecraft.registry.DynamicRegistryManager;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayNetworkHandler;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -120,7 +121,7 @@ public abstract class MixinServerPlayerEntity extends PlayerEntity implements Pl
         }
         if (message.startsWith("#rich:")) {
             if (ServerMain.INSTANCE.getCommonConfig().allowRichMessage) {
-                return Text.Serialization.fromJson(message.substring(6));
+                return Text.Serialization.fromJson(message.substring(6), DynamicRegistryManager.EMPTY);
             }
             else {
                 message = message.substring(6);

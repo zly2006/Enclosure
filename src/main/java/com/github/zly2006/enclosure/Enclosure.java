@@ -4,6 +4,7 @@ import com.github.zly2006.enclosure.command.Session;
 import com.github.zly2006.enclosure.utils.Permission;
 import com.github.zly2006.enclosure.utils.TrT;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.ClickEvent;
@@ -38,11 +39,12 @@ public class Enclosure extends EnclosureArea {
         subEnclosures = new EnclosureList(session.getWorld(), false);
     }
 
+    @NotNull
     @Override
-    public @NotNull NbtCompound writeNbt(@NotNull NbtCompound nbt) {
-        NbtCompound compound = super.writeNbt(nbt);
+    public NbtCompound writeNbt(@NotNull NbtCompound nbt, @Nullable RegistryWrapper.WrapperLookup registryLookup) {
+        NbtCompound compound = super.writeNbt(nbt, registryLookup);
         NbtCompound sub = new NbtCompound();
-        subEnclosures.writeNbt(sub);
+        subEnclosures.writeNbt(sub, registryLookup);
         compound.put(SUB_ENCLOSURES_KEY, sub);
         return compound;
     }

@@ -1,114 +1,115 @@
-package com.github.zly2006.enclosure.gui;
+package com.github.zly2006.enclosure.gui
 
-import com.github.zly2006.enclosure.Enclosure;
-import com.github.zly2006.enclosure.EnclosureArea;
-import com.github.zly2006.enclosure.EnclosureView;
-import com.github.zly2006.enclosure.utils.Serializable2Text;
-import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
-import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerFactory;
-import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerType;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.player.PlayerInventory;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.network.PacketByteBuf;
-import net.minecraft.registry.Registries;
-import net.minecraft.registry.Registry;
-import net.minecraft.screen.ScreenHandler;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.Text;
-import net.minecraft.util.Identifier;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import com.github.zly2006.enclosure.Enclosure
+import com.github.zly2006.enclosure.EnclosureArea
+import com.github.zly2006.enclosure.EnclosureView
+import com.github.zly2006.enclosure.EnclosureView.Companion.readonly
+import com.github.zly2006.enclosure.utils.Serializable2Text
+import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerFactory
+import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerType
+import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerType.ExtendedFactory
+import net.minecraft.entity.player.PlayerEntity
+import net.minecraft.entity.player.PlayerInventory
+import net.minecraft.item.ItemStack
+import net.minecraft.item.Items
+import net.minecraft.nbt.NbtCompound
+import net.minecraft.network.PacketByteBuf
+import net.minecraft.network.codec.PacketCodec
+import net.minecraft.registry.Registries
+import net.minecraft.registry.Registry
+import net.minecraft.screen.ScreenHandler
+import net.minecraft.server.network.ServerPlayerEntity
+import net.minecraft.text.Text
+import net.minecraft.util.Identifier
 
-import java.util.ArrayList;
-import java.util.List;
+class EnclosureScreenHandler private constructor(
+    syncId: Int,
+    @JvmField val area: EnclosureView.ReadOnly,
+    @JvmField val fullName: String,
+    @JvmField val fatherFullName: String,
+    @JvmField val worldId: Identifier,
+    @JvmField val subAreaNames: List<String>
+) : ScreenHandler(
+    ENCLOSURE_SCREEN_HANDLER, syncId
+) {
+    class Data(
+        val fullName: String,
+        val fatherFullName: String,
+        val worldId: Identifier,
+        val compound: NbtCompound,
+        val subAreaNames: List<String>
+    )
 
-public class EnclosureScreenHandler extends ScreenHandler {
-    public static final Identifier ENCLOSURE_SCREEN_ID = new Identifier("enclosure", "screen.enclosure");
-    public static final ExtendedScreenHandlerType<EnclosureScreenHandler> ENCLOSURE_SCREEN_HANDLER =
-        new ExtendedScreenHandlerType<>((syncId, inventory, buf) -> {
-            String fullName = buf.readString();
-            String fatherFullName = buf.readString();
-            Identifier worldId = buf.readIdentifier();
-            NbtCompound compound = buf.readNbt();
-            assert compound != null;
-            EnclosureView.ReadOnly area = EnclosureView.ReadOnly.Companion.readonly(compound);
-            List<String> subAreaNames = new ArrayList<>();
-            int size = buf.readVarInt();
-            for (int i = 0; i < size; i++) {
-                subAreaNames.add(buf.readString());
-            }
-            return new EnclosureScreenHandler(syncId, area, fullName, fatherFullName, worldId, subAreaNames);
-        });
-    public final EnclosureView.ReadOnly area;
-    public final String fullName;
-    public final String fatherFullName;
-    public final Identifier worldId;
-    public final List<String> subAreaNames;
-
-    private EnclosureScreenHandler(int syncId, EnclosureView.ReadOnly area, String fullName, String fatherFullName, Identifier worldId, List<String> subAreaNames) {
-        super(ENCLOSURE_SCREEN_HANDLER, syncId);
-        this.area = area;
-        this.fullName = fullName;
-        this.fatherFullName = fatherFullName;
-        this.worldId = worldId;
-        this.subAreaNames = subAreaNames;
+    override fun quickMove(player: PlayerEntity, slot: Int): ItemStack {
+        return Items.AIR.defaultStack
     }
 
-    public static void register() {
-        Registry.register(Registries.SCREEN_HANDLER, ENCLOSURE_SCREEN_ID, ENCLOSURE_SCREEN_HANDLER);
+    override fun canUse(player: PlayerEntity): Boolean {
+        return true
     }
 
-    @Override
-    public ItemStack quickMove(PlayerEntity player, int slot) {
-        return null;
-    }
-
-    @Override
-    public boolean canUse(PlayerEntity player) {
-        return true;
-    }
-
-    public static void open(@NotNull ServerPlayerEntity player, @NotNull EnclosureArea area) {
-        player.openHandledScreen(new ExtendedScreenHandlerFactory() {
-                @Override
-                public void writeScreenOpeningData(ServerPlayerEntity player, PacketByteBuf buf) {
-                    buf.writeString(area.getFullName());
-                    if (area.getFather() instanceof Enclosure) {
-                        buf.writeString(area.getFather().getFullName());
-                    } else if (area.getFather() != null) {
-                        buf.writeString("$" + area.getFather().getFullName());
-                    } else {
-                        buf.writeString("");
-                    }
-                    buf.writeIdentifier(area.getWorld().getRegistryKey().getValue());
-                    NbtCompound compound = new NbtCompound();
-                    area.writeNbt(compound);
-                    buf.writeNbt(compound);
-                    if (area instanceof Enclosure enclosure) {
-                        buf.writeVarInt(enclosure.getSubEnclosures().getAreas().size());
-                        for (EnclosureArea subArea : enclosure.getSubEnclosures().getAreas()) {
-                            buf.writeString(subArea.getName());
+    companion object {
+        @JvmField
+        val ENCLOSURE_SCREEN_ID: Identifier = Identifier("enclosure", "screen.enclosure")
+        @JvmField
+        val ENCLOSURE_SCREEN_HANDLER: ExtendedScreenHandlerType<EnclosureScreenHandler, Data> =
+            ExtendedScreenHandlerType(
+                ExtendedFactory<EnclosureScreenHandler, Data> { syncId: Int, inventory: PlayerInventory?, buf: Data ->
+                    EnclosureScreenHandler(
+                        syncId,
+                        readonly(buf.compound),
+                        buf.fullName,
+                        buf.fatherFullName,
+                        buf.worldId,
+                        buf.subAreaNames
+                    )
+                }, PacketCodec.ofStatic(
+                    { buf: PacketByteBuf, data: Data ->
+                        buf.writeString(data.fullName)
+                        buf.writeString(data.fatherFullName)
+                        buf.writeIdentifier(data.worldId)
+                        buf.writeNbt(data.compound)
+                        buf.writeVarInt(data.subAreaNames.size)
+                        for (name in data.subAreaNames) {
+                            buf.writeString(name)
                         }
-                    } else {
-                        buf.writeVarInt(0);
+                    },
+                    { buf: PacketByteBuf ->
+                        Data(
+                            buf.readString(),
+                            buf.readString(),
+                            buf.readIdentifier(),
+                            buf.readNbt()!!,
+                            (0 until buf.readVarInt()).map { buf.readString() }
+                        )
                     }
+
+                ))
+
+        fun register() {
+            Registry.register(Registries.SCREEN_HANDLER, ENCLOSURE_SCREEN_ID, ENCLOSURE_SCREEN_HANDLER)
+        }
+
+        fun open(player: ServerPlayerEntity, area: EnclosureArea) {
+            player.openHandledScreen(object : ExtendedScreenHandlerFactory<Any?> {
+                override fun getDisplayName(): Text {
+                    return area.serialize(Serializable2Text.SerializationSettings.Name, player)
                 }
 
-                @Override
-                public Text getDisplayName() {
-                    return area.serialize(Serializable2Text.SerializationSettings.Name, player);
+                override fun getScreenOpeningData(player: ServerPlayerEntity?): Data {
+                    return Data(
+                        area.fullName,
+                        area.father?.fullName ?: "",
+                        area.world.registryKey.value,
+                        NbtCompound().apply { area.writeNbt(this, null) },
+                        if (area is Enclosure) area.subEnclosures.areas.map { it.name } else emptyList()
+                    )
                 }
 
-                @Nullable
-                @Override
-                public ScreenHandler createMenu(int syncId, PlayerInventory inv, PlayerEntity player) {
-                    PacketByteBuf buf = PacketByteBufs.create();
-                    writeScreenOpeningData(null, buf);
-                    return EnclosureScreenHandler.ENCLOSURE_SCREEN_HANDLER
-                        .create(syncId, inv, buf);
+                override fun createMenu(syncId: Int, inv: PlayerInventory, player: PlayerEntity): ScreenHandler? {
+                    return ENCLOSURE_SCREEN_HANDLER.create(syncId, inv, getScreenOpeningData(null))
                 }
-            });
+            })
+        }
     }
 }

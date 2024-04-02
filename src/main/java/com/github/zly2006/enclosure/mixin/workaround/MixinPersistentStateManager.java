@@ -10,10 +10,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.PushbackInputStream;
+import java.io.*;
 
 @Mixin(PersistentStateManager.class)
 public class MixinPersistentStateManager {
@@ -26,13 +23,13 @@ public class MixinPersistentStateManager {
             locals = LocalCapture.CAPTURE_FAILHARD,
             cancellable = true
     )
-    private void readNbt$Inject$DataFixTypes$Update(String id, DataFixTypes dataFixTypes, int currentSaveVersion, CallbackInfoReturnable<NbtCompound> cir, File file, FileInputStream fileInputStream, PushbackInputStream pushbackInputStream, NbtCompound nbtCompound, int i) {
-        try {
-            pushbackInputStream.close();
-            fileInputStream.close();
-        } catch (IOException ignored) {
-        }
+    private void readNbt$Inject$DataFixTypes$Update(String id, DataFixTypes dataFixTypes, int currentSaveVersion, CallbackInfoReturnable<NbtCompound> cir, File file, InputStream inputStream, PushbackInputStream pushbackInputStream, NbtCompound nbtCompound, int i) {
         if (id.equals(EnclosureListKt.ENCLOSURE_LIST_KEY)) {
+            try {
+                pushbackInputStream.close();
+                inputStream.close();
+            } catch (IOException ignored) {
+            }
             cir.setReturnValue(nbtCompound);
         }
     }

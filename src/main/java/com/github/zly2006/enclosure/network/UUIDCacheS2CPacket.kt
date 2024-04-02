@@ -23,7 +23,9 @@ class UUIDCacheS2CPacket(
     override fun getId() = ID
 
     companion object {
+        @JvmField
         val uuid2name: MutableMap<UUID, String> = HashMap()
+        @JvmStatic
         fun getName(uuid: UUID): String? {
             if (uuid2name.containsKey(uuid)) {
                 return uuid2name[uuid]
@@ -34,6 +36,7 @@ class UUIDCacheS2CPacket(
         val CODEC: PacketCodec<PacketByteBuf, UUIDCacheS2CPacket?> = CustomPayload.codecOf(
             { obj, buf -> obj!!.write(buf) },
             { buf -> UUIDCacheS2CPacket(buf) })
+        @JvmStatic
         fun register() {
             PayloadTypeRegistry.configurationS2C().register(ID, CODEC)
             ClientPlayNetworking.registerGlobalReceiver(ID) { payload, _ ->

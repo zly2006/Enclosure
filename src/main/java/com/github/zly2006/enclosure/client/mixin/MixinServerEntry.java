@@ -16,8 +16,6 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-import java.util.List;
-
 @Mixin(MultiplayerServerListWidget.ServerEntry.class)
 public class MixinServerEntry {
     @Shadow @Final private MultiplayerScreen screen;
@@ -33,8 +31,8 @@ public class MixinServerEntry {
                 if (mouseX > x + 24 && mouseX < x + 32 &&
                         mouseY > y + 24 && mouseY < y + 32) {
                     offset = 8;
-                    screen.setMultiplayerScreenTooltip(
-                            List.of(Text.of("This server has enclosure mod installed, version: " + access.getModVersion().getFriendlyString()))
+                    screen.setTooltip(
+                            Text.of("This server has enclosure mod installed, version: " + access.getModVersion().getFriendlyString())
                     );
                 }
             }

@@ -44,7 +44,6 @@ public class PermissionTargetListWidget<T extends ButtonWidget> extends ElementL
         this.fullName = fullName;
         this.parent = parent;
         this.buttonFactory = buttonFactory;
-        setRenderBackground(false); // 不渲染背景
     }
 
     @Override
@@ -53,7 +52,7 @@ public class PermissionTargetListWidget<T extends ButtonWidget> extends ElementL
     }
 
     @Override
-    protected int getScrollbarPositionX() {
+    protected int getDefaultScrollbarX() {
         return width - 15;
     }
 
@@ -135,9 +134,9 @@ public class PermissionTargetListWidget<T extends ButtonWidget> extends ElementL
                 switch (mode) {
                     case Players -> entryStream = area.getPermissionsMap().keySet().stream()
                             .filter(uuid -> !uuid.equals(CONSOLE))
-                            .map(uuid -> new PlayerEntry(Text.literal(UUIDCacheS2CPacket.getName(uuid)), uuid));
+                            .map(uuid -> new PlayerEntry(Text.of(UUIDCacheS2CPacket.getName(uuid)), uuid));
                     case Unspecified -> entryStream = UUIDCacheS2CPacket.uuid2name.keySet().stream()
-                            .map(uuid -> new PlayerEntry(Text.literal(UUIDCacheS2CPacket.getName(uuid)), uuid));
+                            .map(uuid -> new PlayerEntry(Text.of(UUIDCacheS2CPacket.getName(uuid)), uuid));
                 }
                 entryStream.filter(entry -> entry.name.getString().contains(s))
                         .sorted(Comparator.comparing(o -> o.name.getString()))

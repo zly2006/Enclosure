@@ -18,7 +18,7 @@ public class MixinRegistrySyncManager {
             method = "sendPacket",
             at = @At(
                     value = "INVOKE",
-                    target = "Lnet/fabricmc/fabric/impl/registry/sync/packet/RegistryPacketHandler;sendPacket(Ljava/util/function/Consumer;Ljava/util/Map;)V"
+                    target = "Lnet/fabricmc/fabric/impl/registry/sync/packet/DirectRegistryPacketHandler;sendPacket(Ljava/util/function/Consumer;Ljava/util/Map;)V"
             )
     )
     private Map<Identifier, Object2IntMap<Identifier>> modifyIds(Map<Identifier, Object2IntMap<Identifier>> ids) {

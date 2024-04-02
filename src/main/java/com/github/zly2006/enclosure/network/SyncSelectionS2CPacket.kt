@@ -42,6 +42,7 @@ class SyncSelectionS2CPacket(
         val CODEC: PacketCodec<PacketByteBuf, SyncSelectionS2CPacket?> = CustomPayload.codecOf(
             { obj, buf -> obj!!.write(buf) },
             { buf -> SyncSelectionS2CPacket(buf.readBlockPos(), buf.readBlockPos()) })
+        @JvmStatic
         fun register() {
 
             PayloadTypeRegistry.configurationS2C().register(ID, CODEC)

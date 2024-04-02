@@ -31,6 +31,7 @@ class SyncPermissionS2CPacket(
             { obj, buf -> obj!!.write(buf) },
             { buf -> SyncPermissionS2CPacket(buf) })
 
+        @JvmStatic
         fun register() {
 
             PayloadTypeRegistry.configurationS2C().register(ID, CODEC)
