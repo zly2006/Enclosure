@@ -64,7 +64,9 @@
     "MixinVehicleEntity",
     "MixinWitherEntity",
     "MixinWitherSkullBlock",
+    "PacketDebug",
     "workaround.MixinPersistentStateManager",
     "workaround.MixinRegistrySyncManager",
+    "workaround.fuckMajong.MixinC2S"
   ]
 }

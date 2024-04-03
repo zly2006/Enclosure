@@ -484,7 +484,11 @@ fun register(dispatcher: CommandDispatcher<ServerCommandSource>, access: Command
                 permission("enclosure.command.admin.clients", BuilderScope.Companion.DefaultPermission.OP)
                 executes {
                     EnclosureInstalledC2SPacket.installedClientMod.forEach {
-                        source.sendMessage(Text.literal(it.key.nameForScoreboard + ": " + it.value.friendlyString))
+                        source.sendMessage(
+                            Text.literal(
+                                "${source.server.playerManager.getPlayer(it.key)?.nameForScoreboard}: ${it.value.friendlyString}"
+                            )
+                        )
                     }
                 }
             }

@@ -45,7 +45,7 @@ class SyncSelectionS2CPacket(
         @JvmStatic
         fun register() {
 
-            PayloadTypeRegistry.configurationS2C().register(ID, CODEC)
+            PayloadTypeRegistry.playS2C().register(ID, CODEC)
             ClientPlayNetworking.registerGlobalReceiver(ID, ) { payload, context ->
 
                 if (ClientMain.clientSession == null) {

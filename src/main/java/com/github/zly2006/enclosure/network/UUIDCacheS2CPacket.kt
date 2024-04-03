@@ -38,7 +38,7 @@ class UUIDCacheS2CPacket(
             { buf -> UUIDCacheS2CPacket(buf) })
         @JvmStatic
         fun register() {
-            PayloadTypeRegistry.configurationS2C().register(ID, CODEC)
+            PayloadTypeRegistry.playS2C().register(ID, CODEC)
             ClientPlayNetworking.registerGlobalReceiver(ID) { payload, _ ->
                 uuid2name.clear()
                 payload.cache.keys.forEach { key -> uuid2name[payload.cache.getUuid(key)!!] = key }

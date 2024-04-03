@@ -46,7 +46,7 @@ class RequestOpenScreenC2SPPacket(
 
         @JvmStatic
         fun register() {
-            PayloadTypeRegistry.configurationS2C().register(ID, CODEC)
+            PayloadTypeRegistry.playC2S().register(ID, CODEC)
             ServerPlayNetworking.registerGlobalReceiver(ID) { payload: RequestOpenScreenC2SPPacket?, context: ServerPlayNetworking.Context? ->
                 val blockPos = BlockPos(payload!!.pos[0], payload.pos[1], payload.pos[2])
                 var area: EnclosureArea? = null

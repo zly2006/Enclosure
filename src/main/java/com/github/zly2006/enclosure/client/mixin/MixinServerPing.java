@@ -24,7 +24,7 @@ public class MixinServerPing {
             locals = LocalCapture.CAPTURE_FAILSOFT,
             at = @At("HEAD")
     )
-    private void captureEntry(ServerInfo entry, Runnable saver, CallbackInfo ci) {
+    private void captureEntry(ServerInfo entry, Runnable saver, Runnable pingCallback, CallbackInfo ci) {
         this.entry = entry;
     }
 

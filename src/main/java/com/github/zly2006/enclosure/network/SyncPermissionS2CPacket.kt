@@ -34,7 +34,7 @@ class SyncPermissionS2CPacket(
         @JvmStatic
         fun register() {
 
-            PayloadTypeRegistry.configurationS2C().register(ID, CODEC)
+            PayloadTypeRegistry.playS2C().register(ID, CODEC)
             ClientPlayNetworking.registerGlobalReceiver(ID) { payload: SyncPermissionS2CPacket, context: ClientPlayNetworking.Context? ->
                 val client = MinecraftClient.getInstance()
                 val screen = client.currentScreen

@@ -36,7 +36,7 @@ class ConfirmRequestS2CPacket(
 
         @JvmStatic
         fun register() {
-            PayloadTypeRegistry.configurationS2C().register(ID, CODEC)
+            PayloadTypeRegistry.playS2C().register(ID, CODEC)
             ClientPlayNetworking.registerGlobalReceiver(ID) { payload: ConfirmRequestS2CPacket?, context: ClientPlayNetworking.Context? ->
                 val client = MinecraftClient.getInstance()
                 if (client.currentScreen is EnclosureGui) {
