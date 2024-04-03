@@ -2,12 +2,8 @@ package com.github.zly2006.enclosure
 
 import com.github.zly2006.enclosure.command.CONSOLE
 import com.github.zly2006.enclosure.command.Session
-import com.github.zly2006.enclosure.gui.EnclosureScreenHandler
-import com.github.zly2006.enclosure.network.SyncPermissionS2CPacket
 import com.github.zly2006.enclosure.utils.*
 import com.github.zly2006.enclosure.utils.Serializable2Text.SerializationSettings
-import net.fabricmc.fabric.api.networking.v1.PacketByteBufs
-import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking
 import net.minecraft.nbt.NbtCompound
 import net.minecraft.nbt.NbtDouble
 import net.minecraft.nbt.NbtList
@@ -272,16 +268,6 @@ open class EnclosureArea : PersistentState, EnclosureView {
         }
         LOGGER.info("${source?.name ?: "<null>"} set perm ${perm.name} to $value for $uuid in $fullName")
         super.setPermission(source, uuid, perm, value)
-        // sync to the client
-        minecraftServer.playerManager.playerList.forEach {
-            val handler = it.currentScreenHandler as? EnclosureScreenHandler ?: return@forEach
-            if (handler.fullName == fullName) {
-                val buf = PacketByteBufs.create()
-                buf.writeUuid(uuid)
-                buf.writeNbt(permissionsMap[uuid].toNbt())
-                ServerPlayNetworking.send(it, SyncPermissionS2CPacket(uuid, permissionsMap[uuid].toNbt()))
-            }
-        }
         markDirty()
     }
 

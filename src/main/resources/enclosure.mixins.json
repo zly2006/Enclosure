@@ -65,8 +65,6 @@
     "MixinWitherEntity",
     "MixinWitherSkullBlock",
     "PacketDebug",
-    "workaround.MixinPersistentStateManager",
-    "workaround.MixinRegistrySyncManager",
-    "workaround.fuckMajong.MixinC2S"
+    "workaround.MixinPersistentStateManager"
   ]
 }

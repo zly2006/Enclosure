@@ -33,9 +33,6 @@
     ],
     "client": [
       "com.github.zly2006.enclosure.client.ClientMain"
-    ],
-    "rei_client": [
-      "com.github.zly2006.enclosure.rei.ReiMain"
     ]
   },
   "mixins": [

@@ -3,8 +3,6 @@ package com.github.zly2006.enclosure.command
 import com.github.zly2006.enclosure.*
 import com.github.zly2006.enclosure.access.PlayerAccess
 import com.github.zly2006.enclosure.exceptions.PermissionTargetException
-import com.github.zly2006.enclosure.gui.EnclosureScreenHandler
-import com.github.zly2006.enclosure.network.EnclosureInstalledC2SPacket
 import com.github.zly2006.enclosure.utils.*
 import com.github.zly2006.enclosure.utils.Serializable2Text.SerializationSettings
 import com.mojang.brigadier.Command
@@ -375,10 +373,6 @@ fun register(dispatcher: CommandDispatcher<ServerCommandSource>, access: Command
                 source.sendMessage(
                     TrT.of("enclosure.about.version.server").append(MOD_VERSION.friendlyString)
                 )
-                if (player != null && EnclosureInstalledC2SPacket.isInstalled(player)) {
-                    val version = EnclosureInstalledC2SPacket.clientVersion(player)
-                    source.sendMessage(TrT.of("enclosure.about.version.client").append(version?.friendlyString.toString()))
-                }
                 source.sendMessage(TrT.of("enclosure.about.copyright"))
             }
         }
@@ -475,18 +469,6 @@ fun register(dispatcher: CommandDispatcher<ServerCommandSource>, access: Command
                         source.sendMessage(
                             Text.literal("Name: ${permission.name} Target: ${permission.target}\nDescription: ") + permission.description + Text.literal(
                                 "\nDefault: ${permission.defaultValue}\nComponents: ${permission.permissions.joinToString()}"
-                            )
-                        )
-                    }
-                }
-            }
-            literal("clients") {
-                permission("enclosure.command.admin.clients", BuilderScope.Companion.DefaultPermission.OP)
-                executes {
-                    EnclosureInstalledC2SPacket.installedClientMod.forEach {
-                        source.sendMessage(
-                            Text.literal(
-                                "${source.server.playerManager.getPlayer(it.key)?.nameForScoreboard}: ${it.value.friendlyString}"
                             )
                         )
                     }
@@ -775,33 +757,10 @@ fun register(dispatcher: CommandDispatcher<ServerCommandSource>, access: Command
                 }
             }
         }
-        literal("gui") {
-            // Note: this register block only runs once
-            BuilderScope.map["enclosure.gui"] = BuilderScope.Companion.DefaultPermission.TRUE
-            parent.requires {
-                it.isExecutedByPlayer &&
-                    checkPermission(it, "enclosure.gui")
-            }
-            optionalEnclosure {
-                val player = source.player!!
-                if (EnclosureInstalledC2SPacket.isInstalled(player)) {
-                    EnclosureScreenHandler.open(player, it)
-                }
-            }
-        }
         literal("info") {
             permission("enclosure.command.info", BuilderScope.Companion.DefaultPermission.TRUE)
             optionalEnclosure { area ->
                 val text = area.serialize(SerializationSettings.BarredFull, source.player)
-                if (EnclosureInstalledC2SPacket.isInstalled(source.player)) {
-                    text.append(
-                        Text.literal("(*)").setStyle(
-                            Style.EMPTY.withColor(Formatting.AQUA)
-                                .hoverText(Text.translatable("enclosure.message.suggest_gui"))
-                                .clickRun("/enclosure gui ${area.fullName}")
-                        )
-                    )
-                }
                 source.sendMessage(text)
             }
         }

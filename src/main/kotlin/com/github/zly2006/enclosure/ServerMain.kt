@@ -8,10 +8,7 @@ import com.github.zly2006.enclosure.command.register
 import com.github.zly2006.enclosure.config.Common
 import com.github.zly2006.enclosure.config.Converter
 import com.github.zly2006.enclosure.config.LandLimits
-import com.github.zly2006.enclosure.gui.EnclosureScreenHandler
 import com.github.zly2006.enclosure.listeners.SessionListener
-import com.github.zly2006.enclosure.network.EnclosureInstalledC2SPacket
-import com.github.zly2006.enclosure.network.RequestOpenScreenC2SPPacket
 import com.github.zly2006.enclosure.utils.Permission
 import com.github.zly2006.enclosure.utils.ResourceLoader
 import com.github.zly2006.enclosure.utils.checkPermission
@@ -535,11 +532,6 @@ object ServerMain: ModInitializer {
         }
 
         SessionListener.register()
-
-        EnclosureScreenHandler.register()
-
-        EnclosureInstalledC2SPacket.register()
-        RequestOpenScreenC2SPPacket.register()
 
         // initialize enclosures
 
