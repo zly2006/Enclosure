@@ -257,8 +257,8 @@ object ServerMain: ModInitializer {
         }
 
     fun checkPermission(world: World, pos: BlockPos, player: PlayerEntity?, permission: Permission): Boolean {
-        if (world.isClient) return true
-        val list = getAllEnclosures(world as ServerWorld)
+        if (world !is ServerWorld) return true
+        val list = getAllEnclosures(world)
         val area = list.getArea(pos) ?: return true
         return if (player != null) {
             area.areaOf(pos).hasPerm((player as ServerPlayerEntity?)!!, permission)

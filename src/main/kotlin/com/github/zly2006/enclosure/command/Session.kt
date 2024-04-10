@@ -49,7 +49,7 @@ class Session(
     }
 
     fun syncDimension(player: ServerPlayerEntity) {
-        if (world !== player.world) {
+        if (world !== player.world && player.world is ServerWorld) {
             reset(player.world as ServerWorld)
         }
     }
