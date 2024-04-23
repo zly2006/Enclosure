@@ -197,64 +197,7 @@ object ServerMain: ModInitializer {
      * 判断某个情况是否适用某个权限
      * 此处的使用不一定是唯一用途
      */
-    private val USE_PREDICATES: MutableMap<Permission, Predicate<UseContext>> =
-        object : HashMap<Permission, Predicate<UseContext>>() {
-            init {
-                put(Permission.RESPAWN_ANCHOR) { it.block === Blocks.RESPAWN_ANCHOR }
-                put(Permission.ANVIL) { it.block is AnvilBlock }
-                put(Permission.BED) { it.block is BedBlock }
-                put(Permission.BEACON) { it.block === Blocks.BEACON }
-                put(Permission.CAKE) { it.block === Blocks.CAKE }
-                put(Permission.DOOR) { it.block is DoorBlock || it.block is FenceGateBlock || it.block is TrapdoorBlock }
-                put(Permission.HONEY) { it.block is BeehiveBlock && it.item == Items.GLASS_BOTTLE || it.item == Items.SHEARS }
-                put(Permission.DRAGON_EGG) { it.block === Blocks.DRAGON_EGG }
-                put(Permission.NOTE) { it.block === Blocks.NOTE_BLOCK }
-                put(Permission.SHEAR) {
-                    it.item === Items.SHEARS && (it.entity != null
-                            || it.block is TwistingVinesBlock
-                            || it.block is TwistingVinesPlantBlock
-                            || it.block is WeepingVinesBlock
-                            || it.block is WeepingVinesPlantBlock
-                            || it.block is PumpkinBlock)
-                }
-                put(Permission.NAMETAG) { it.item === Items.NAME_TAG && it.entity != null }
-                put(Permission.PICK_BERRIES) {
-                    it.block === Blocks.SWEET_BERRY_BUSH || it.block === Blocks.CAVE_VINES_PLANT || it.block === Blocks.CAVE_VINES
-                }
-                put(Permission.DYE) {
-                    when (it.item) {
-                        is DyeItem -> it.entity is SheepEntity || it.block is AbstractSignBlock
-                        Items.INK_SAC, Items.GLOW_INK_SAC, Items.HONEYCOMB -> it.block is AbstractSignBlock
-                        else -> false
-                    }
-                }
-                put(Permission.HORSE) { it.entity is Saddleable }
-                put(Permission.FEED_ANIMAL) {
-                    it.entity is AnimalEntity && it.entity.isBreedingItem(it.item.defaultStack)
-                }
-                put(Permission.FISH) { it.item === Items.FISHING_ROD }
-                put(Permission.USE_BONE_MEAL) { it.item === Items.BONE_MEAL }
-                put(Permission.USE_CAMPFIRE) { it.block === Blocks.CAMPFIRE || it.block === Blocks.SOUL_CAMPFIRE }
-                put(Permission.USE_DIRT) {
-                    it.block === Blocks.GRASS_BLOCK && (it.item is ShovelItem || it.item === Items.BONE_MEAL) || it.block === Blocks.DIRT && it.item is PotionItem
-                }
-                put(Permission.USE_JUKEBOX) { it.block === Blocks.JUKEBOX }
-                put(Permission.REDSTONE) {
-                    it.block is ButtonBlock || it.block === Blocks.LEVER || it.block === Blocks.DAYLIGHT_DETECTOR
-                            || it.block === Blocks.REPEATER || it.block === Blocks.COMPARATOR || it.block === Blocks.REDSTONE_WIRE
-                }
-                put(Permission.STRIP_LOG) { (it.state?.isIn(BlockTags.LOGS) ?: false) && it.item is AxeItem }
-                put(Permission.VEHICLE) { it.item is BoatItem || it.item is MinecartItem }
-                put(Permission.ALLAY) { it.entity is AllayEntity }
-                put(Permission.CAULDRON) { it.block is AbstractCauldronBlock }
-                put(Permission.COMMAND_TP) { it.entity is ItemFrameEntity }
-                put(Permission.PLACE_BLOCK) {
-                    if (it.entity is ItemFrameEntity)
-                        it.entity.heldItemStack.isOf(Items.AIR) && it.item != Items.AIR
-                    else false
-                }
-            }
-        }
+    private val USE_PREDICATES = mutableMapOf<Permission, Predicate<UseContext>>()
 
     fun checkPermission(world: World, pos: BlockPos, player: PlayerEntity?, permission: Permission): Boolean {
         if (world !is ServerWorld) return true
@@ -349,6 +292,61 @@ object ServerMain: ModInitializer {
 
     override fun onInitialize() {
         operationItem = Items.WOODEN_HOE
+        USE_PREDICATES.run {
+            put(Permission.RESPAWN_ANCHOR) { it.block === Blocks.RESPAWN_ANCHOR }
+            put(Permission.ANVIL) { it.block is AnvilBlock }
+            put(Permission.BED) { it.block is BedBlock }
+            put(Permission.BEACON) { it.block === Blocks.BEACON }
+            put(Permission.CAKE) { it.block === Blocks.CAKE }
+            put(Permission.DOOR) { it.block is DoorBlock || it.block is FenceGateBlock || it.block is TrapdoorBlock }
+            put(Permission.HONEY) { it.block is BeehiveBlock && it.item == Items.GLASS_BOTTLE || it.item == Items.SHEARS }
+            put(Permission.DRAGON_EGG) { it.block === Blocks.DRAGON_EGG }
+            put(Permission.NOTE) { it.block === Blocks.NOTE_BLOCK }
+            put(Permission.SHEAR) {
+                it.item === Items.SHEARS && (it.entity != null
+                        || it.block is TwistingVinesBlock
+                        || it.block is TwistingVinesPlantBlock
+                        || it.block is WeepingVinesBlock
+                        || it.block is WeepingVinesPlantBlock
+                        || it.block is PumpkinBlock)
+            }
+            put(Permission.NAMETAG) { it.item === Items.NAME_TAG && it.entity != null }
+            put(Permission.PICK_BERRIES) {
+                it.block === Blocks.SWEET_BERRY_BUSH || it.block === Blocks.CAVE_VINES_PLANT || it.block === Blocks.CAVE_VINES
+            }
+            put(Permission.DYE) {
+                when (it.item) {
+                    is DyeItem -> it.entity is SheepEntity || it.block is AbstractSignBlock
+                    Items.INK_SAC, Items.GLOW_INK_SAC, Items.HONEYCOMB -> it.block is AbstractSignBlock
+                    else -> false
+                }
+            }
+            put(Permission.HORSE) { it.entity is Saddleable }
+            put(Permission.FEED_ANIMAL) {
+                it.entity is AnimalEntity && it.entity.isBreedingItem(it.item.defaultStack)
+            }
+            put(Permission.FISH) { it.item === Items.FISHING_ROD }
+            put(Permission.USE_BONE_MEAL) { it.item === Items.BONE_MEAL }
+            put(Permission.USE_CAMPFIRE) { it.block === Blocks.CAMPFIRE || it.block === Blocks.SOUL_CAMPFIRE }
+            put(Permission.USE_DIRT) {
+                it.block === Blocks.GRASS_BLOCK && (it.item is ShovelItem || it.item === Items.BONE_MEAL) || it.block === Blocks.DIRT && it.item is PotionItem
+            }
+            put(Permission.USE_JUKEBOX) { it.block === Blocks.JUKEBOX }
+            put(Permission.REDSTONE) {
+                it.block is ButtonBlock || it.block === Blocks.LEVER || it.block === Blocks.DAYLIGHT_DETECTOR
+                        || it.block === Blocks.REPEATER || it.block === Blocks.COMPARATOR || it.block === Blocks.REDSTONE_WIRE
+            }
+            put(Permission.STRIP_LOG) { (it.state?.isIn(BlockTags.LOGS) ?: false) && it.item is AxeItem }
+            put(Permission.VEHICLE) { it.item is BoatItem || it.item is MinecartItem }
+            put(Permission.ALLAY) { it.entity is AllayEntity }
+            put(Permission.CAULDRON) { it.block is AbstractCauldronBlock }
+            put(Permission.COMMAND_TP) { it.entity is ItemFrameEntity }
+            put(Permission.PLACE_BLOCK) {
+                if (it.entity is ItemFrameEntity)
+                    it.entity.heldItemStack.isOf(Items.AIR) && it.item != Items.AIR
+                else false
+            }
+        }
 
         ServerPlayConnectionEvents.JOIN.register(ServerPlayConnectionEvents.Join { handler: ServerPlayNetworkHandler, _, _ ->
             // warn the server ops that this server is running in development mode and not secure.
