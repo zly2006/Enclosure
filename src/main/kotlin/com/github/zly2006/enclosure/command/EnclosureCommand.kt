@@ -6,6 +6,7 @@ import com.github.zly2006.enclosure.exceptions.PermissionTargetException
 import com.github.zly2006.enclosure.gui.EnclosureScreenHandler
 import com.github.zly2006.enclosure.network.EnclosureInstalledC2SPacket
 import com.github.zly2006.enclosure.utils.*
+import com.github.zly2006.enclosure.utils.Permission.Companion.permissions
 import com.github.zly2006.enclosure.utils.Serializable2Text.SerializationSettings
 import com.mojang.brigadier.Command
 import com.mojang.brigadier.CommandDispatcher
@@ -223,7 +224,7 @@ private fun getEnclosure(context: CommandContext<ServerCommandSource>): Enclosur
 private fun permissionArgument(target: Permission.Target): RequiredArgumentBuilder<ServerCommandSource, String> {
     return CommandManager.argument("permission", StringArgumentType.word())
         .suggests { _, builder ->
-            CommandSource.suggestMatching(Permission.suggest(target), builder)
+            CommandSource.suggestMatching(permissions.suggest(target), builder)
         }
 }
 
@@ -470,7 +471,7 @@ fun register(dispatcher: CommandDispatcher<ServerCommandSource>): LiteralCommand
                 permission("enclosure.command.admin.perm_info", BuilderScope.Companion.DefaultPermission.OP)
                 argument(permissionArgument(Permission.Target.Both)) {
                     executes {
-                        val permission = Permission.getValue(StringArgumentType.getString(this, "permission"))
+                        val permission = permissions.getValue(StringArgumentType.getString(this, "permission"))
                             ?: error(TrT.of("enclosure.message.invalid_permission"), this)
                         source.sendMessage(
                             Text.literal("Name: ${permission.name} Target: ${permission.target}\nDescription: ") + permission.description + Text.literal(
@@ -492,7 +493,7 @@ fun register(dispatcher: CommandDispatcher<ServerCommandSource>): LiteralCommand
         literal("flags") {
             permission("enclosure.command.flags", BuilderScope.Companion.DefaultPermission.TRUE)
             paged({ "/enclosure flags" }) {
-                Permission.PERMISSIONS.values.map {
+                permissions.PERMISSIONS.values.map {
                     it.serialize(SerializationSettings.Full, null)
                 }
             }
@@ -811,8 +812,8 @@ fun register(dispatcher: CommandDispatcher<ServerCommandSource>): LiteralCommand
                         val cd = ServerMain.commonConfig.teleportCooldown
                         val area = getEnclosure(this)
 
-                        if (!area.hasPerm(player, Permission.COMMAND_TP)) {
-                            player.sendMessage(Permission.COMMAND_TP.getNoPermissionMsg(player))
+                        if (!area.hasPerm(player, permissions.COMMAND_TP)) {
+                            player.sendMessage(permissions.COMMAND_TP.getNoPermissionMsg(player))
                             return@executes
                         }
                         if (!source.hasPermissionLevel(4) && cd > 0 && lastTeleportTimeSpan < cd) {
@@ -842,8 +843,8 @@ fun register(dispatcher: CommandDispatcher<ServerCommandSource>): LiteralCommand
             literal("settp") {
                 permission("enclosure.command.settp", BuilderScope.Companion.DefaultPermission.TRUE)
                 optionalEnclosure { area ->
-                    if (!area.hasPerm(source.player!!, Permission.ADMIN)) {
-                        error(Permission.ADMIN.getNoPermissionMsg(source.player), this)
+                    if (!area.hasPerm(source.player!!, permissions.ADMIN)) {
+                        error(permissions.ADMIN.getNoPermissionMsg(source.player), this)
                     }
                     if (!area.isInner(BlockPos.ofFloored(source.position))) {
                         error(TrT.of("enclosure.message.res_settp_pos_error"), this)
@@ -939,14 +940,14 @@ fun register(dispatcher: CommandDispatcher<ServerCommandSource>): LiteralCommand
             permission("enclosure.command.trust", BuilderScope.Companion.DefaultPermission.TRUE)
             optionalEnclosure({ area ->
                 val uuid = getOfflineUUID(this)
-                if (area.hasPerm(source.player!!, Permission.ADMIN)) {
-                    area.setPermission(source, uuid, Permission.TRUSTED, true)
+                if (area.hasPerm(source.player!!, permissions.ADMIN)) {
+                    area.setPermission(source, uuid, permissions.TRUSTED, true)
                     source.sendFeedback(
                         { TrT.of("enclosure.message.added_user", Utils.getDisplayNameByUUID(uuid)) },
                         true
                     )
                 } else {
-                    error(Permission.ADMIN.getNoPermissionMsg(source.player), this)
+                    error(permissions.ADMIN.getNoPermissionMsg(source.player), this)
                 }
             }, { node, command ->
                 node.then(offlinePlayerArgument().executes(command))
@@ -971,9 +972,9 @@ fun register(dispatcher: CommandDispatcher<ServerCommandSource>): LiteralCommand
                                 )
                             }
                         }
-                        area.setPermission(source, area.owner, Permission.ALL, null)
+                        area.setPermission(source, area.owner, permissions.ALL, null)
                         area.owner = uuid
-                        area.setPermission(source, uuid, Permission.ALL, true)
+                        area.setPermission(source, uuid, permissions.ALL, true)
                         source.sendFeedback({
                             TrT.of("enclosure.message.given.1")
                                     .append(area.serialize(SerializationSettings.Name, source.player))
@@ -1086,7 +1087,7 @@ fun register(dispatcher: CommandDispatcher<ServerCommandSource>): LiteralCommand
                         }
                     }
                 }) { a, l ->
-                    val permission = Permission.getValue(StringArgumentType.getString(this, "permission"))
+                    val permission = permissions.getValue(StringArgumentType.getString(this, "permission"))
                         ?: error(TrT.of("enclosure.message.invalid_permission"), this)
                     when (l) {
                         "user" -> {
@@ -1110,8 +1111,8 @@ fun register(dispatcher: CommandDispatcher<ServerCommandSource>): LiteralCommand
                 permission("enclosure.command.set", BuilderScope.Companion.DefaultPermission.TRUE)
                 tupa({ n, c -> n.then(optionalBooleanArgument().executes(c)) }) { area, uuid, permission ->
                     source.player?.let {
-                        if (!area.hasPerm(it, Permission.ADMIN)) {
-                            error(Permission.ADMIN.getNoPermissionMsg(it), this)
+                        if (!area.hasPerm(it, permissions.ADMIN)) {
+                            error(permissions.ADMIN.getNoPermissionMsg(it), this)
                         }
                     }
                     val value: Boolean? = when (getArgument("value", String::class.java)) {
@@ -1134,7 +1135,7 @@ fun register(dispatcher: CommandDispatcher<ServerCommandSource>): LiteralCommand
                             }, true
                         )
                     }
-                    val warning = if (permission === Permission.ADMIN) {
+                    val warning = if (permission === permissions.ADMIN) {
                         TrT.of("enclosure.message.setting_admin").formatted(Formatting.RED)
                     } else if (permission.permissions.size > 1) {
                         TrT.of("enclosure.message.setting_multiple").formatted(Formatting.RED)
@@ -1225,8 +1226,8 @@ fun register(dispatcher: CommandDispatcher<ServerCommandSource>): LiteralCommand
                         }
                         .executes(c))
                 }) { area, l ->
-                    if (!area.hasPerm(source.player!!, Permission.ADMIN)) {
-                        error(Permission.ADMIN.getNoPermissionMsg(source.player), this)
+                    if (!area.hasPerm(source.player!!, permissions.ADMIN)) {
+                        error(permissions.ADMIN.getNoPermissionMsg(source.player), this)
                     }
                     var str by delegate(area, l)
                     str = StringArgumentType.getString(this, "message").let {
@@ -1244,8 +1245,8 @@ fun register(dispatcher: CommandDispatcher<ServerCommandSource>): LiteralCommand
                 withLeaveEnter({ n, c ->
                     n.then(CommandManager.argument("message", TextArgumentType.text()).executes(c))
                 }) { area, l ->
-                    if (!area.hasPerm(source.player!!, Permission.ADMIN)) {
-                        error(Permission.ADMIN.getNoPermissionMsg(source.player), this)
+                    if (!area.hasPerm(source.player!!, permissions.ADMIN)) {
+                        error(permissions.ADMIN.getNoPermissionMsg(source.player), this)
                     }
                     var str by delegate(area, l)
                     val message = Text.Serializer.toJson(TextArgumentType.getTextArgument(this, "message"))
@@ -1260,8 +1261,8 @@ fun register(dispatcher: CommandDispatcher<ServerCommandSource>): LiteralCommand
                 argument(landArgument()) {
                     executes {
                         val area = getEnclosure(this)
-                        if (!area.hasPerm(source.player!!, Permission.ADMIN)) {
-                            error(Permission.ADMIN.getNoPermissionMsg(source.player), this)
+                        if (!area.hasPerm(source.player!!, permissions.ADMIN)) {
+                            error(permissions.ADMIN.getNoPermissionMsg(source.player), this)
                         }
                         if (ServerMain.backupManager.backup(area, source)) {
                             source.sendFeedback(

@@ -9,6 +9,7 @@ import java.util.Optional;
 
 public interface ServerMetadataAccess {
     String getModName();
+
     Version getModVersion();
 
     void setModVersion(Version version);

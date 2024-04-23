@@ -35,6 +35,7 @@ public class PermissionTargetListWidget<T extends ButtonWidget> extends ElementL
         Players,
         Unspecified,
     }
+
     Mode mode = Mode.Players;
     final SearchEntry searchEntry = new SearchEntry();
 
@@ -86,7 +87,9 @@ public class PermissionTargetListWidget<T extends ButtonWidget> extends ElementL
         this.top = top;
     }
 
-    abstract static class Entry extends ElementListWidget.Entry<Entry> { }
+    abstract static class Entry extends ElementListWidget.Entry<Entry> {
+    }
+
     class PlayerEntry extends Entry {
         final Text name;
         final UUID uuid;
@@ -122,6 +125,7 @@ public class PermissionTargetListWidget<T extends ButtonWidget> extends ElementL
                     });
         }
     }
+
     @Environment(EnvType.CLIENT)
     public class SearchEntry extends Entry {
         final TextFieldWidget searchWidget;

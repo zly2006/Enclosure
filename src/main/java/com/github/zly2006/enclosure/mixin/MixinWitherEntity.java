@@ -2,7 +2,6 @@ package com.github.zly2006.enclosure.mixin;
 
 import com.github.zly2006.enclosure.EnclosureArea;
 import com.github.zly2006.enclosure.ServerMain;
-import com.github.zly2006.enclosure.utils.Permission;
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
@@ -15,6 +14,8 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
+
+import static com.github.zly2006.enclosure.utils.Permission.permissions;
 
 @Mixin(WitherEntity.class)
 public abstract class MixinWitherEntity extends Entity {
@@ -29,11 +30,12 @@ public abstract class MixinWitherEntity extends Entity {
         }
         EnclosureArea a = ServerMain.INSTANCE.getSmallestEnclosure((ServerWorld) getWorld(), blockPos);
         if (a == null) return;
-        if (!a.hasPubPerm(Permission.WITHER_DESTROY)) {
+        if (!a.hasPubPerm(permissions.WITHER_DESTROY)) {
             // prevent breaking block
             ci.cancel();
         }
     }
+
     @Inject(method = "mobTick", at = @At("HEAD"), cancellable = true)
     private void onTick(CallbackInfo ci) {
         if (getWorld().isClient) {
@@ -41,7 +43,7 @@ public abstract class MixinWitherEntity extends Entity {
         }
         EnclosureArea a = ServerMain.INSTANCE.getSmallestEnclosure((ServerWorld) getWorld(), getBlockPos());
         if (a == null) return;
-        if (!a.hasPubPerm(Permission.WITHER_ENTER)) {
+        if (!a.hasPubPerm(permissions.WITHER_ENTER)) {
             // prevent entering enclosure
             discard();
             ci.cancel();

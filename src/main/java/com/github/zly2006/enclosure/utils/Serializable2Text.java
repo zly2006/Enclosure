@@ -13,6 +13,7 @@ public interface Serializable2Text {
         Full,
         BarredFull,
     }
+
     static Serializable2Text of(MutableText text) {
         return (settings, player) -> text;
     }

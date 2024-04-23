@@ -27,20 +27,20 @@ import java.util.List;
 public class EnclosureScreenHandler extends ScreenHandler {
     public static final Identifier ENCLOSURE_SCREEN_ID = new Identifier("enclosure", "screen.enclosure");
     public static final ExtendedScreenHandlerType<EnclosureScreenHandler> ENCLOSURE_SCREEN_HANDLER =
-        new ExtendedScreenHandlerType<>((syncId, inventory, buf) -> {
-            String fullName = buf.readString();
-            String fatherFullName = buf.readString();
-            Identifier worldId = buf.readIdentifier();
-            NbtCompound compound = buf.readNbt();
-            assert compound != null;
-            EnclosureView.ReadOnly area = EnclosureView.ReadOnly.Companion.readonly(compound);
-            List<String> subAreaNames = new ArrayList<>();
-            int size = buf.readVarInt();
-            for (int i = 0; i < size; i++) {
-                subAreaNames.add(buf.readString());
-            }
-            return new EnclosureScreenHandler(syncId, area, fullName, fatherFullName, worldId, subAreaNames);
-        });
+            new ExtendedScreenHandlerType<>((syncId, inventory, buf) -> {
+                String fullName = buf.readString();
+                String fatherFullName = buf.readString();
+                Identifier worldId = buf.readIdentifier();
+                NbtCompound compound = buf.readNbt();
+                assert compound != null;
+                EnclosureView.ReadOnly area = EnclosureView.ReadOnly.Companion.readonly(compound);
+                List<String> subAreaNames = new ArrayList<>();
+                int size = buf.readVarInt();
+                for (int i = 0; i < size; i++) {
+                    subAreaNames.add(buf.readString());
+                }
+                return new EnclosureScreenHandler(syncId, area, fullName, fatherFullName, worldId, subAreaNames);
+            });
     public final EnclosureView.ReadOnly area;
     public final String fullName;
     public final String fatherFullName;
@@ -72,43 +72,43 @@ public class EnclosureScreenHandler extends ScreenHandler {
 
     public static void open(@NotNull ServerPlayerEntity player, @NotNull EnclosureArea area) {
         player.openHandledScreen(new ExtendedScreenHandlerFactory() {
-                @Override
-                public void writeScreenOpeningData(ServerPlayerEntity player, PacketByteBuf buf) {
-                    buf.writeString(area.getFullName());
-                    if (area.getFather() instanceof Enclosure) {
-                        buf.writeString(area.getFather().getFullName());
-                    } else if (area.getFather() != null) {
-                        buf.writeString("$" + area.getFather().getFullName());
-                    } else {
-                        buf.writeString("");
-                    }
-                    buf.writeIdentifier(area.getWorld().getRegistryKey().getValue());
-                    NbtCompound compound = new NbtCompound();
-                    area.writeNbt(compound);
-                    buf.writeNbt(compound);
-                    if (area instanceof Enclosure enclosure) {
-                        buf.writeVarInt(enclosure.getSubEnclosures().getAreas().size());
-                        for (EnclosureArea subArea : enclosure.getSubEnclosures().getAreas()) {
-                            buf.writeString(subArea.getName());
-                        }
-                    } else {
-                        buf.writeVarInt(0);
-                    }
+            @Override
+            public void writeScreenOpeningData(ServerPlayerEntity player, PacketByteBuf buf) {
+                buf.writeString(area.getFullName());
+                if (area.getFather() instanceof Enclosure) {
+                    buf.writeString(area.getFather().getFullName());
+                } else if (area.getFather() != null) {
+                    buf.writeString("$" + area.getFather().getFullName());
+                } else {
+                    buf.writeString("");
                 }
-
-                @Override
-                public Text getDisplayName() {
-                    return area.serialize(Serializable2Text.SerializationSettings.Name, player);
+                buf.writeIdentifier(area.getWorld().getRegistryKey().getValue());
+                NbtCompound compound = new NbtCompound();
+                area.writeNbt(compound);
+                buf.writeNbt(compound);
+                if (area instanceof Enclosure enclosure) {
+                    buf.writeVarInt(enclosure.getSubEnclosures().getAreas().size());
+                    for (EnclosureArea subArea : enclosure.getSubEnclosures().getAreas()) {
+                        buf.writeString(subArea.getName());
+                    }
+                } else {
+                    buf.writeVarInt(0);
                 }
+            }
 
-                @Nullable
-                @Override
-                public ScreenHandler createMenu(int syncId, PlayerInventory inv, PlayerEntity player) {
-                    PacketByteBuf buf = PacketByteBufs.create();
-                    writeScreenOpeningData(null, buf);
-                    return EnclosureScreenHandler.ENCLOSURE_SCREEN_HANDLER
+            @Override
+            public Text getDisplayName() {
+                return area.serialize(Serializable2Text.SerializationSettings.Name, player);
+            }
+
+            @Nullable
+            @Override
+            public ScreenHandler createMenu(int syncId, PlayerInventory inv, PlayerEntity player) {
+                PacketByteBuf buf = PacketByteBufs.create();
+                writeScreenOpeningData(null, buf);
+                return EnclosureScreenHandler.ENCLOSURE_SCREEN_HANDLER
                         .create(syncId, inv, buf);
-                }
-            });
+            }
+        });
     }
 }

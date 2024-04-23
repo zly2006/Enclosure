@@ -20,10 +20,17 @@ import java.util.List;
 
 @Mixin(MultiplayerServerListWidget.ServerEntry.class)
 public class MixinServerEntry {
-    @Shadow @Final private MultiplayerScreen screen;
-    @Shadow @Final private ServerInfo server;
-    @Shadow @Final private MinecraftClient client;
+    @Shadow
+    @Final
+    private MultiplayerScreen screen;
+    @Shadow
+    @Final
+    private ServerInfo server;
+    @Shadow
+    @Final
+    private MinecraftClient client;
     Identifier NOTIFY_TEXTURE = new Identifier("realms", "textures/gui/realms/trial_icon.png");
+
     @Inject(method = "render", at = @At("RETURN"))
     private void onRender(DrawContext context, int index, int y, int x, int entryWidth, int entryHeight, int mouseX, int mouseY, boolean hovered, float tickDelta, CallbackInfo ci) {
         ServerMetadataAccess access = (ServerMetadataAccess) server;

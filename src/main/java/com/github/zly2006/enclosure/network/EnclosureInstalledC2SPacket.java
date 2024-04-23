@@ -71,6 +71,7 @@ public class EnclosureInstalledC2SPacket implements ServerPlayNetworking.PlayCha
             } else {
                 player.sendMessage(Text.translatable("enclosure.message.outdated", MOD_VERSION.getFriendlyString(), version.getFriendlyString()), false);
             }
-        } catch (VersionParsingException ignored) { }
+        } catch (VersionParsingException ignored) {
+        }
     }
 }

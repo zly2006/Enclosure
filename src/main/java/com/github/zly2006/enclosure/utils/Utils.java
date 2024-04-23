@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.UUID;
 
 import static com.github.zly2006.enclosure.ServerMainKt.minecraftServer;
+import static com.github.zly2006.enclosure.utils.Permission.permissions;
 
 public class Utils {
     public static boolean isAnimal(Entity entity) {
@@ -157,16 +158,13 @@ public class Utils {
 
     public static boolean commonOnDamage(DamageSource source, Entity entity) {
         if (isAnimal(entity)) {
-            return commonOnDamage(source, entity.getBlockPos(), entity.getWorld(), Permission.ATTACK_ANIMAL);
-        }
-        else if (isMonster(entity)) {
-            return commonOnDamage(source, entity.getBlockPos(), entity.getWorld(), Permission.ATTACK_MONSTER);
-        }
-        else if (entity instanceof VillagerEntity) {
-            return commonOnDamage(source, entity.getBlockPos(), entity.getWorld(), Permission.ATTACK_VILLAGER);
-        }
-        else {
-            return commonOnDamage(source, entity.getBlockPos(), entity.getWorld(), Permission.ATTACK_ENTITY);
+            return commonOnDamage(source, entity.getBlockPos(), entity.getWorld(), permissions.ATTACK_ANIMAL);
+        } else if (isMonster(entity)) {
+            return commonOnDamage(source, entity.getBlockPos(), entity.getWorld(), permissions.ATTACK_MONSTER);
+        } else if (entity instanceof VillagerEntity) {
+            return commonOnDamage(source, entity.getBlockPos(), entity.getWorld(), permissions.ATTACK_VILLAGER);
+        } else {
+            return commonOnDamage(source, entity.getBlockPos(), entity.getWorld(), permissions.ATTACK_ENTITY);
         }
     }
 

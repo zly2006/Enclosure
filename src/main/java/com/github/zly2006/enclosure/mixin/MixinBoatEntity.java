@@ -15,7 +15,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-import static com.github.zly2006.enclosure.utils.Permission.VEHICLE;
+import static com.github.zly2006.enclosure.utils.Permission.permissions;
 
 @Mixin(BoatEntity.class)
 public abstract class MixinBoatEntity extends Entity {
@@ -25,15 +25,15 @@ public abstract class MixinBoatEntity extends Entity {
 
     @Inject(method = "damage", at = @At("HEAD"), cancellable = true)
     private void onDamage(DamageSource source, float amount, CallbackInfoReturnable<Boolean> cir) {
-        if (!Utils.commonOnDamage(source, getBlockPos(), getWorld(), VEHICLE)) {
+        if (!Utils.commonOnDamage(source, getBlockPos(), getWorld(), permissions.VEHICLE)) {
             cir.setReturnValue(false);
         }
     }
 
     @Inject(method = "interact", at = @At("HEAD"), cancellable = true)
     private void onInteract(PlayerEntity player, Hand hand, CallbackInfoReturnable<ActionResult> cir) {
-        if (!ServerMain.INSTANCE.checkPermission(getWorld(), getBlockPos(), player, VEHICLE)) {
-            player.sendMessage(VEHICLE.getNoPermissionMsg(player));
+        if (!ServerMain.INSTANCE.checkPermission(getWorld(), getBlockPos(), player, permissions.VEHICLE)) {
+            player.sendMessage(permissions.VEHICLE.getNoPermissionMsg(player));
             cir.setReturnValue(ActionResult.FAIL);
         }
     }

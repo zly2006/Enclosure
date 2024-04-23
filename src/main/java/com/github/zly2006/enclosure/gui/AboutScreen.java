@@ -31,15 +31,16 @@ public class AboutScreen extends Screen {
         textWidgets.add(new ClickableTextWidget(client, parent, Text.translatable("enclosure.about.author"), null, button -> {
         }, 5, 5, width - 20));
         textWidgets.add(new ClickableTextWidget(client, parent, Text.translatable("enclosure.about.source").formatted(Formatting.UNDERLINE), Text.translatable("enclosure.about.click_to_open"),
-            button -> ConfirmLinkScreen.open("https://github.com/zly2006/Enclosure", this, true), 5, 5, width - 20));
+                button -> ConfirmLinkScreen.open("https://github.com/zly2006/Enclosure", this, true), 5, 5, width - 20));
         textWidgets.add(new ClickableTextWidget(client, parent, Text.translatable("enclosure.about.team_page").formatted(Formatting.UNDERLINE), Text.translatable("enclosure.about.click_to_open"),
-            button -> ConfirmLinkScreen.open("https://www.starlight.cool/", this, true), 5, 5, width - 20));
+                button -> ConfirmLinkScreen.open("https://www.starlight.cool/", this, true), 5, 5, width - 20));
         textWidgets.add(new ClickableTextWidget(client, parent, Text.translatable("enclosure.about.copyright"), null,
-            button -> {}, 5, 5, width - 20));
+                button -> {
+                }, 5, 5, width - 20));
         textWidgets.add(new ClickableTextWidget(client, parent, Text.translatable("点击查看中文wiki页面").formatted(Formatting.UNDERLINE), Text.translatable("enclosure.about.click_to_open"),
-            button -> ConfirmLinkScreen.open(WIKI_ZH, this, true), 5, 5, width - 20));
+                button -> ConfirmLinkScreen.open(WIKI_ZH, this, true), 5, 5, width - 20));
         textWidgets.add(new ClickableTextWidget(client, parent, Text.translatable("Click to open English wiki page").formatted(Formatting.UNDERLINE), Text.translatable("enclosure.about.click_to_open"),
-            button -> ConfirmLinkScreen.open(WIKI_EN, this, true), 5, 5, width - 20));
+                button -> ConfirmLinkScreen.open(WIKI_EN, this, true), 5, 5, width - 20));
     }
 
     @Override

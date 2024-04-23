@@ -1,7 +1,7 @@
 package com.github.zly2006.enclosure.network;
 
+import com.github.zly2006.enclosure.gui.ConfirmScreen;
 import com.github.zly2006.enclosure.gui.EnclosureGui;
-import com.github.zly2006.enclosure.gui.*;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
 import net.fabricmc.fabric.api.networking.v1.PacketSender;

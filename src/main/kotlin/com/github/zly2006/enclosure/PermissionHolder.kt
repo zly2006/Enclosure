@@ -3,6 +3,7 @@ package com.github.zly2006.enclosure
 import com.github.zly2006.enclosure.command.CONSOLE
 import com.github.zly2006.enclosure.exceptions.PermissionTargetException
 import com.github.zly2006.enclosure.utils.*
+import com.github.zly2006.enclosure.utils.Permission.Companion.permissions
 import com.github.zly2006.enclosure.utils.Serializable2Text.SerializationSettings
 import com.mojang.datafixers.util.Pair
 import net.minecraft.server.command.ServerCommandSource
@@ -26,7 +27,7 @@ interface PermissionHolder : Serializable2Text {
         if (checkPermission(player, "enclosure.bypass") && perm.canBypass) {
             return true
         }
-        return if (perm === Permission.ADMIN && isOwnerOrFatherAdmin(player.commandSource)) {
+        return if (perm === permissions.ADMIN && isOwnerOrFatherAdmin(player.commandSource)) {
             true
         } else hasPerm(player.uuid, perm)
     }

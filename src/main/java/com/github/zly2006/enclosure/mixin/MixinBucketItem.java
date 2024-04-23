@@ -22,14 +22,18 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 
+import static com.github.zly2006.enclosure.utils.Permission.permissions;
+
 @Mixin(BucketItem.class)
 public class MixinBucketItem {
-    @Shadow @Final private Fluid fluid;
+    @Shadow
+    @Final
+    private Fluid fluid;
 
     @Inject(method = "use", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/World;canPlayerModifyAt(Lnet/minecraft/entity/player/PlayerEntity;Lnet/minecraft/util/math/BlockPos;)Z"), locals = LocalCapture.CAPTURE_FAILSOFT, cancellable = true)
     private void onUse(World world, PlayerEntity user, Hand hand, CallbackInfoReturnable<TypedActionResult<ItemStack>> cir, ItemStack itemStack, BlockHitResult blockHitResult, BlockPos blockPos, Direction direction, BlockPos blockPos2) {
         if (user instanceof ServerPlayerEntity player) {
-            Permission permission = this.fluid == Fluids.EMPTY ? Permission.BREAK_BLOCK : Permission.PLACE_BLOCK;
+            Permission permission = this.fluid == Fluids.EMPTY ? permissions.BREAK_BLOCK : permissions.PLACE_BLOCK;
             if (!ServerMain.INSTANCE.checkPermission(world, blockPos, player, permission) ||
                     !ServerMain.INSTANCE.checkPermission(world, blockPos2, player, permission)) {
                 player.currentScreenHandler.syncState();

@@ -11,14 +11,14 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-import static com.github.zly2006.enclosure.utils.Permission.LEASH;
+import static com.github.zly2006.enclosure.utils.Permission.permissions;
 
 @Mixin(LeadItem.class)
 public class MixinLeadItem {
     @Inject(method = "attachHeldMobsToBlock", at = @At("HEAD"), cancellable = true)
     private static void onAttachHeldMobsToBlock(PlayerEntity player, World world, BlockPos pos, CallbackInfoReturnable<ActionResult> cir) {
-        if (!ServerMain.INSTANCE.checkPermission(world, pos, player, LEASH)) {
-            player.sendMessage(LEASH.getNoPermissionMsg(player));
+        if (!ServerMain.INSTANCE.checkPermission(world, pos, player, permissions.LEASH)) {
+            player.sendMessage(permissions.LEASH.getNoPermissionMsg(player));
             cir.setReturnValue(ActionResult.PASS);
         }
     }

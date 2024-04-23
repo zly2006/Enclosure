@@ -19,7 +19,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-import static com.github.zly2006.enclosure.utils.Permission.PARROT_COOKIE;
+import static com.github.zly2006.enclosure.utils.Permission.permissions;
 
 @Mixin(ParrotEntity.class)
 public abstract class MixinParrotEntity extends AnimalEntity {
@@ -37,8 +37,8 @@ public abstract class MixinParrotEntity extends AnimalEntity {
             if (player.getStackInHand(hand).isOf(COOKIE)) {
                 EnclosureArea area = ServerMain.INSTANCE.getAllEnclosures((ServerWorld) getWorld()).getArea(getBlockPos());
 
-                if (area != null && !area.areaOf(getBlockPos()).hasPerm(player, PARROT_COOKIE)) {
-                    player.sendMessage(PARROT_COOKIE.getNoPermissionMsg(player));
+                if (area != null && !area.areaOf(getBlockPos()).hasPerm(player, permissions.PARROT_COOKIE)) {
+                    player.sendMessage(permissions.PARROT_COOKIE.getNoPermissionMsg(player));
                     cir.setReturnValue(ActionResult.FAIL);
                 }
             }

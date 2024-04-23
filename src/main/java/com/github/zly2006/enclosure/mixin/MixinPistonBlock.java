@@ -2,7 +2,6 @@ package com.github.zly2006.enclosure.mixin;
 
 import com.github.zly2006.enclosure.ServerMain;
 import com.github.zly2006.enclosure.mixinadatper.MixinPistonBlockKt;
-import com.github.zly2006.enclosure.utils.Permission;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.FacingBlock;
 import net.minecraft.block.PistonBlock;
@@ -17,6 +16,8 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
+
+import static com.github.zly2006.enclosure.utils.Permission.permissions;
 
 @Mixin(PistonBlock.class)
 public class MixinPistonBlock extends FacingBlock {
@@ -44,7 +45,7 @@ public class MixinPistonBlock extends FacingBlock {
     @Redirect(method = "onSyncedBlockEvent", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/World;removeBlock(Lnet/minecraft/util/math/BlockPos;Z)Z"))
     private boolean protectBlockEvent(World world, BlockPos pos, boolean move) {
         if (world instanceof ServerWorld serverWorld && !serverWorld.getBlockState(pos).isOf(Blocks.PISTON_HEAD)) {
-            if (!ServerMain.INSTANCE.checkPermission(serverWorld, pos, null, Permission.BREAK_BLOCK)) {
+            if (!ServerMain.INSTANCE.checkPermission(serverWorld, pos, null, permissions.BREAK_BLOCK)) {
                 serverWorld.getChunkManager().markForUpdate(pos);
                 return false;
             }

@@ -13,6 +13,7 @@ import com.github.zly2006.enclosure.listeners.SessionListener
 import com.github.zly2006.enclosure.network.EnclosureInstalledC2SPacket
 import com.github.zly2006.enclosure.network.RequestOpenScreenC2SPPacket
 import com.github.zly2006.enclosure.utils.Permission
+import com.github.zly2006.enclosure.utils.Permission.Companion.permissions
 import com.github.zly2006.enclosure.utils.ResourceLoader
 import com.github.zly2006.enclosure.utils.checkPermission
 import com.google.gson.Gson
@@ -197,64 +198,7 @@ object ServerMain: ModInitializer {
      * 判断某个情况是否适用某个权限
      * 此处的使用不一定是唯一用途
      */
-    private val USE_PREDICATES: MutableMap<Permission, Predicate<UseContext>> =
-        object : HashMap<Permission, Predicate<UseContext>>() {
-            init {
-                put(Permission.RESPAWN_ANCHOR) { it.block === Blocks.RESPAWN_ANCHOR }
-                put(Permission.ANVIL) { it.block is AnvilBlock }
-                put(Permission.BED) { it.block is BedBlock }
-                put(Permission.BEACON) { it.block === Blocks.BEACON }
-                put(Permission.CAKE) { it.block === Blocks.CAKE }
-                put(Permission.DOOR) { it.block is DoorBlock || it.block is FenceGateBlock || it.block is TrapdoorBlock }
-                put(Permission.HONEY) { it.block is BeehiveBlock && it.item == Items.GLASS_BOTTLE || it.item == Items.SHEARS }
-                put(Permission.DRAGON_EGG) { it.block === Blocks.DRAGON_EGG }
-                put(Permission.NOTE) { it.block === Blocks.NOTE_BLOCK }
-                put(Permission.SHEAR) {
-                    it.item === Items.SHEARS && (it.entity != null
-                            || it.block is TwistingVinesBlock
-                            || it.block is TwistingVinesPlantBlock
-                            || it.block is WeepingVinesBlock
-                            || it.block is WeepingVinesPlantBlock
-                            || it.block is PumpkinBlock)
-                }
-                put(Permission.NAMETAG) { it.item === Items.NAME_TAG && it.entity != null }
-                put(Permission.PICK_BERRIES) {
-                    it.block === Blocks.SWEET_BERRY_BUSH || it.block === Blocks.CAVE_VINES_PLANT || it.block === Blocks.CAVE_VINES
-                }
-                put(Permission.DYE) {
-                    when (it.item) {
-                        is DyeItem -> it.entity is SheepEntity || it.block is AbstractSignBlock
-                        Items.INK_SAC, Items.GLOW_INK_SAC, Items.HONEYCOMB -> it.block is AbstractSignBlock
-                        else -> false
-                    }
-                }
-                put(Permission.HORSE) { it.entity is Saddleable }
-                put(Permission.FEED_ANIMAL) {
-                    it.entity is AnimalEntity && it.entity.isBreedingItem(it.item.defaultStack)
-                }
-                put(Permission.FISH) { it.item === Items.FISHING_ROD }
-                put(Permission.USE_BONE_MEAL) { it.item === Items.BONE_MEAL }
-                put(Permission.USE_CAMPFIRE) { it.block === Blocks.CAMPFIRE || it.block === Blocks.SOUL_CAMPFIRE }
-                put(Permission.USE_DIRT) {
-                    it.block === Blocks.GRASS_BLOCK && (it.item is ShovelItem || it.item === Items.BONE_MEAL) || it.block === Blocks.DIRT && it.item is PotionItem
-                }
-                put(Permission.USE_JUKEBOX) { it.block === Blocks.JUKEBOX }
-                put(Permission.REDSTONE) {
-                    it.block is ButtonBlock || it.block === Blocks.LEVER || it.block === Blocks.DAYLIGHT_DETECTOR
-                            || it.block === Blocks.REPEATER || it.block === Blocks.COMPARATOR || it.block === Blocks.REDSTONE_WIRE
-                }
-                put(Permission.STRIP_LOG) { (it.state?.isIn(BlockTags.LOGS) ?: false) && it.item is AxeItem }
-                put(Permission.VEHICLE) { it.item is BoatItem || it.item is MinecartItem }
-                put(Permission.ALLAY) { it.entity is AllayEntity }
-                put(Permission.CAULDRON) { it.block is AbstractCauldronBlock }
-                put(Permission.COMMAND_TP) { it.entity is ItemFrameEntity }
-                put(Permission.PLACE_BLOCK) {
-                    if (it.entity is ItemFrameEntity)
-                        it.entity.heldItemStack.isOf(Items.AIR) && it.item != Items.AIR
-                    else false
-                }
-            }
-        }
+    private lateinit var USE_PREDICATES: MutableMap<Permission, Predicate<UseContext>>
 
     fun checkPermission(world: World, pos: BlockPos, player: PlayerEntity?, permission: Permission): Boolean {
         if (world !is ServerWorld) return true
@@ -348,14 +292,14 @@ object ServerMain: ModInitializer {
     }
 
     override fun onInitialize() {
+        LOGGER.info("Starting Enclosure mod v$MOD_VERSION")
         operationItem = Items.WOODEN_HOE
 
         ServerPlayConnectionEvents.JOIN.register(ServerPlayConnectionEvents.Join { handler: ServerPlayNetworkHandler, _, _ ->
             // warn the server ops that this server is running in development mode and not secure.
             if (minecraftServer.playerManager.isOperator(handler.player.gameProfile) && commonConfig.developMode) {
                 handler.player.sendMessage(
-                    Text.literal("This server is running in development environment, and this is dangerous! To turn this feature off, please modify the config file.")
-                        .formatted(Formatting.RED), false
+                    Text.literal("This server is running in development environment, and this is dangerous! To turn this feature off, please modify the config file."), false
                 )
             }
             // let server ops know if there is a new version available
@@ -421,6 +365,66 @@ object ServerMain: ModInitializer {
         })
         ServerLifecycleEvents.SERVER_STARTING.register(ServerStarting { server: MinecraftServer? ->
             minecraftServer = server!!
+
+            permissions = Permission.Permissions()
+
+            USE_PREDICATES = object : HashMap<Permission, Predicate<UseContext>>() {
+                init {
+                    put(permissions.RESPAWN_ANCHOR) { it.block === Blocks.RESPAWN_ANCHOR }
+                    put(permissions.ANVIL) { it.block is AnvilBlock }
+                    put(permissions.BED) { it.block is BedBlock }
+                    put(permissions.BEACON) { it.block === Blocks.BEACON }
+                    put(permissions.CAKE) { it.block === Blocks.CAKE }
+                    put(permissions.DOOR) { it.block is DoorBlock || it.block is FenceGateBlock || it.block is TrapdoorBlock }
+                    put(permissions.HONEY) { it.block is BeehiveBlock && it.item == Items.GLASS_BOTTLE || it.item == Items.SHEARS }
+                    put(permissions.DRAGON_EGG) { it.block === Blocks.DRAGON_EGG }
+                    put(permissions.NOTE) { it.block === Blocks.NOTE_BLOCK }
+                    put(permissions.SHEAR) {
+                        it.item === Items.SHEARS && (it.entity != null
+                              || it.block is TwistingVinesBlock
+                              || it.block is TwistingVinesPlantBlock
+                              || it.block is WeepingVinesBlock
+                              || it.block is WeepingVinesPlantBlock
+                              || it.block is PumpkinBlock)
+                    }
+                    put(permissions.NAMETAG) { it.item === Items.NAME_TAG && it.entity != null }
+                    put(permissions.PICK_BERRIES) {
+                        it.block === Blocks.SWEET_BERRY_BUSH || it.block === Blocks.CAVE_VINES_PLANT || it.block === Blocks.CAVE_VINES
+                    }
+                    put(permissions.DYE) {
+                        when (it.item) {
+                            is DyeItem -> it.entity is SheepEntity || it.block is AbstractSignBlock
+                            Items.INK_SAC, Items.GLOW_INK_SAC, Items.HONEYCOMB -> it.block is AbstractSignBlock
+                            else -> false
+                        }
+                    }
+                    put(permissions.HORSE) { it.entity is Saddleable }
+                    put(permissions.FEED_ANIMAL) {
+                        it.entity is AnimalEntity && it.entity.isBreedingItem(it.item.defaultStack)
+                    }
+                    put(permissions.FISH) { it.item === Items.FISHING_ROD }
+                    put(permissions.USE_BONE_MEAL) { it.item === Items.BONE_MEAL }
+                    put(permissions.USE_CAMPFIRE) { it.block === Blocks.CAMPFIRE || it.block === Blocks.SOUL_CAMPFIRE }
+                    put(permissions.USE_DIRT) {
+                        it.block === Blocks.GRASS_BLOCK && (it.item is ShovelItem || it.item === Items.BONE_MEAL) || it.block === Blocks.DIRT && it.item is PotionItem
+                    }
+                    put(permissions.USE_JUKEBOX) { it.block === Blocks.JUKEBOX }
+                    put(permissions.REDSTONE) {
+                        it.block is ButtonBlock || it.block === Blocks.LEVER || it.block === Blocks.DAYLIGHT_DETECTOR
+                              || it.block === Blocks.REPEATER || it.block === Blocks.COMPARATOR || it.block === Blocks.REDSTONE_WIRE
+                    }
+                    put(permissions.STRIP_LOG) { (it.state?.isIn(BlockTags.LOGS) ?: false) && it.item is AxeItem }
+                    put(permissions.VEHICLE) { it.item is BoatItem || it.item is MinecartItem }
+                    put(permissions.ALLAY) { it.entity is AllayEntity }
+                    put(permissions.CAULDRON) { it.block is AbstractCauldronBlock }
+                    put(permissions.COMMAND_TP) { it.entity is ItemFrameEntity }
+                    put(permissions.PLACE_BLOCK) {
+                        if (it.entity is ItemFrameEntity)
+                            it.entity.heldItemStack.isOf(Items.AIR) && it.item != Items.AIR
+                        else false
+                    }
+                }
+            }
         })
         UseBlockCallback.EVENT.register { player: PlayerEntity, world: World, hand: Hand, hitResult: BlockHitResult ->
             if (player is ServerPlayerEntity) {
@@ -441,11 +445,11 @@ object ServerMain: ModInitializer {
                             || context.item === Items.END_CRYSTAL
                             || context.item is DecorationItem)) {
                     val pos = hitResult.blockPos.offset(hitResult.side)
-                    if (checkPermission(player, Permission.PLACE_BLOCK, pos)) {
+                    if (checkPermission(player, permissions.PLACE_BLOCK, pos)) {
                         return@register ActionResult.PASS
                     } else {
                         player.currentScreenHandler.syncState()
-                        player.sendMessage(Permission.PLACE_BLOCK.getNoPermissionMsg(player))
+                        player.sendMessage(permissions.PLACE_BLOCK.getNoPermissionMsg(player))
                         return@register ActionResult.FAIL
                     }
                 }
@@ -488,15 +492,15 @@ object ServerMain: ModInitializer {
             if (player is ServerPlayerEntity) {
                 val state = world.getBlockState(pos)
                 if (state.block is DragonEggBlock) {
-                    if (checkPermission(player, Permission.DRAGON_EGG, pos)) {
+                    if (checkPermission(player, permissions.DRAGON_EGG, pos)) {
                         return@register ActionResult.PASS
                     }
                     else {
                         return@register ActionResult.FAIL
                     }
                 }
-                if (!checkPermission(player, Permission.BREAK_BLOCK, pos)) {
-                    player.sendMessage(Permission.BREAK_BLOCK.getNoPermissionMsg(player))
+                if (!checkPermission(player, permissions.BREAK_BLOCK, pos)) {
+                    player.sendMessage(permissions.BREAK_BLOCK.getNoPermissionMsg(player))
                     return@register ActionResult.FAIL
                 }
             }
@@ -504,8 +508,8 @@ object ServerMain: ModInitializer {
         }
         UseEntityCallback.EVENT.register { player: PlayerEntity, world: World?, hand, entity: Entity, _ ->
             if (entity is ArmorStandEntity) {
-                if (!checkPermission(world!!, entity.getBlockPos(), player, Permission.ARMOR_STAND)) {
-                    player.sendMessage(Permission.ARMOR_STAND.getNoPermissionMsg(player))
+                if (!checkPermission(world!!, entity.getBlockPos(), player, permissions.ARMOR_STAND)) {
+                    player.sendMessage(permissions.ARMOR_STAND.getNoPermissionMsg(player))
                     player.currentScreenHandler.syncState()
                     // We don't need to sync entity in this situation
                     return@register ActionResult.FAIL

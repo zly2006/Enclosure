@@ -16,6 +16,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 @Mixin(RaidManager.class)
 public class MixinRaidManager {
     private final static Logger LOGGER = LoggerFactory.getLogger("Enclosure Raid Alert");
+
     @Inject(method = "startRaid", at = @At("RETURN"))
     private void onStart(ServerPlayerEntity player, CallbackInfoReturnable<Raid> cir) {
         Raid raid = cir.getReturnValue();

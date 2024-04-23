@@ -32,6 +32,7 @@ public class MixinHopperBlockEntity extends BlockEntity {
             cir.setReturnValue(false);
         }
     }
+
     @Inject(method = "extract(Lnet/minecraft/inventory/Inventory;Lnet/minecraft/entity/ItemEntity;)Z", at = @At("HEAD"), cancellable = true)
     private static void onExtract(Inventory inventory, ItemEntity itemEntity, CallbackInfoReturnable<Boolean> cir) {
         UUID owner = itemEntity.owner;

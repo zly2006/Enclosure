@@ -3,7 +3,6 @@ package com.github.zly2006.enclosure.mixin;
 import com.github.zly2006.enclosure.EnclosureArea;
 import com.github.zly2006.enclosure.EnclosureList;
 import com.github.zly2006.enclosure.ServerMain;
-import com.github.zly2006.enclosure.utils.Permission;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import net.minecraft.entity.Entity;
 import net.minecraft.server.world.ServerWorld;
@@ -17,6 +16,8 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.ModifyVariable;
 
 import java.util.List;
+
+import static com.github.zly2006.enclosure.utils.Permission.permissions;
 
 @Mixin(Explosion.class)
 public abstract class MixinExplosion {
@@ -36,11 +37,11 @@ public abstract class MixinExplosion {
                 assert e != null;
                 BlockPos pos = e.getBlockPos();
                 EnclosureArea a = enclosureList.getArea(pos);
-                return a != null && !a.areaOf(pos).hasPubPerm(Permission.EXPLOSION);
+                return a != null && !a.areaOf(pos).hasPubPerm(permissions.EXPLOSION);
             });
             this.affectedBlocks.removeIf(pos -> {
                 EnclosureArea a = enclosureList.getArea(pos);
-                return a != null && !a.areaOf(pos).hasPubPerm(Permission.EXPLOSION);
+                return a != null && !a.areaOf(pos).hasPubPerm(permissions.EXPLOSION);
             });
         }
         return list;

@@ -3,8 +3,6 @@ package com.github.zly2006.enclosure.mixin;
 import com.github.zly2006.enclosure.EnclosureArea;
 import com.github.zly2006.enclosure.EnclosureList;
 import com.github.zly2006.enclosure.ServerMain;
-import com.github.zly2006.enclosure.utils.Permission;
-import net.fabricmc.api.Environment;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.SculkSpreadable;
 import net.minecraft.block.entity.SculkSpreadManager;
@@ -20,6 +18,8 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import java.util.Collection;
 
+import static com.github.zly2006.enclosure.utils.Permission.permissions;
+
 @Mixin(SculkSpreadManager.Cursor.class)
 public class MixinSculkSpreadManagerCursor {
     @Inject(method = "canSpread(Lnet/minecraft/world/WorldAccess;Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/util/math/BlockPos;)Z", at = @At("HEAD"), cancellable = true)
@@ -30,7 +30,7 @@ public class MixinSculkSpreadManagerCursor {
             }
             EnclosureList list = ServerMain.INSTANCE.getAllEnclosures(serverWorld);
             EnclosureArea area = list.getArea(targetPos);
-            if (area != null && !area.areaOf(targetPos).hasPubPerm(Permission.SCULK_SPREAD)) {
+            if (area != null && !area.areaOf(targetPos).hasPubPerm(permissions.SCULK_SPREAD)) {
                 cir.setReturnValue(false);
             }
         }
@@ -41,7 +41,7 @@ public class MixinSculkSpreadManagerCursor {
         if (world instanceof ServerWorld serverWorld) {
             EnclosureList list = ServerMain.INSTANCE.getAllEnclosures(serverWorld);
             EnclosureArea area = list.getArea(pos);
-            if (area != null && !area.areaOf(pos).hasPubPerm(Permission.SCULK_SPREAD)) {
+            if (area != null && !area.areaOf(pos).hasPubPerm(permissions.SCULK_SPREAD)) {
                 return false;
             }
         }

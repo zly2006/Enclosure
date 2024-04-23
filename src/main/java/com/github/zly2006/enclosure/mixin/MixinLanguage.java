@@ -18,7 +18,7 @@ public class MixinLanguage {
     private static void create(CallbackInfoReturnable<Language> cir, ImmutableMap.Builder builder, BiConsumer biConsumer) {
         if (ServerMain.INSTANCE.getCommonConfig().injectServerLanguage) {
             ServerMain.INSTANCE.getTranslation().entrySet().forEach(entry ->
-                builder.put(entry.getKey(), entry.getValue().getAsString()));
+                    builder.put(entry.getKey(), entry.getValue().getAsString()));
         }
     }
 }

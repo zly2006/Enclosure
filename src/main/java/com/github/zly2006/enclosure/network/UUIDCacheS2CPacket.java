@@ -16,6 +16,7 @@ import static com.github.zly2006.enclosure.ServerMainKt.LOGGER;
 
 public class UUIDCacheS2CPacket implements ClientPlayNetworking.PlayChannelHandler {
     public static final Map<UUID, String> uuid2name = new HashMap<>();
+
     public static String getName(UUID uuid) {
         if (uuid2name.containsKey(uuid)) {
             return uuid2name.get(uuid);
@@ -23,7 +24,9 @@ public class UUIDCacheS2CPacket implements ClientPlayNetworking.PlayChannelHandl
         return uuid.toString();
     }
 
-    private UUIDCacheS2CPacket() {}
+    private UUIDCacheS2CPacket() {
+    }
+
     @Override
     public void receive(MinecraftClient client, ClientPlayNetworkHandler handler, PacketByteBuf buf, PacketSender responseSender) {
         NbtCompound compound = buf.readNbt();

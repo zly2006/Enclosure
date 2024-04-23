@@ -20,20 +20,20 @@ public class ConfirmScreen extends Screen {
         this.message = message;
         this.action = action;
         yesButton = ButtonWidget.builder(Text.translatable("enclosure.widget.yes"), button -> {
-                action.run();
-                assert client != null;
-                client.setScreen(parent);
-            })
-            .position(parent.width / 2 - 95, 0)
-            .size(90, 20)
-            .build();
+                    action.run();
+                    assert client != null;
+                    client.setScreen(parent);
+                })
+                .position(parent.width / 2 - 95, 0)
+                .size(90, 20)
+                .build();
         noButton = ButtonWidget.builder(Text.translatable("enclosure.widget.no"), button -> {
-                assert client != null;
-                client.setScreen(parent);
-            })
-            .position(parent.width / 2 + 5, 0)
-            .size(90, 20)
-            .build();
+                    assert client != null;
+                    client.setScreen(parent);
+                })
+                .position(parent.width / 2 + 5, 0)
+                .size(90, 20)
+                .build();
         addDrawableChild(yesButton);
         addDrawableChild(noButton);
     }

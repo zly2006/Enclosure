@@ -61,8 +61,7 @@ public class RequestOpenScreenC2SPPacket implements ServerPlayNetworking.PlayCha
                     return;
                 }
                 area = area.areaOf(blockPos);
-            }
-            else {
+            } else {
                 area = ServerMain.INSTANCE.getEnclosure(name);
                 if (area == null) {
                     player.sendMessage(TrT.of("enclosure.message.no_enclosure"));

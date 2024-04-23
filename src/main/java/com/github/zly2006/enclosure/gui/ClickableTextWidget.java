@@ -44,12 +44,15 @@ public class ClickableTextWidget implements Element, Drawable, Selectable {
     int renderedWidth;
     private int height;
     final TextRenderer textRenderer;
+
     public int getHeight() {
         return height;
     }
+
     public int calcHeight() {
         return textRenderer.wrapLines(text, width).size() * (textRenderer.fontHeight + 1);
     }
+
     public ClickableTextWidget(MinecraftClient client, Screen parent, Text text, Text hover, Consumer<Integer> onClick, int x, int y, int width) {
         textRenderer = client.textRenderer;
         this.parent = parent;
@@ -61,6 +64,7 @@ public class ClickableTextWidget implements Element, Drawable, Selectable {
         this.width = width;
         height = 0;
     }
+
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
         if (mouseX >= x && mouseX <= x + renderedWidth) {

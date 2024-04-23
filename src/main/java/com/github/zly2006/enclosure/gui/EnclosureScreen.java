@@ -48,37 +48,37 @@ public class EnclosureScreen extends HandledScreen<EnclosureScreenHandler> imple
                 }).size(40, 20).build()
         ));
         globalWidget = addDrawableChild(ButtonWidget.builder(Text.translatable("enclosure.widget.global"), button -> {
-                assert client != null;
-                client.setScreen(new PermissionScreen(area, new UUID(0, 0), handler.fullName, this));
-            })
-            .size(100, 20)
-            .position(5, 35)
-            .build());
+                    assert client != null;
+                    client.setScreen(new PermissionScreen(area, new UUID(0, 0), handler.fullName, this));
+                })
+                .size(100, 20)
+                .position(5, 35)
+                .build());
         playerWidget = addDrawableChild(ButtonWidget.builder(Text.translatable("enclosure.widget.player"), button -> {
-                assert client != null;
-                button.active = false;
-                unlistedWidget.active = true;
-                permissionTargetListWidget.showPlayers();
-            })
-            .size(100, 20)
-            .position(110, 35)
-            .build());
+                    assert client != null;
+                    button.active = false;
+                    unlistedWidget.active = true;
+                    permissionTargetListWidget.showPlayers();
+                })
+                .size(100, 20)
+                .position(110, 35)
+                .build());
         unlistedWidget = addDrawableChild(ButtonWidget.builder(Text.translatable("enclosure.widget.unspecified_player"), button -> {
-                assert client != null;
-                button.active = false;
-                playerWidget.active = true;
-                permissionTargetListWidget.showUnlistedPlayers();
-            })
-            .size(100, 20)
-            .position(215, 35)
-            .build());
+                    assert client != null;
+                    button.active = false;
+                    playerWidget.active = true;
+                    permissionTargetListWidget.showUnlistedPlayers();
+                })
+                .size(100, 20)
+                .position(215, 35)
+                .build());
         aboutWidget = addDrawableChild(ButtonWidget.builder(Text.translatable("enclosure.widget.about"), button -> {
-                assert client != null;
-                client.setScreen(new AboutScreen(this));
-            })
-            .size(50, 20)
-            .position(320, 35)
-            .build());
+                    assert client != null;
+                    client.setScreen(new AboutScreen(this));
+                })
+                .size(50, 20)
+                .position(320, 35)
+                .build());
         if (area.getOwner().equals(client.player.getUuid()) || client.player.hasPermissionLevel(4)) {
             transferWidget = addDrawableChild(ButtonWidget.builder(Text.translatable("enclosure.widget.transfer"), button -> {
                 client.setScreen(new TransferScreen(area, handler.fullName, this));
@@ -88,62 +88,62 @@ public class EnclosureScreen extends HandledScreen<EnclosureScreenHandler> imple
         assert client != null;
         if (!handler.fatherFullName.isEmpty()) {
             textWidgets.add(new ClickableTextWidget(client, this, Text.literal("<<< ")
-                .styled(style -> style.withColor(Formatting.DARK_GREEN))
-                .append(Text.literal(handler.fatherFullName).formatted(Formatting.GOLD)),
-                Text.translatable("enclosure.widget.father_land.hover"),
-                button -> {
-                    assert client.player != null;
-                    close();
-                    client.player.networkHandler.sendChatCommand("enclosure gui " + handler.fatherFullName);
-                }, 5, 5, width - 10));
+                    .styled(style -> style.withColor(Formatting.DARK_GREEN))
+                    .append(Text.literal(handler.fatherFullName).formatted(Formatting.GOLD)),
+                    Text.translatable("enclosure.widget.father_land.hover"),
+                    button -> {
+                        assert client.player != null;
+                        close();
+                        client.player.networkHandler.sendChatCommand("enclosure gui " + handler.fatherFullName);
+                    }, 5, 5, width - 10));
         }
         textWidgets.add(new ClickableTextWidget(client, this, Text.empty()
-            .append(Text.literal(area.getFullName()).styled(style -> style.withColor(Formatting.GOLD)))
-            .append(" ")
-            .append(Text.translatable("enclosure.info.created_by"))
-            .append(" ")
-            .append(owner == null ?
-                Text.translatable("enclosure.message.unknown_user").styled(style -> style.withColor(Formatting.RED)) :
-                Text.literal(owner).styled(style -> style.withColor(Formatting.GOLD)))
-            .append(", ")
-            .append(Text.translatable("enclosure.info.created_on"))
-            .append(Text.literal(new SimpleDateFormat().format(area.getCreatedOn())).styled(style -> style.withColor(Formatting.GOLD))),
-            null, null,
-            5, 5, width - 10));
+                .append(Text.literal(area.getFullName()).styled(style -> style.withColor(Formatting.GOLD)))
+                .append(" ")
+                .append(Text.translatable("enclosure.info.created_by"))
+                .append(" ")
+                .append(owner == null ?
+                        Text.translatable("enclosure.message.unknown_user").styled(style -> style.withColor(Formatting.RED)) :
+                        Text.literal(owner).styled(style -> style.withColor(Formatting.GOLD)))
+                .append(", ")
+                .append(Text.translatable("enclosure.info.created_on"))
+                .append(Text.literal(new SimpleDateFormat().format(area.getCreatedOn())).styled(style -> style.withColor(Formatting.GOLD))),
+                null, null,
+                5, 5, width - 10));
         textWidgets.add(new ClickableTextWidget(client, this, Text.translatable("enclosure.message.select.from")
-            .append(Text.literal("[").styled(style -> style.withColor(Formatting.DARK_GREEN)))
-            .append(Text.literal(String.valueOf(area.getMinX())).styled(style -> style.withColor(Formatting.GREEN)))
-            .append(Text.literal(", ").styled(style -> style.withColor(Formatting.DARK_GREEN)))
-            .append(Text.literal(String.valueOf(area.getMinY())).styled(style -> style.withColor(Formatting.GREEN)))
-            .append(Text.literal(", ").styled(style -> style.withColor(Formatting.DARK_GREEN)))
-            .append(Text.literal(String.valueOf(area.getMinZ())).styled(style -> style.withColor(Formatting.GREEN)))
-            .append(Text.literal("]").styled(style -> style.withColor(Formatting.DARK_GREEN)))
-            .append(Text.translatable("enclosure.message.select.to"))
-            .append(Text.literal("[").styled(style -> style.withColor(Formatting.DARK_GREEN)))
-            .append(Text.literal(String.valueOf(area.getMaxX())).styled(style -> style.withColor(Formatting.GREEN)))
-            .append(Text.literal(", ").styled(style -> style.withColor(Formatting.DARK_GREEN)))
-            .append(Text.literal(String.valueOf(area.getMaxY())).styled(style -> style.withColor(Formatting.GREEN)))
-            .append(Text.literal(", ").styled(style -> style.withColor(Formatting.DARK_GREEN)))
-            .append(Text.literal(String.valueOf(area.getMaxZ())).styled(style -> style.withColor(Formatting.GREEN)))
-            .append(Text.literal("]").styled(style -> style.withColor(Formatting.DARK_GREEN)))
-            .append(Text.translatable("enclosure.message.select.world"))
-            .append(Text.literal(handler.worldId.toString()).styled(style -> style.withColor(Formatting.GOLD))),
-            Text.translatable("enclosure.widget.selection_render.hover"),
-            button -> {
-                assert client.player != null;
-                client.player.networkHandler.sendChatCommand("enclosure select land " + handler.fullName);
-                close();
-            }, 5, 20, width - 10));
-        for (String name : handler.subAreaNames) {
-            subLandWidgets.add(new ClickableTextWidget(client, this, Text.literal(">>> ")
-                .styled(style -> style.withColor(Formatting.DARK_GREEN))
-                .append(Text.literal(name).formatted(Formatting.GOLD)),
-                Text.translatable("enclosure.widget.sub_land.hover"),
+                .append(Text.literal("[").styled(style -> style.withColor(Formatting.DARK_GREEN)))
+                .append(Text.literal(String.valueOf(area.getMinX())).styled(style -> style.withColor(Formatting.GREEN)))
+                .append(Text.literal(", ").styled(style -> style.withColor(Formatting.DARK_GREEN)))
+                .append(Text.literal(String.valueOf(area.getMinY())).styled(style -> style.withColor(Formatting.GREEN)))
+                .append(Text.literal(", ").styled(style -> style.withColor(Formatting.DARK_GREEN)))
+                .append(Text.literal(String.valueOf(area.getMinZ())).styled(style -> style.withColor(Formatting.GREEN)))
+                .append(Text.literal("]").styled(style -> style.withColor(Formatting.DARK_GREEN)))
+                .append(Text.translatable("enclosure.message.select.to"))
+                .append(Text.literal("[").styled(style -> style.withColor(Formatting.DARK_GREEN)))
+                .append(Text.literal(String.valueOf(area.getMaxX())).styled(style -> style.withColor(Formatting.GREEN)))
+                .append(Text.literal(", ").styled(style -> style.withColor(Formatting.DARK_GREEN)))
+                .append(Text.literal(String.valueOf(area.getMaxY())).styled(style -> style.withColor(Formatting.GREEN)))
+                .append(Text.literal(", ").styled(style -> style.withColor(Formatting.DARK_GREEN)))
+                .append(Text.literal(String.valueOf(area.getMaxZ())).styled(style -> style.withColor(Formatting.GREEN)))
+                .append(Text.literal("]").styled(style -> style.withColor(Formatting.DARK_GREEN)))
+                .append(Text.translatable("enclosure.message.select.world"))
+                .append(Text.literal(handler.worldId.toString()).styled(style -> style.withColor(Formatting.GOLD))),
+                Text.translatable("enclosure.widget.selection_render.hover"),
                 button -> {
                     assert client.player != null;
+                    client.player.networkHandler.sendChatCommand("enclosure select land " + handler.fullName);
                     close();
-                    client.player.networkHandler.sendChatCommand("enclosure gui %s.%s".formatted(handler.fullName, name));
-                }, 5, 5, 0));
+                }, 5, 20, width - 10));
+        for (String name : handler.subAreaNames) {
+            subLandWidgets.add(new ClickableTextWidget(client, this, Text.literal(">>> ")
+                    .styled(style -> style.withColor(Formatting.DARK_GREEN))
+                    .append(Text.literal(name).formatted(Formatting.GOLD)),
+                    Text.translatable("enclosure.widget.sub_land.hover"),
+                    button -> {
+                        assert client.player != null;
+                        close();
+                        client.player.networkHandler.sendChatCommand("enclosure gui %s.%s".formatted(handler.fullName, name));
+                    }, 5, 5, 0));
         }
     }
 
@@ -179,8 +179,7 @@ public class EnclosureScreen extends HandledScreen<EnclosureScreenHandler> imple
         if (transferWidget != null) {
             transferWidget.setY(renderBottom + 20);
             permissionTargetListWidget.setTop(renderBottom + 45);
-        }
-        else {
+        } else {
             permissionTargetListWidget.setTop(renderBottom + 25);
         }
         super.render(context, mouseX, mouseY, delta);
@@ -204,7 +203,8 @@ public class EnclosureScreen extends HandledScreen<EnclosureScreenHandler> imple
     }
 
     @Override
-    protected void drawForeground(DrawContext context, int mouseX, int mouseY) { }
+    protected void drawForeground(DrawContext context, int mouseX, int mouseY) {
+    }
 
     @Override
     public boolean keyPressed(int keyCode, int scanCode, int modifiers) {

@@ -2,7 +2,6 @@ package com.github.zly2006.enclosure.mixin;
 
 import com.github.zly2006.enclosure.EnclosureArea;
 import com.github.zly2006.enclosure.ServerMain;
-import com.github.zly2006.enclosure.utils.Permission;
 import com.github.zly2006.enclosure.utils.Utils;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.damage.DamageSource;
@@ -19,6 +18,8 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
+import static com.github.zly2006.enclosure.utils.Permission.permissions;
+
 @Mixin(ItemFrameEntity.class)
 public abstract class MixinItemFrameEntity extends AbstractDecorationEntity {
     protected MixinItemFrameEntity(EntityType<? extends AbstractDecorationEntity> entityType, World world) {
@@ -29,8 +30,8 @@ public abstract class MixinItemFrameEntity extends AbstractDecorationEntity {
     private void onUse(PlayerEntity player, Hand hand, CallbackInfoReturnable<ActionResult> cir) {
         if (player instanceof ServerPlayerEntity serverPlayer) {
             EnclosureArea area = ServerMain.INSTANCE.getSmallestEnclosure((ServerWorld) serverPlayer.getWorld(), getBlockPos());
-            if (area != null && !area.areaOf(getBlockPos()).hasPerm(serverPlayer, Permission.ITEM_FRAME)) {
-                player.sendMessage(Permission.ITEM_FRAME.getNoPermissionMsg(serverPlayer));
+            if (area != null && !area.areaOf(getBlockPos()).hasPerm(serverPlayer, permissions.ITEM_FRAME)) {
+                player.sendMessage(permissions.ITEM_FRAME.getNoPermissionMsg(serverPlayer));
                 cir.setReturnValue(ActionResult.FAIL);
             }
         }
@@ -38,7 +39,7 @@ public abstract class MixinItemFrameEntity extends AbstractDecorationEntity {
 
     @Inject(method = "damage", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/decoration/ItemFrameEntity;dropHeldStack(Lnet/minecraft/entity/Entity;Z)V"), cancellable = true)
     private void onDamages(DamageSource source, float amount, CallbackInfoReturnable<Boolean> cir) {
-        if (!Utils.commonOnDamage(source, getBlockPos(), getWorld(), Permission.ITEM_FRAME)) {
+        if (!Utils.commonOnDamage(source, getBlockPos(), getWorld(), permissions.ITEM_FRAME)) {
             cir.setReturnValue(false);
         }
     }

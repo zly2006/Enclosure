@@ -14,6 +14,7 @@ public class SyncPermissionS2CPacket implements ClientPlayNetworking.PlayChannel
     public static void register() {
         ClientPlayNetworking.registerGlobalReceiver(NetworkChannels.SYNC_PERMISSION, new SyncPermissionS2CPacket());
     }
+
     @Override
     public void receive(MinecraftClient client, ClientPlayNetworkHandler handler, PacketByteBuf buf, PacketSender responseSender) {
         UUID uuid = buf.readUuid();

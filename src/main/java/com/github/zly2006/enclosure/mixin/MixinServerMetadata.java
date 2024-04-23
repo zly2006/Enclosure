@@ -19,7 +19,9 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(ServerMetadata.class)
 public abstract class MixinServerMetadata implements ServerMetadataAccess {
     @Mutable
-    @Shadow @Final public static Codec<ServerMetadata> CODEC;
+    @Shadow
+    @Final
+    public static Codec<ServerMetadata> CODEC;
 
     private String modName = ServerMainKt.MOD_ID;
     private Version modVersion = ServerMainKt.MOD_VERSION;

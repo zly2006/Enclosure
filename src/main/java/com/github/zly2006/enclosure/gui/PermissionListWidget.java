@@ -25,6 +25,7 @@ import java.util.*;
 import java.util.function.Supplier;
 
 import static com.github.zly2006.enclosure.command.EnclosureCommandKt.CONSOLE;
+import static com.github.zly2006.enclosure.utils.Permission.permissions;
 
 public class PermissionListWidget extends ElementListWidget<PermissionListWidget.Entry> {
     private final Screen parent;
@@ -42,7 +43,7 @@ public class PermissionListWidget extends ElementListWidget<PermissionListWidget
         this.uuid = uuid;
         this.target = uuid.equals(CONSOLE) ? Permission.Target.Enclosure : Permission.Target.Player;
         addEntry(new SearchEntry());
-        Permission.PERMISSIONS.values().stream().filter(permission ->
+        permissions.PERMISSIONS.values().stream().filter(permission ->
                         (permission.getTarget().fitPlayer() && target.fitPlayer()) ||
                                 (permission.getTarget().fitEnclosure() && target.fitEnclosure()))
                 .sorted(Comparator.comparing(Permission::getName))
@@ -67,7 +68,8 @@ public class PermissionListWidget extends ElementListWidget<PermissionListWidget
     }
 
     @Environment(EnvType.CLIENT)
-    public abstract static class Entry extends ElementListWidget.Entry<Entry> { }
+    public abstract static class Entry extends ElementListWidget.Entry<Entry> {
+    }
 
     @Environment(EnvType.CLIENT)
     public class PermissionEntry extends Entry {
@@ -77,8 +79,9 @@ public class PermissionListWidget extends ElementListWidget<PermissionListWidget
         private Text value(Boolean value) {
             return value == null ? Text.translatable("enclosure.widget.none").setStyle(Style.EMPTY.withColor(Formatting.DARK_AQUA))
                     : value ? Text.translatable("enclosure.widget.true").setStyle(Style.EMPTY.withColor(Formatting.GREEN))
-                            : Text.translatable("enclosure.widget.false").setStyle(Style.EMPTY.withColor(Formatting.RED));
+                    : Text.translatable("enclosure.widget.false").setStyle(Style.EMPTY.withColor(Formatting.RED));
         }
+
         private Text value() {
             return value(getValue());
         }
@@ -95,7 +98,8 @@ public class PermissionListWidget extends ElementListWidget<PermissionListWidget
 
         public PermissionEntry(Permission permission) {
             this.permission = permission;
-            buttonWidget = new SetButtonWidget(0, 0, 40, 20, value(), buttonWidget -> {}, Supplier::get);
+            buttonWidget = new SetButtonWidget(0, 0, 40, 20, value(), buttonWidget -> {
+            }, Supplier::get);
         }
 
         @Override
@@ -123,8 +127,7 @@ public class PermissionListWidget extends ElementListWidget<PermissionListWidget
                         Text.translatable("enclosure.widget.click.left").styled(style -> style.withColor(Formatting.GREEN)),
                         Text.translatable("enclosure.widget.click.right").styled(style -> style.withColor(Formatting.RED))
                 ), mouseX, mouseY);
-            }
-            else if (hovered) {
+            } else if (hovered) {
                 context.drawTooltip(client.textRenderer,
                         List.of(permission.getDescription(),
                                 Text.translatable("enclosure.widget.default_value_is").setStyle(Style.EMPTY.withColor(Formatting.GOLD))
@@ -143,27 +146,25 @@ public class PermissionListWidget extends ElementListWidget<PermissionListWidget
                 assert client.player != null;
                 if (!visible || !active) {
                     return false;
-                }
-                else if (button == GLFW.GLFW_MOUSE_BUTTON_LEFT) {
+                } else if (button == GLFW.GLFW_MOUSE_BUTTON_LEFT) {
                     Boolean value = getValue();
                     if (value == null) setValue(true);
                     else setValue(null);
 
                     client.player.networkHandler.sendChatCommand("enclosure set " + fullName + " uuid " +
-                        uuid.toString() + " " +
-                        permission.getName() + " " +
-                        Optional.ofNullable(getValue()).map(String::valueOf).orElse("none"));
+                            uuid.toString() + " " +
+                            permission.getName() + " " +
+                            Optional.ofNullable(getValue()).map(String::valueOf).orElse("none"));
                     buttonWidget.setMessage(value());
                     return true;
-                }
-                else if (button == GLFW.GLFW_MOUSE_BUTTON_RIGHT) {
+                } else if (button == GLFW.GLFW_MOUSE_BUTTON_RIGHT) {
                     Boolean value = getValue();
                     if (value == null) setValue(false);
                     else setValue(null);
                     client.player.networkHandler.sendChatCommand("enclosure set " + fullName + " uuid " +
-                        uuid.toString() + " " +
-                        permission.getName() + " " +
-                        Optional.ofNullable(getValue()).map(String::valueOf).orElse("none"));
+                            uuid.toString() + " " +
+                            permission.getName() + " " +
+                            Optional.ofNullable(getValue()).map(String::valueOf).orElse("none"));
                     buttonWidget.setMessage(value());
                     return true;
                 }
@@ -181,7 +182,7 @@ public class PermissionListWidget extends ElementListWidget<PermissionListWidget
             searchWidget.setChangedListener(s -> {
                 clearEntries();
                 addEntry(this);
-                Permission.PERMISSIONS.values().stream().filter(permission ->
+                permissions.PERMISSIONS.values().stream().filter(permission ->
                                 (permission.getTarget().fitPlayer() && target.fitPlayer()) ||
                                         (permission.getTarget().fitEnclosure() && target.fitEnclosure()))
                         .filter(permission -> {

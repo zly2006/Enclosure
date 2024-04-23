@@ -11,7 +11,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-import static com.github.zly2006.enclosure.utils.Permission.*;
+import static com.github.zly2006.enclosure.utils.Permission.permissions;
 
 @Mixin(LivingEntity.class)
 public abstract class MixinLivingEntity extends Entity {
@@ -25,22 +25,19 @@ public abstract class MixinLivingEntity extends Entity {
             return;
         }
         if (Utils.isAnimal(this)) {
-            if (!Utils.commonOnPlayerDamage(source, getBlockPos(), getWorld(), ATTACK_ANIMAL)) {
+            if (!Utils.commonOnPlayerDamage(source, getBlockPos(), getWorld(), permissions.ATTACK_ANIMAL)) {
                 cir.setReturnValue(false);
             }
-        }
-        else if (Utils.isMonster(this)) {
-            if (!Utils.commonOnPlayerDamage(source, getBlockPos(), getWorld(), ATTACK_MONSTER)) {
+        } else if (Utils.isMonster(this)) {
+            if (!Utils.commonOnPlayerDamage(source, getBlockPos(), getWorld(), permissions.ATTACK_MONSTER)) {
                 cir.setReturnValue(false);
             }
-        }
-        else if (getType() == EntityType.VILLAGER) {
-            if (!Utils.commonOnPlayerDamage(source, getBlockPos(), getWorld(), ATTACK_VILLAGER)) {
+        } else if (getType() == EntityType.VILLAGER) {
+            if (!Utils.commonOnPlayerDamage(source, getBlockPos(), getWorld(), permissions.ATTACK_VILLAGER)) {
                 cir.setReturnValue(false);
             }
-        }
-        else {
-            if (!Utils.commonOnPlayerDamage(source, getBlockPos(), getWorld(), ATTACK_ENTITY)) {
+        } else {
+            if (!Utils.commonOnPlayerDamage(source, getBlockPos(), getWorld(), permissions.ATTACK_ENTITY)) {
                 cir.setReturnValue(false);
             }
         }

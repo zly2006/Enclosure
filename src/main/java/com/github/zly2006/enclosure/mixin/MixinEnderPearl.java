@@ -2,7 +2,6 @@ package com.github.zly2006.enclosure.mixin;
 
 import com.github.zly2006.enclosure.EnclosureArea;
 import com.github.zly2006.enclosure.ServerMain;
-import com.github.zly2006.enclosure.utils.Permission;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.projectile.thrown.EnderPearlEntity;
 import net.minecraft.entity.projectile.thrown.ThrownItemEntity;
@@ -14,6 +13,8 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+
+import static com.github.zly2006.enclosure.utils.Permission.permissions;
 
 @Mixin(EnderPearlEntity.class)
 public abstract class MixinEnderPearl extends ThrownItemEntity {
@@ -27,8 +28,8 @@ public abstract class MixinEnderPearl extends ThrownItemEntity {
             EnclosureArea area = ServerMain.INSTANCE.getSmallestEnclosure(serverWorld, getBlockPos());
             if (area == null)
                 return;
-            if (!area.hasPerm(player, Permission.TELEPORT)) {
-                player.sendMessage(Permission.TELEPORT.getNoPermissionMsg(player));
+            if (!area.hasPerm(player, permissions.TELEPORT)) {
+                player.sendMessage(permissions.TELEPORT.getNoPermissionMsg(player));
                 ci.cancel();
                 discard();
             }

@@ -2,7 +2,6 @@ package com.github.zly2006.enclosure.mixin;
 
 import com.github.zly2006.enclosure.EnclosureArea;
 import com.github.zly2006.enclosure.ServerMain;
-import com.github.zly2006.enclosure.utils.Permission;
 import net.minecraft.block.BlockState;
 import net.minecraft.fluid.FlowableFluid;
 import net.minecraft.fluid.Fluid;
@@ -16,6 +15,8 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
+import static com.github.zly2006.enclosure.utils.Permission.permissions;
+
 @Mixin(FlowableFluid.class)
 public abstract class MixinFlowableFluid {
     @Inject(method = "canFlow", at = @At("HEAD"), cancellable = true)
@@ -24,7 +25,7 @@ public abstract class MixinFlowableFluid {
             EnclosureArea from = ServerMain.INSTANCE.getSmallestEnclosure(serverWorld, fluidPos);
             EnclosureArea to = ServerMain.INSTANCE.getSmallestEnclosure(serverWorld, flowTo);
             if (to != null && to != from) {
-                if (!to.hasPubPerm(Permission.FLUID)) {
+                if (!to.hasPubPerm(permissions.FLUID)) {
                     cir.setReturnValue(false);
                 }
             }

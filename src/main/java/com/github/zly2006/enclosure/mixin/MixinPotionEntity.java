@@ -3,7 +3,6 @@ package com.github.zly2006.enclosure.mixin;
 import com.github.zly2006.enclosure.EnclosureArea;
 import com.github.zly2006.enclosure.EnclosureList;
 import com.github.zly2006.enclosure.ServerMain;
-import com.github.zly2006.enclosure.utils.Permission;
 import net.minecraft.block.Block;
 import net.minecraft.block.CampfireBlock;
 import net.minecraft.entity.EntityType;
@@ -18,7 +17,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-import static com.github.zly2006.enclosure.utils.Permission.USE_CAMPFIRE;
+import static com.github.zly2006.enclosure.utils.Permission.permissions;
 import static net.minecraft.block.CampfireBlock.LIT;
 import static net.minecraft.block.CampfireBlock.WATERLOGGED;
 
@@ -37,9 +36,9 @@ public abstract class MixinPotionEntity extends ThrownItemEntity {
         if (block instanceof CampfireBlock) {
             EnclosureList list = ServerMain.INSTANCE.getAllEnclosures((ServerWorld) getWorld());
             EnclosureArea area = list.getArea(pos);
-            if (area != null && !area.areaOf(pos).hasPubPerm(Permission.USE_CAMPFIRE)) {
+            if (area != null && !area.areaOf(pos).hasPubPerm(permissions.USE_CAMPFIRE)) {
                 if (getOwner() instanceof ServerPlayerEntity player) {
-                    player.sendMessage(USE_CAMPFIRE.getNoPermissionMsg(player));
+                    player.sendMessage(permissions.USE_CAMPFIRE.getNoPermissionMsg(player));
                 }
                 getWorld().setBlockState(pos, getWorld().getBlockState(pos).with(WATERLOGGED, false).with(LIT, true), 252);
                 ci.cancel();

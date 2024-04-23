@@ -22,11 +22,13 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-import static com.github.zly2006.enclosure.utils.Permission.PLACE_BLOCK;
+import static com.github.zly2006.enclosure.utils.Permission.permissions;
 
 @Mixin(PlayerEntity.class)
 public abstract class MixinPlayerEntity extends LivingEntity {
-    @Shadow @Final private PlayerInventory inventory;
+    @Shadow
+    @Final
+    private PlayerInventory inventory;
 
     public MixinPlayerEntity(EntityType<? extends LivingEntity> type, World world) {
         super(type, world);
@@ -45,8 +47,8 @@ public abstract class MixinPlayerEntity extends LivingEntity {
     @Inject(method = "canPlaceOn", at = @At("HEAD"), cancellable = true)
     private void protectPlacing(BlockPos pos, Direction facing, ItemStack stack, CallbackInfoReturnable<Boolean> cir) {
         if (((LivingEntity) this) instanceof ServerPlayerEntity serverPlayer) {
-            if (!ServerMain.INSTANCE.checkPermission(serverPlayer, PLACE_BLOCK, pos)) {
-                serverPlayer.sendMessage(PLACE_BLOCK.getNoPermissionMsg(serverPlayer));
+            if (!ServerMain.INSTANCE.checkPermission(serverPlayer, permissions.PLACE_BLOCK, pos)) {
+                serverPlayer.sendMessage(permissions.PLACE_BLOCK.getNoPermissionMsg(serverPlayer));
                 cir.setReturnValue(false);
             }
         }

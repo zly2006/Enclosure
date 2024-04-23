@@ -12,6 +12,7 @@ public class DataUpdater {
     private interface Updater {
         NbtCompound update(NbtCompound data);
     }
+
     static final Map<Integer, Updater> updaters = new HashMap<>() {{
         put(1, (NbtCompound compound) -> {
             if (compound.contains("tp_pos") && !compound.contains("yaw")) {
@@ -31,11 +32,11 @@ public class DataUpdater {
             return compound;
         });
     }};
+
     public static NbtCompound update(int versionBefore, NbtCompound compound) {
         if (versionBefore == 0) {
             return compound;
-        }
-        else if (updaters.get(versionBefore) != null) {
+        } else if (updaters.get(versionBefore) != null) {
             Updater updater = updaters.get(versionBefore);
             compound.getKeys().forEach(key -> {
                 if (compound.get(key) instanceof NbtCompound nbt) {
@@ -47,8 +48,7 @@ public class DataUpdater {
                 }
             });
             return compound;
-        }
-        else {
+        } else {
             throw new Error("Enclosure cannot update this version of data: " + versionBefore);
         }
     }

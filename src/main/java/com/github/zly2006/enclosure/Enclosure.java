@@ -23,6 +23,7 @@ public class Enclosure extends EnclosureArea {
 
     /**
      * Create an instance from nbt for a specific world.
+     *
      * @param compound the nbt compound tag
      */
     public Enclosure(NbtCompound compound, ServerWorld world) {
@@ -83,8 +84,7 @@ public class Enclosure extends EnclosureArea {
                 }
             }
             return text;
-        }
-        else {
+        } else {
             return super.serialize(settings, player);
         }
     }
@@ -108,8 +108,7 @@ public class Enclosure extends EnclosureArea {
             area.setFather(this);
             subEnclosures.addArea(area);
             markDirty();
-        }
-        else {
+        } else {
             throw new IllegalArgumentException("child must be an instance of EnclosureArea");
         }
     }

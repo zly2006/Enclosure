@@ -3,7 +3,6 @@ package com.github.zly2006.enclosure.mixin;
 import com.github.zly2006.enclosure.EnclosureArea;
 import com.github.zly2006.enclosure.ServerMain;
 import com.github.zly2006.enclosure.access.PlayerAccess;
-import com.github.zly2006.enclosure.utils.Permission;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.ItemEntity;
@@ -16,6 +15,8 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
+import static com.github.zly2006.enclosure.utils.Permission.permissions;
+
 @Mixin(ItemEntity.class)
 public abstract class MixinItemEntity extends Entity {
     public MixinItemEntity(EntityType<?> type, World world) {
@@ -26,8 +27,8 @@ public abstract class MixinItemEntity extends Entity {
     private void onPlayerCollision(PlayerEntity player, CallbackInfo ci) {
         if (getWorld() instanceof ServerWorld serverWorld) {
             EnclosureArea area = ServerMain.INSTANCE.getAllEnclosures(serverWorld).getArea(getBlockPos());
-            if (area != null && !area.areaOf(getBlockPos()).hasPerm((ServerPlayerEntity) player, Permission.PICKUP_ITEM)) {
-                ((PlayerAccess) player).sendMessageWithCD(Permission.PICKUP_ITEM::getNoPermissionMsg);
+            if (area != null && !area.areaOf(getBlockPos()).hasPerm((ServerPlayerEntity) player, permissions.PICKUP_ITEM)) {
+                ((PlayerAccess) player).sendMessageWithCD(permissions.PICKUP_ITEM::getNoPermissionMsg);
                 ci.cancel();
             }
         }

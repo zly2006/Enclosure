@@ -2,6 +2,7 @@ package com.github.zly2006.enclosure.mixinadatper
 
 import com.github.zly2006.enclosure.ServerMain
 import com.github.zly2006.enclosure.utils.Permission
+import com.github.zly2006.enclosure.utils.Permission.Companion.permissions
 import com.github.zly2006.enclosure.utils.mark4updateChecked
 import net.minecraft.block.piston.PistonHandler
 import net.minecraft.server.world.ServerWorld
@@ -24,7 +25,7 @@ fun protectPiston(
     val areas = positions.map { ServerMain.getSmallestEnclosure(world, it) }
         .map { Optional.ofNullable(it) } // null is also considered as an "area"
         .distinct()
-    val cancel = areas.size > 1 && areas.mapNotNull { it.getOrNull()?.hasPubPerm(Permission.PISTON)?.not() }.any { it }
+    val cancel = areas.size > 1 && areas.mapNotNull { it.getOrNull()?.hasPubPerm(permissions.PISTON)?.not() }.any { it }
     if (cancel) {
         positions.forEach(world::mark4updateChecked) // some position may be invalid
         cir.returnValue = false

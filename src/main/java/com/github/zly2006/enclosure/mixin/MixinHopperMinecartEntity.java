@@ -2,7 +2,6 @@ package com.github.zly2006.enclosure.mixin;
 
 import com.github.zly2006.enclosure.EnclosureArea;
 import com.github.zly2006.enclosure.ServerMain;
-import com.github.zly2006.enclosure.utils.Permission;
 import com.github.zly2006.enclosure.utils.RayCast;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.vehicle.AbstractMinecartEntity;
@@ -16,11 +15,14 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
+import static com.github.zly2006.enclosure.utils.Permission.permissions;
+
 @Mixin(HopperMinecartEntity.class)
 public abstract class MixinHopperMinecartEntity extends AbstractMinecartEntity {
     Vec3d lastVelocity;
     Vec3d lastPosition;
     BlockPos lastBlockPos;
+
     public MixinHopperMinecartEntity(EntityType<?> type, World world) {
         super(type, world);
     }
@@ -39,13 +41,13 @@ public abstract class MixinHopperMinecartEntity extends AbstractMinecartEntity {
             EnclosureArea a2 = ServerMain.INSTANCE.getSmallestEnclosure(world, getBlockPos());
             if (a1 != a2) {
                 RayCast rayCast = new RayCast(lastPosition, getPos());
-                if (a1 != null && !a1.hasPubPerm(Permission.CONTAINER)) {
+                if (a1 != null && !a1.hasPubPerm(permissions.CONTAINER)) {
                     if (rayCast.intersect(a1.toBox()) != null) {
                         setVelocity(lastVelocity);
                         setPos(lastPosition.x, lastPosition.y, lastPosition.z);
                     }
                 }
-                if (a2 != null && !a2.hasPubPerm(Permission.CONTAINER)) {
+                if (a2 != null && !a2.hasPubPerm(permissions.CONTAINER)) {
                     if (rayCast.intersect(a2.toBox()) != null) {
                         setVelocity(lastVelocity);
                         setPos(lastPosition.x, lastPosition.y, lastPosition.z);

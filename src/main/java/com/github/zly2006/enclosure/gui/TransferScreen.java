@@ -15,6 +15,7 @@ public class TransferScreen extends Screen implements EnclosureGui {
     private final Screen parent;
     EnclosureView.ReadOnly data;
     private PermissionTargetListWidget<ButtonWidget> permissionTargetListWidget;
+
     public TransferScreen(EnclosureView.ReadOnly data, String fullName, Screen parent) {
         super(Text.literal("Transfer"));
         this.fullName = fullName;

@@ -90,6 +90,10 @@ class Permission(
     }
 
     companion object {
+        lateinit var permissions: Permissions
+    }
+
+    class Permissions{
         @JvmField val PERMISSIONS: MutableMap<String, Permission> = mutableMapOf()
         // Special permissions
         @JvmField val ADMIN = Permission("admin", Target.Player, false, Items.COMMAND_BLOCK)

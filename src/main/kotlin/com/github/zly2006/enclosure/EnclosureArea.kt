@@ -5,6 +5,7 @@ import com.github.zly2006.enclosure.command.Session
 import com.github.zly2006.enclosure.gui.EnclosureScreenHandler
 import com.github.zly2006.enclosure.network.NetworkChannels
 import com.github.zly2006.enclosure.utils.*
+import com.github.zly2006.enclosure.utils.Permission.Companion.permissions
 import com.github.zly2006.enclosure.utils.Serializable2Text.SerializationSettings
 import net.fabricmc.fabric.api.networking.v1.PacketByteBufs
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking
@@ -126,7 +127,7 @@ open class EnclosureArea : PersistentState, EnclosureView {
         owner = session.owner
         this.name = name
         permissionsMap[owner] = mutableMapOf()
-        Permission.PERMISSIONS.values.filter { p -> p.target.fitPlayer() }
+        permissions.PERMISSIONS.values.filter { p -> p.target.fitPlayer() }
             .forEach { p -> permissionsMap[owner]!![p] = true }
         minX = min(session.pos1.x, session.pos2.x)
         minY = min(session.pos1.y, session.pos2.y)
@@ -250,7 +251,7 @@ open class EnclosureArea : PersistentState, EnclosureView {
         return if (source.player != null) {
             source.player!!.uuid == owner || hasPerm(
                 source.player!!.uuid,
-                Permission.ADMIN
+                permissions.ADMIN
             )
         } else {
             false
@@ -265,7 +266,7 @@ open class EnclosureArea : PersistentState, EnclosureView {
 
     override fun setPermission(source: ServerCommandSource?, uuid: UUID, perm: Permission, value: Boolean?) {
         checkLock()
-        if (source != null && source.player != null && !hasPerm(source.player!!, Permission.ADMIN)) {
+        if (source != null && source.player != null && !hasPerm(source.player!!, permissions.ADMIN)) {
             LOGGER.warn("Player " + source.name + " try to set permission of " + uuid + " in " + name + " without admin permission")
             LOGGER.warn("allowing, if you have any problem please report to the author")
         }

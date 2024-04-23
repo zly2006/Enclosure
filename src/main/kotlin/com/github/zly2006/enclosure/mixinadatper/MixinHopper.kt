@@ -1,6 +1,7 @@
 package com.github.zly2006.enclosure.mixinadatper
 
 import com.github.zly2006.enclosure.utils.Permission
+import com.github.zly2006.enclosure.utils.Permission.Companion.permissions
 import com.github.zly2006.enclosure.utils.contains
 import com.github.zly2006.enclosure.utils.getEnclosure
 import net.minecraft.block.entity.BlockEntity
@@ -25,7 +26,7 @@ fun canExtractFromInventory(
         else -> return true
     } as? ServerWorld ?: return true
     val area = world.getEnclosure(pos)
-    if (area?.hasPubPerm(Permission.CONTAINER) == false) { // null means no enclosure, allow access
+    if (area?.hasPubPerm(permissions.CONTAINER) == false) { // null means no enclosure, allow access
         val box = when (hopper) {
             is BlockEntity -> Box(hopper.pos)
             is Entity -> hopper.boundingBox

@@ -16,7 +16,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-import static com.github.zly2006.enclosure.utils.Permission.CONTAINER;
+import static com.github.zly2006.enclosure.utils.Permission.permissions;
 
 @Mixin(LockableContainerBlockEntity.class)
 public class MixinLockableContainerBlockEntity extends BlockEntity {
@@ -31,8 +31,8 @@ public class MixinLockableContainerBlockEntity extends BlockEntity {
                 return;
             }
             EnclosureArea area = ServerMain.INSTANCE.getSmallestEnclosure((ServerWorld) player.getWorld(), getPos());
-            if (area != null && !area.hasPerm(player, CONTAINER)) {
-                player.sendMessage(CONTAINER.getNoPermissionMsg(player));
+            if (area != null && !area.hasPerm(player, permissions.CONTAINER)) {
+                player.sendMessage(permissions.CONTAINER.getNoPermissionMsg(player));
                 cir.setReturnValue(false);
             }
         }

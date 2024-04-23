@@ -3,7 +3,6 @@ package com.github.zly2006.enclosure.mixin;
 import com.github.zly2006.enclosure.EnclosureArea;
 import com.github.zly2006.enclosure.ServerMain;
 import com.github.zly2006.enclosure.access.PlayerAccess;
-import com.github.zly2006.enclosure.utils.Permission;
 import com.github.zly2006.enclosure.utils.TrT;
 import com.github.zly2006.enclosure.utils.Utils;
 import com.github.zly2006.enclosure.utils.UtilsKt;
@@ -36,15 +35,19 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import java.util.Optional;
 
 import static com.github.zly2006.enclosure.command.EnclosureCommandKt.CONSOLE;
-import static com.github.zly2006.enclosure.utils.Permission.*;
+import static com.github.zly2006.enclosure.utils.Permission.permissions;
 
 @Mixin(ServerPlayerEntity.class)
 public abstract class MixinServerPlayerEntity extends PlayerEntity implements PlayerAccess {
-    @Shadow public ServerPlayNetworkHandler networkHandler;
+    @Shadow
+    public ServerPlayNetworkHandler networkHandler;
     private long lastTeleportTime = 0;
-    @Nullable private Vec3d lastPos = null;
-    @Nullable private EnclosureArea lastArea = null;
-    @Nullable private ServerWorld lastWorld;
+    @Nullable
+    private Vec3d lastPos = null;
+    @Nullable
+    private EnclosureArea lastArea = null;
+    @Nullable
+    private ServerWorld lastWorld;
     private long permissionDeniedMsgTime = 0;
 
     @Override
@@ -57,11 +60,15 @@ public abstract class MixinServerPlayerEntity extends PlayerEntity implements Pl
         this.permissionDeniedMsgTime = permissionDeniedMsgTime;
     }
 
-    @Shadow public abstract void sendMessage(Text message);
+    @Shadow
+    public abstract void sendMessage(Text message);
 
-    @Shadow public abstract void sendMessage(Text message, boolean overlay);
+    @Shadow
+    public abstract void sendMessage(Text message, boolean overlay);
 
-    @Shadow @Final public MinecraftServer server;
+    @Shadow
+    @Final
+    public MinecraftServer server;
 
     public MixinServerPlayerEntity(World world, BlockPos pos, float yaw, GameProfile gameProfile) {
         super(world, pos, yaw, gameProfile);
@@ -70,8 +77,8 @@ public abstract class MixinServerPlayerEntity extends PlayerEntity implements Pl
     @Inject(method = "openHorseInventory", at = @At("HEAD"), cancellable = true)
     private void onOpenHorseInventory(CallbackInfo ci) {
         EnclosureArea area = ServerMain.INSTANCE.getSmallestEnclosure((ServerWorld) this.getWorld(), getBlockPos());
-        if (area != null && !area.hasPerm((ServerPlayerEntity) (Object) this, Permission.CONTAINER)) {
-            sendMessage(Permission.CONTAINER.getNoPermissionMsg(this));
+        if (area != null && !area.hasPerm((ServerPlayerEntity) (Object) this, permissions.CONTAINER)) {
+            sendMessage(permissions.CONTAINER.getNoPermissionMsg(this));
             ci.cancel();
         }
     }
@@ -82,12 +89,12 @@ public abstract class MixinServerPlayerEntity extends PlayerEntity implements Pl
             //pvp
             EnclosureArea area = ServerMain.INSTANCE.getSmallestEnclosure((ServerWorld) getWorld(), getBlockPos());
             EnclosureArea attackerArea = ServerMain.INSTANCE.getSmallestEnclosure((ServerWorld) attacker.getWorld(), attacker.getBlockPos());
-            if (area != null && !area.hasPubPerm(Permission.PVP)) {
+            if (area != null && !area.hasPubPerm(permissions.PVP)) {
                 cir.setReturnValue(false);
             }
-            if (attackerArea != null && !attackerArea.hasPubPerm(Permission.PVP)
+            if (attackerArea != null && !attackerArea.hasPubPerm(permissions.PVP)
                     && UtilsKt.checkPermission(attacker, "enclosure.bypass")) {
-                attacker.sendMessage(PVP.getNoPermissionMsg(attacker));
+                attacker.sendMessage(permissions.PVP.getNoPermissionMsg(attacker));
                 cir.setReturnValue(false);
             }
         }
@@ -99,12 +106,11 @@ public abstract class MixinServerPlayerEntity extends PlayerEntity implements Pl
         if (area == null) {
             return;
         }
-        if (!area.hasPerm(networkHandler.player, Permission.DROP_ITEM)) {
+        if (!area.hasPerm(networkHandler.player, permissions.DROP_ITEM)) {
             if (!isDead() && getInventory().insertStack(stack)) {
-                this.sendMessageWithCD(DROP_ITEM::getNoPermissionMsg);
+                this.sendMessageWithCD(permissions.DROP_ITEM::getNoPermissionMsg);
                 cir.setReturnValue(null);
-            }
-            else {
+            } else {
                 if (cir.getReturnValue() != null) {
                     this.sendMessageWithCD(TrT.of("enclosure.message.item_only_self_pickup"));
                     cir.getReturnValue().setOwner(getUuid());
@@ -121,8 +127,7 @@ public abstract class MixinServerPlayerEntity extends PlayerEntity implements Pl
         if (message.startsWith("#rich:")) {
             if (ServerMain.INSTANCE.getCommonConfig().allowRichMessage) {
                 return Text.Serializer.fromJson(message.substring(6));
-            }
-            else {
+            } else {
                 message = message.substring(6);
             }
         }
@@ -159,6 +164,7 @@ public abstract class MixinServerPlayerEntity extends PlayerEntity implements Pl
         }
         player.sendMessage(text, ServerMain.INSTANCE.getCommonConfig().useActionBarMessage);
     }
+
     @Inject(method = "tick", at = @At("HEAD"))
     private void onTick(CallbackInfo ci) {
         if (server.getTicks() % 10 == 0) {
@@ -173,8 +179,8 @@ public abstract class MixinServerPlayerEntity extends PlayerEntity implements Pl
                 }
             }
             if (area != null) {
-                if (!area.hasPerm(player, MOVE)) {
-                    player.sendMessage(MOVE.getNoPermissionMsg(player));
+                if (!area.hasPerm(player, permissions.MOVE)) {
+                    player.sendMessage(permissions.MOVE.getNoPermissionMsg(player));
                     if (area != lastArea && lastWorld != null && lastPos != null) {
                         // teleport back
                         player.teleport(lastWorld, lastPos.x, lastPos.y, lastPos.z, 0, 0);
@@ -187,7 +193,7 @@ public abstract class MixinServerPlayerEntity extends PlayerEntity implements Pl
                     sendFormattedMessage(player, area, true);
                 }
                 // glowing effect
-                if (area.hasPerm(player, GLOWING)) {
+                if (area.hasPerm(player, permissions.GLOWING)) {
                     player.addStatusEffect(new StatusEffectInstance(StatusEffects.GLOWING, 15, 1, false, false, false));
                 }
             }

@@ -2,8 +2,6 @@ package com.github.zly2006.enclosure.mixin;
 
 import com.github.zly2006.enclosure.EnclosureArea;
 import com.github.zly2006.enclosure.ServerMain;
-import com.github.zly2006.enclosure.utils.Permission;
-import net.fabricmc.api.Environment;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.FallingBlockEntity;
@@ -15,6 +13,8 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+
+import static com.github.zly2006.enclosure.utils.Permission.permissions;
 
 @Mixin(value = FallingBlockEntity.class)
 public abstract class MixinFallingBlockEntity extends Entity {
@@ -42,7 +42,7 @@ public abstract class MixinFallingBlockEntity extends Entity {
         if (currentArea == null || sourceArea == currentArea) {
             return;
         }
-        if (!currentArea.hasPubPerm(Permission.FALLING_BLOCK)) {
+        if (!currentArea.hasPubPerm(permissions.FALLING_BLOCK)) {
             discard();
             ci.cancel();
         }

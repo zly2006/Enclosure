@@ -6,7 +6,8 @@ import java.io.InputStream;
 public class ResourceLoader {
     private static final String LANGUAGE_FILES_PATH = "/assets/enclosure/lang/";
 
-    public ResourceLoader(){}
+    public ResourceLoader() {
+    }
 
     public static String getLanguageFile(String langCode) throws IOException {
         try (InputStream resource = ResourceLoader.class.getResourceAsStream(LANGUAGE_FILES_PATH + langCode + ".json")) {

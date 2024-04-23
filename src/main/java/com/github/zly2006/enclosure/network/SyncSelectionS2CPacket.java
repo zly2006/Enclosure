@@ -13,7 +13,8 @@ import net.minecraft.util.math.BlockPos;
 
 @Environment(EnvType.CLIENT)
 public class SyncSelectionS2CPacket implements ClientPlayNetworking.PlayChannelHandler {
-    private SyncSelectionS2CPacket() {}
+    private SyncSelectionS2CPacket() {
+    }
 
     public static void register() {
         ClientPlayNetworking.registerGlobalReceiver(NetworkChannels.SYNC_SELECTION, new SyncSelectionS2CPacket());

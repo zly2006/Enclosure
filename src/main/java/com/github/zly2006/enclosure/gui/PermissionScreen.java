@@ -24,6 +24,7 @@ public class PermissionScreen extends Screen implements EnclosureGui {
     final String fullName;
     final Screen parent;
     PermissionListWidget permissionWidgetList;
+
     public PermissionScreen(EnclosureView.ReadOnly area, UUID uuid, String fullName, Screen parent) {
         super(Text.of("Set permission"));
         this.area = area;
@@ -67,8 +68,7 @@ public class PermissionScreen extends Screen implements EnclosureGui {
         MutableText title = Text.translatable("enclosure.widget.set_permission").append(" ");
         if (CONSOLE.equals(uuid)) {
             title.append(Text.translatable("enclosure.widget.global"));
-        }
-        else {
+        } else {
             title.append(Text.translatable("enclosure.widget.player"))
                     .append(" ")
                     .append(UUIDCacheS2CPacket.getName(uuid));
