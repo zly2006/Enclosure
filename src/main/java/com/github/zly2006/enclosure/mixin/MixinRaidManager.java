@@ -17,13 +17,13 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 public class MixinRaidManager {
     private final static Logger LOGGER = LoggerFactory.getLogger("Enclosure Raid Alert");
     @Inject(method = "startRaid", at = @At("RETURN"))
-    private void onStart(ServerPlayerEntity player, CallbackInfoReturnable<Raid> cir) {
+    private void onStart(ServerPlayerEntity player, BlockPos pos, CallbackInfoReturnable<Raid> cir) {
         Raid raid = cir.getReturnValue();
         if (raid != null) {
-            BlockPos pos = raid.getCenter();
-            EnclosureArea area = ServerMain.INSTANCE.getSmallestEnclosure(player.getServerWorld(), pos);
+            BlockPos blockPos = raid.getCenter();
+            EnclosureArea area = ServerMain.INSTANCE.getSmallestEnclosure(player.getServerWorld(), blockPos);
             if (area != null) {
-                LOGGER.info("Raid " + raid.getRaidId() + " started by " + player.getNameForScoreboard() + " in enclosure " + area.getName() + " at " + pos.getX() + " " + pos.getY() + " " + pos.getZ() + ".");
+                LOGGER.info("Raid {} started by {} in enclosure {} at {}.", raid.getRaidId(), player.getNameForScoreboard(), area.getName(), blockPos.toShortString());
             }
         }
     }
