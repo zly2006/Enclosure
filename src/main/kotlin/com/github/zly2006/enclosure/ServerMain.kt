@@ -164,20 +164,18 @@ object ServerMain: ModInitializer {
                 JsonObject::class.java
             )
             LOGGER.info("Loaded language file: " + commonConfig.defaultLanguageKey + ", there are " + fromJson.entrySet().size + " entries")
-            return@lazy fromJson
+            fromJson
         } catch (e: IOException) {
             LOGGER.error("Failed to load default language file: " + commonConfig.defaultLanguageKey)
             LOGGER.warn("Using en_us as default language")
             try {
-                return@lazy GSON.fromJson(
+                GSON.fromJson(
                     ResourceLoader.getLanguageFile("en_us"),
                     JsonObject::class.java
                 )
             } catch (ex: IOException) {
-                LOGGER.error("Failed to load en_us language file")
-                LOGGER.error("Please report this issue to the author")
-                e.printStackTrace()
-                return@lazy JsonObject()
+                LOGGER.error("Failed to load en_us language file\nPlease report this issue to the author", e)
+                JsonObject()
             }
         }
     }
