@@ -103,7 +103,6 @@ object EnclosureWorldRenderer {
         val matrix4f = matrices.peek().positionMatrix
         matrices.push()
         RenderSystem.disableCull()
-        val bufferBuilder = Tessellator.getInstance()
         RenderSystem.setShader { GameRenderer.getPositionColorProgram() }
         fun drawFace(x1: Float, y1: Float, z1: Float, x2: Float, y2: Float, z2: Float, x3: Float, y3: Float, z3: Float, x4: Float, y4: Float, z4: Float, red: Float, green: Float, blue: Float, alpha: Float) {
             val bufferBuilder = Tessellator.getInstance().begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_COLOR)
@@ -111,8 +110,7 @@ object EnclosureWorldRenderer {
             bufferBuilder.vertex(matrix4f, x2, y2, z2).color(red, green, blue, alpha)
             bufferBuilder.vertex(matrix4f, x3, y3, z3).color(red, green, blue, alpha)
             bufferBuilder.vertex(matrix4f, x4, y4, z4).color(red, green, blue, alpha)
-            bufferBuilder.end()
-//            Tessellator.getInstance().draw()
+            BufferRenderer.drawWithGlobalProgram(bufferBuilder.end())
         }
         drawFace(minX, minY, minZ, minX, minY, maxZ, minX, maxY, maxZ, minX, maxY, minZ, red, green, blue, alpha)
         drawFace(maxX, minY, minZ, maxX, minY, maxZ, maxX, maxY, maxZ, maxX, maxY, minZ, red, green, blue, alpha)
