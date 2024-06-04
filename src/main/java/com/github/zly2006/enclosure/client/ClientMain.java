@@ -10,12 +10,19 @@ import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
+import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.gui.screen.ingame.HandledScreens;
 import net.minecraft.client.option.KeyBinding;
 import net.minecraft.client.util.InputUtil;
 import net.minecraft.util.math.BlockPos;
 import org.lwjgl.glfw.GLFW;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
+
+import static com.github.zly2006.enclosure.ServerMainKt.MOD_VERSION;
 
 @Environment(EnvType.CLIENT)
 public class ClientMain implements ClientModInitializer {
@@ -29,6 +36,8 @@ public class ClientMain implements ClientModInitializer {
     public static ClientSession clientSession;
     public static boolean isEnclosureInstalled = false;
 
+    public static Map<UUID, String> uuid2name = new HashMap<>();
+
     @Override
     public void onInitializeClient() {
         UUIDCacheS2CPacket.register();
@@ -36,10 +45,10 @@ public class ClientMain implements ClientModInitializer {
         ConfirmRequestS2CPacket.register();
         HandledScreens.register(EnclosureScreenHandler.ENCLOSURE_SCREEN_HANDLER, EnclosureScreen::new);
         EnclosureWorldRenderer.INSTANCE.register();
-        SyncPermissionS2CPacket.register();
+        SyncPermissionBiPacket.register();
         ClientPlayConnectionEvents.JOIN.register((handler, sender, client) -> {
             clientSession = new ClientSession();
-            EnclosureInstalledC2SPacket.send();
+            ClientPlayNetworking.send(new EnclosureInstalledC2SPacket(MOD_VERSION));
             if (FabricLoader.getInstance().isDevelopmentEnvironment()) {
                 isEnclosureInstalled = true;
                 clientSession.setPos1(new BlockPos(0, 0, 0));

@@ -49,7 +49,7 @@ public class AboutScreen extends Screen {
         int renderStart = Math.max(50, centerHeight - 80);
         context.drawCenteredTextWithShadow(textRenderer, Text.of("Enclosure"), centerWidth, renderStart, 0xffffff);
         renderStart += 10;
-        renderBackgroundTexture(context);
+        renderInGameBackground(context);
         for (ClickableTextWidget textWidget : textWidgets) {
             textWidget.x = 10;
             textWidget.y = renderStart;

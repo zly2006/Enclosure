@@ -1,6 +1,7 @@
 package com.github.zly2006.enclosure.gui;
 
 import com.github.zly2006.enclosure.EnclosureView;
+import com.github.zly2006.enclosure.client.ClientMain;
 import com.github.zly2006.enclosure.network.UUIDCacheS2CPacket;
 import kotlin.jvm.functions.Function2;
 import net.fabricmc.api.EnvType;
@@ -44,17 +45,11 @@ public class PermissionTargetListWidget<T extends ButtonWidget> extends ElementL
         this.fullName = fullName;
         this.parent = parent;
         this.buttonFactory = buttonFactory;
-        setRenderBackground(false); // 不渲染背景
     }
 
     @Override
     public int getRowWidth() {
         return width - 60;
-    }
-
-    @Override
-    protected int getScrollbarPositionX() {
-        return width - 15;
     }
 
     public void showPlayers() {
@@ -74,7 +69,7 @@ public class PermissionTargetListWidget<T extends ButtonWidget> extends ElementL
         mode = Mode.Unspecified;
         setScrollAmount(0);
         addEntry(searchEntry);
-        UUIDCacheS2CPacket.uuid2name.keySet().stream()
+        ClientMain.uuid2name.keySet().stream()
                 .filter(uuid -> !CONSOLE.equals(uuid))
                 .filter(uuid -> !area.getPermissionsMap().containsKey(uuid))
                 .map(uuid -> new PlayerEntry(Text.of(UUIDCacheS2CPacket.getName(uuid)), uuid))
@@ -136,7 +131,7 @@ public class PermissionTargetListWidget<T extends ButtonWidget> extends ElementL
                     case Players -> entryStream = area.getPermissionsMap().keySet().stream()
                             .filter(uuid -> !uuid.equals(CONSOLE))
                             .map(uuid -> new PlayerEntry(Text.literal(UUIDCacheS2CPacket.getName(uuid)), uuid));
-                    case Unspecified -> entryStream = UUIDCacheS2CPacket.uuid2name.keySet().stream()
+                    case Unspecified -> entryStream = ClientMain.uuid2name.keySet().stream()
                             .map(uuid -> new PlayerEntry(Text.literal(UUIDCacheS2CPacket.getName(uuid)), uuid));
                 }
                 entryStream.filter(entry -> entry.name.getString().contains(s))

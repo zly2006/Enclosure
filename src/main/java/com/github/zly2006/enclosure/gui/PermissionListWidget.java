@@ -47,17 +47,11 @@ public class PermissionListWidget extends ElementListWidget<PermissionListWidget
                                 (permission.getTarget().fitEnclosure() && target.fitEnclosure()))
                 .sorted(Comparator.comparing(Permission::getName))
                 .forEach(permission -> addEntry(new PermissionEntry(permission)));
-        setRenderBackground(false); // 不渲染背景
     }
 
     @Override
     public int getRowWidth() {
         return width - 60;
-    }
-
-    @Override
-    protected int getScrollbarPositionX() {
-        return width - 15;
     }
 
     @Environment(EnvType.CLIENT)

@@ -20,6 +20,7 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType
 import com.mojang.brigadier.suggestion.SuggestionsBuilder
 import com.mojang.brigadier.tree.LiteralCommandNode
+import net.minecraft.command.CommandRegistryAccess
 import net.minecraft.command.CommandSource
 import net.minecraft.command.argument.*
 import net.minecraft.server.command.CommandManager
@@ -360,7 +361,7 @@ fun BuilderScope<*>.registerConfirmCommand() {
     }
 }
 
-fun register(dispatcher: CommandDispatcher<ServerCommandSource>): LiteralCommandNode<ServerCommandSource>? {
+fun register(dispatcher: CommandDispatcher<ServerCommandSource>, access: CommandRegistryAccess): LiteralCommandNode<ServerCommandSource>? {
     val node = BuilderScope(CommandManager.literal("enclosure")).apply {
         registerConfirmCommand()
         literal("about") {
@@ -1242,35 +1243,15 @@ fun register(dispatcher: CommandDispatcher<ServerCommandSource>): LiteralCommand
             literal("rich") {
                 parent.requires { ServerMain.commonConfig.allowRichMessage }
                 withLeaveEnter({ n, c ->
-                    n.then(CommandManager.argument("message", TextArgumentType.text()).executes(c))
+                    n.then(CommandManager.argument("message", TextArgumentType.text(access)).executes(c))
                 }) { area, l ->
                     if (!area.hasPerm(source.player!!, Permission.ADMIN)) {
                         error(Permission.ADMIN.getNoPermissionMsg(source.player), this)
                     }
                     var str by delegate(area, l)
-                    val message = Text.Serialization.toJsonTree(TextArgumentType.getTextArgument(this, "message"))
+                    val message = Text.Serialization.toJsonString(TextArgumentType.getTextArgument(this, "message"), area.world.registryManager)
                     str = "#rich:$message"
                     source.sendMessage(TrT.of("enclosure.message.set_message", l))
-                }
-            }
-        }
-        literal("experimental") {
-            permission("enclosure.command.experimental", BuilderScope.Companion.DefaultPermission.OP)
-            literal("backup") {
-                argument(landArgument()) {
-                    executes {
-                        val area = getEnclosure(this)
-                        if (!area.hasPerm(source.player!!, Permission.ADMIN)) {
-                            error(Permission.ADMIN.getNoPermissionMsg(source.player), this)
-                        }
-                        if (ServerMain.backupManager.backup(area, source)) {
-                            source.sendFeedback(
-                                { TrT.of("enclosure.message.backup", area.fullName).formatted(Formatting.YELLOW) }, true
-                            )
-                        } else {
-                            error(TrT.of("enclosure.message.backup_failed", area.fullName), this)
-                        }
-                    }
                 }
             }
         }

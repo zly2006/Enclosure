@@ -7,7 +7,7 @@ import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 
 public class ConfirmScreen extends Screen {
-    private static final Identifier TEXTURE = new Identifier("textures/gui/demo_background.png");
+    private static final Identifier TEXTURE = Identifier.of("textures/gui/demo_background.png");
     final Screen parent;
     final Text message;
     final Runnable action;

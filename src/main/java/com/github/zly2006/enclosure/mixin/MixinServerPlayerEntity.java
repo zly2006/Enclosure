@@ -120,7 +120,7 @@ public abstract class MixinServerPlayerEntity extends PlayerEntity implements Pl
         }
         if (message.startsWith("#rich:")) {
             if (ServerMain.INSTANCE.getCommonConfig().allowRichMessage) {
-                return Text.Serialization.fromJson(message.substring(6));
+                return Text.Serialization.fromJson(message.substring(6), area.getWorld().getRegistryManager());
             }
             else {
                 message = message.substring(6);

@@ -17,7 +17,7 @@ import java.util.UUID;
 import static com.github.zly2006.enclosure.command.EnclosureCommandKt.CONSOLE;
 
 public class PermissionScreen extends Screen implements EnclosureGui {
-    public static final Identifier PERMISSION_SCREEN_ID = new Identifier("enclosure", "screen.permission");
+    public static final Identifier PERMISSION_SCREEN_ID = Identifier.of("enclosure", "screen.permission");
 
     final EnclosureView.ReadOnly area;
     public final UUID uuid;

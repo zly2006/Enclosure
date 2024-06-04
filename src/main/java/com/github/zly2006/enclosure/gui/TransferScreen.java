@@ -1,8 +1,8 @@
 package com.github.zly2006.enclosure.gui;
 
 import com.github.zly2006.enclosure.EnclosureView;
+import com.github.zly2006.enclosure.client.ClientMain;
 import com.github.zly2006.enclosure.command.EnclosureCommandKt;
-import com.github.zly2006.enclosure.network.UUIDCacheS2CPacket;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.ButtonWidget;
@@ -21,7 +21,7 @@ public class TransferScreen extends Screen implements EnclosureGui {
         this.parent = parent;
         this.data = data.clone();
         this.data.getPermissionsMap().clear();
-        UUIDCacheS2CPacket.uuid2name.forEach((uuid, s) -> {
+        ClientMain.uuid2name.forEach((uuid, s) -> {
             if (!uuid.equals(EnclosureCommandKt.CONSOLE)) {
                 this.data.getPermissionsMap().put(uuid, new HashMap<>());
             }

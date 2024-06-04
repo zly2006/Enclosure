@@ -1,6 +1,5 @@
 package com.github.zly2006.enclosure
 
-import com.github.zly2006.enclosure.backup.BackupManager
 import com.github.zly2006.enclosure.command.BuilderScope
 import com.github.zly2006.enclosure.command.CONSOLE
 import com.github.zly2006.enclosure.command.Session
@@ -35,6 +34,7 @@ import net.fabricmc.loader.api.FabricLoader
 import net.fabricmc.loader.api.Version
 import net.minecraft.block.*
 import net.minecraft.command.argument.Vec3ArgumentType
+import net.minecraft.datafixer.DataFixTypes
 import net.minecraft.entity.Entity
 import net.minecraft.entity.Saddleable
 import net.minecraft.entity.decoration.ArmorStandEntity
@@ -92,8 +92,6 @@ const val DATA_VERSION = 2
 lateinit var minecraftServer: MinecraftServer
 
 object ServerMain: ModInitializer {
-    lateinit var backupManager: BackupManager
-        private set
     init {
         val directory = File(FabricLoader.getInstance().configDir.toFile(), MOD_ID)
         if (!directory.exists() || directory.isFile) {
@@ -129,7 +127,6 @@ object ServerMain: ModInitializer {
     internal val enclosures: MutableMap<RegistryKey<World>, EnclosureList> = HashMap()
     var operationItem: Item? = null
     var playerSessions: MutableMap<UUID, Session> = HashMap()
-    lateinit var groups: EnclosureGroup.Groups
     var limits: Map<String, LandLimits> = run {
         try {
             val limits = reloadLimits()
@@ -365,8 +362,8 @@ object ServerMain: ModInitializer {
             }
         })
 
-        CommandRegistrationCallback.EVENT.register(CommandRegistrationCallback { dispatcher: CommandDispatcher<ServerCommandSource>, _, _ ->
-            val node = register(dispatcher)
+        CommandRegistrationCallback.EVENT.register(CommandRegistrationCallback { dispatcher, access, _ ->
+            val node = register(dispatcher, access)
             if (commonConfig.developMode) {
                 dispatcher.register(
                     CommandManager.literal("notify_update")
@@ -526,7 +523,7 @@ object ServerMain: ModInitializer {
                             player.currentScreenHandler.syncState()
                             player.sendMessage(permission.getNoPermissionMsg(player))
                             player.networkHandler.sendPacket(EntityTrackerUpdateS2CPacket(
-                                entity.id, entity.dataTracker.entries.map { it.value.toSerialized() }
+                                entity.id, entity.dataTracker.entries.map { it.toSerialized() }
                             ))
                             ActionResult.FAIL
                         }
@@ -554,8 +551,8 @@ object ServerMain: ModInitializer {
                 val enclosureList = EnclosureList(world, true)
                 enclosureList.markDirty()
                 enclosureList
-            }, {
-                var nbtCompound = it
+            }, { nbtCompound, loopup ->
+                var nbtCompound = nbtCompound
                 val version = nbtCompound.getInt(DATA_VERSION_KEY)
                 if (version != DATA_VERSION) {
                     LOGGER.info(
@@ -574,13 +571,12 @@ object ServerMain: ModInitializer {
                     enclosureList.markDirty()
                 }
                 enclosureList
-            }, null)
+            }, DataFixTypes.SAVED_DATA_MAP_DATA)
             world.chunkManager.persistentStateManager.getOrCreate(type, ENCLOSURE_LIST_KEY)
         })
         ServerLifecycleEvents.SERVER_STARTED.register {
             //backupManager = BackupManager()
             playerSessions[CONSOLE] = Session(null)
-            groups = EnclosureGroup.Groups()
             Converter.convert()
             runCatching { checkUpdateThread.start() }
         }

@@ -8,7 +8,6 @@ import net.minecraft.client.MinecraftClient
 import net.minecraft.client.render.*
 import net.minecraft.client.util.math.MatrixStack
 import net.minecraft.util.math.Vec3d
-import org.joml.Matrix3f
 import org.joml.Matrix4f
 import kotlin.math.max
 import kotlin.math.min
@@ -21,7 +20,7 @@ object EnclosureWorldRenderer {
             if (client.options.hudHidden) return@a true
             val session = ClientMain.clientSession ?: return@a true
             val cameraPos = context.camera().pos
-            drawSessionOutline(context.matrixStack(), session, cameraPos, context.tickDelta(), context.consumers())
+            drawSessionOutline(context.matrixStack()!!, session, cameraPos, context.consumers())
             true
         }
         WorldRenderEvents.AFTER_TRANSLUCENT.register a@{ context: WorldRenderContext ->
@@ -30,7 +29,7 @@ object EnclosureWorldRenderer {
             val session = ClientMain.clientSession ?: return@a
             val cameraPos = context.camera().pos
             RenderSystem.enableBlend()
-            drawSessionFaces(context.matrixStack(), session, cameraPos, context.tickDelta())
+            drawSessionFaces(context.matrixStack()!!, session, cameraPos)
             RenderSystem.disableBlend()
         }
     }
@@ -39,7 +38,6 @@ object EnclosureWorldRenderer {
         matrices: MatrixStack,
         session: ClientSession,
         cameraPos: Vec3d,
-        delta: Float,
         provider: VertexConsumerProvider?
     ) {
         val linesBuffer = provider!!.getBuffer(RenderLayer.getLines())
@@ -54,7 +52,7 @@ object EnclosureWorldRenderer {
         val blue = 1f
         val alpha = 1f
         val matrix4f = matrices.peek().positionMatrix
-        val matrix3f = matrices.peek().normalMatrix
+        val matrix3f = matrices.peek()
         // Render two points
         WorldRenderer.drawBox(
             matrices, linesBuffer,
@@ -91,7 +89,7 @@ object EnclosureWorldRenderer {
         renderLine(linesBuffer, matrix4f, matrix3f, maxX, minY, minZ, 2, maxZ, 0f, 0f, blue, alpha)
     }
 
-    private fun drawSessionFaces(matrices: MatrixStack, session: ClientSession, cameraPos: Vec3d, delta: Float) {
+    private fun drawSessionFaces(matrices: MatrixStack, session: ClientSession, cameraPos: Vec3d) {
         val minX = (min(session.pos1.x, session.pos2.x) - cameraPos.getX() - DELTA).toFloat()
         val minY = (min(session.pos1.y, session.pos2.y) - cameraPos.getY() - DELTA).toFloat()
         val minZ = (min(session.pos1.z, session.pos2.z) - cameraPos.getZ() - DELTA).toFloat()
@@ -105,15 +103,16 @@ object EnclosureWorldRenderer {
         val matrix4f = matrices.peek().positionMatrix
         matrices.push()
         RenderSystem.disableCull()
-        val bufferBuilder = Tessellator.getInstance().buffer
+        val bufferBuilder = Tessellator.getInstance()
         RenderSystem.setShader { GameRenderer.getPositionColorProgram() }
         fun drawFace(x1: Float, y1: Float, z1: Float, x2: Float, y2: Float, z2: Float, x3: Float, y3: Float, z3: Float, x4: Float, y4: Float, z4: Float, red: Float, green: Float, blue: Float, alpha: Float) {
-            bufferBuilder.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_COLOR)
-            bufferBuilder.vertex(matrix4f, x1, y1, z1).color(red, green, blue, alpha).next()
-            bufferBuilder.vertex(matrix4f, x2, y2, z2).color(red, green, blue, alpha).next()
-            bufferBuilder.vertex(matrix4f, x3, y3, z3).color(red, green, blue, alpha).next()
-            bufferBuilder.vertex(matrix4f, x4, y4, z4).color(red, green, blue, alpha).next()
-            Tessellator.getInstance().draw()
+            val bufferBuilder = Tessellator.getInstance().begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_COLOR)
+            bufferBuilder.vertex(matrix4f, x1, y1, z1).color(red, green, blue, alpha)
+            bufferBuilder.vertex(matrix4f, x2, y2, z2).color(red, green, blue, alpha)
+            bufferBuilder.vertex(matrix4f, x3, y3, z3).color(red, green, blue, alpha)
+            bufferBuilder.vertex(matrix4f, x4, y4, z4).color(red, green, blue, alpha)
+            bufferBuilder.end()
+//            Tessellator.getInstance().draw()
         }
         drawFace(minX, minY, minZ, minX, minY, maxZ, minX, maxY, maxZ, minX, maxY, minZ, red, green, blue, alpha)
         drawFace(maxX, minY, minZ, maxX, minY, maxZ, maxX, maxY, maxZ, maxX, maxY, minZ, red, green, blue, alpha)
@@ -140,7 +139,7 @@ object EnclosureWorldRenderer {
      * @param alpha 0-1
      */
     private fun renderLine(
-        linesBuffer: VertexConsumer, matrix4f: Matrix4f, matrix3f: Matrix3f,
+        linesBuffer: VertexConsumer, matrix4f: Matrix4f, matrix3f: MatrixStack.Entry,
         x1: Float, y1: Float, z1: Float,
         way: Int, to: Float,
         red: Float, green: Float, blue: Float, alpha: Float
@@ -154,15 +153,15 @@ object EnclosureWorldRenderer {
                 max = to
                 while (min < max - 64) {
                     linesBuffer.vertex(matrix4f, min, y1, z1).color(red, green, blue, alpha)
-                        .normal(matrix3f, 1f, 0f, 0f).next()
+                        .normal(matrix3f, 1f, 0f, 0f)
                     linesBuffer.vertex(matrix4f, min + 64, y1, z1).color(red, green, blue, alpha)
-                        .normal(matrix3f, 1f, 0f, 0f).next()
+                        .normal(matrix3f, 1f, 0f, 0f)
                     min += 64f
                 }
                 linesBuffer.vertex(matrix4f, min, y1, z1).color(red, green, blue, alpha).normal(matrix3f, 1f, 0f, 0f)
-                    .next()
+                    
                 linesBuffer.vertex(matrix4f, max, y1, z1).color(red, green, blue, alpha).normal(matrix3f, 1f, 0f, 0f)
-                    .next()
+                    
             }
 
             1 -> {
@@ -170,15 +169,15 @@ object EnclosureWorldRenderer {
                 max = to
                 while (min < max - 64) {
                     linesBuffer.vertex(matrix4f, x1, min, z1).color(red, green, blue, alpha)
-                        .normal(matrix3f, 0f, 1f, 0f).next()
+                        .normal(matrix3f, 0f, 1f, 0f)
                     linesBuffer.vertex(matrix4f, x1, min + 64, z1).color(red, green, blue, alpha)
-                        .normal(matrix3f, 0f, 1f, 0f).next()
+                        .normal(matrix3f, 0f, 1f, 0f)
                     min += 64f
                 }
                 linesBuffer.vertex(matrix4f, x1, min, z1).color(red, green, blue, alpha).normal(matrix3f, 0f, 1f, 0f)
-                    .next()
+                    
                 linesBuffer.vertex(matrix4f, x1, max, z1).color(red, green, blue, alpha).normal(matrix3f, 0f, 1f, 0f)
-                    .next()
+                    
             }
 
             2 -> {
@@ -186,15 +185,15 @@ object EnclosureWorldRenderer {
                 max = to
                 while (min < max - 64) {
                     linesBuffer.vertex(matrix4f, x1, y1, min).color(red, green, blue, alpha)
-                        .normal(matrix3f, 0f, 0f, 1f).next()
+                        .normal(matrix3f, 0f, 0f, 1f)
                     linesBuffer.vertex(matrix4f, x1, y1, min + 64).color(red, green, blue, alpha)
-                        .normal(matrix3f, 0f, 0f, 1f).next()
+                        .normal(matrix3f, 0f, 0f, 1f)
                     min += 64f
                 }
                 linesBuffer.vertex(matrix4f, x1, y1, min).color(red, green, blue, alpha).normal(matrix3f, 0f, 0f, 1f)
-                    .next()
+                    
                 linesBuffer.vertex(matrix4f, x1, y1, max).color(red, green, blue, alpha).normal(matrix3f, 0f, 0f, 1f)
-                    .next()
+                    
             }
 
             else -> throw IllegalStateException("Unexpected value: $way")
