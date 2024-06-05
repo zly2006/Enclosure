@@ -25,6 +25,10 @@ class Permission(
     constructor(name: String, target: Target = Target.Both, defaultValue: Boolean = false, icon: Item):
             this(name, target, setOf<String>(name), defaultValue, icon)
 
+    override fun toString(): String {
+        return "Permission[$name]"
+    }
+
     fun getValue(map: Map<String, Boolean>): Boolean? {
         for (permission in permissions) {
             if (map.containsKey(permission)) {

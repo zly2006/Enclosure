@@ -258,7 +258,7 @@ object ServerMain: ModInitializer {
         val list = getAllEnclosures(world)
         val area = list.getArea(pos) ?: return true
         return if (player != null) {
-            area.areaOf(pos).hasPerm((player as ServerPlayerEntity?)!!, permission)
+            area.areaOf(pos).hasPerm(player as ServerPlayerEntity, permission)
         } else area.areaOf(pos).hasPubPerm(permission)
     }
 

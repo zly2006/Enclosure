@@ -26,7 +26,7 @@ import static com.github.zly2006.enclosure.utils.Permission.PLACE_BLOCK;
 
 @Mixin(PlayerEntity.class)
 public abstract class MixinPlayerEntity extends LivingEntity {
-    @Shadow @Final private PlayerInventory inventory;
+    @Shadow @Final PlayerInventory inventory;
 
     public MixinPlayerEntity(EntityType<? extends LivingEntity> type, World world) {
         super(type, world);

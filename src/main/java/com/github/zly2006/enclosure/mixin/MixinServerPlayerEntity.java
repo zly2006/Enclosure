@@ -28,6 +28,7 @@ import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
@@ -41,19 +42,19 @@ import static com.github.zly2006.enclosure.utils.Permission.*;
 @Mixin(ServerPlayerEntity.class)
 public abstract class MixinServerPlayerEntity extends PlayerEntity implements PlayerAccess {
     @Shadow public ServerPlayNetworkHandler networkHandler;
-    private long lastTeleportTime = 0;
-    @Nullable private Vec3d lastPos = null;
-    @Nullable private EnclosureArea lastArea = null;
-    @Nullable private ServerWorld lastWorld;
-    private long permissionDeniedMsgTime = 0;
+    @Unique private long lastTeleportTime = 0;
+    @Unique @Nullable private Vec3d lastPos = null;
+    @Unique @Nullable private EnclosureArea lastArea = null;
+    @Unique @Nullable private ServerWorld lastWorld;
+    @Unique private long permissionDeniedMsgTime = 0;
 
     @Override
-    public long getPermissionDeniedMsgTime() {
+    public long enclosure$getPermissionDeniedMsgTime() {
         return permissionDeniedMsgTime;
     }
 
     @Override
-    public void setPermissionDeniedMsgTime(long permissionDeniedMsgTime) {
+    public void enclosure$setPermissionDeniedMsgTime(long permissionDeniedMsgTime) {
         this.permissionDeniedMsgTime = permissionDeniedMsgTime;
     }
 
@@ -63,14 +64,15 @@ public abstract class MixinServerPlayerEntity extends PlayerEntity implements Pl
 
     @Shadow @Final public MinecraftServer server;
 
+    @Shadow public abstract ServerWorld getServerWorld();
+
     public MixinServerPlayerEntity(World world, BlockPos pos, float yaw, GameProfile gameProfile) {
         super(world, pos, yaw, gameProfile);
     }
 
     @Inject(method = "openHorseInventory", at = @At("HEAD"), cancellable = true)
     private void onOpenHorseInventory(CallbackInfo ci) {
-        EnclosureArea area = ServerMain.INSTANCE.getSmallestEnclosure((ServerWorld) this.getWorld(), getBlockPos());
-        if (area != null && !area.hasPerm((ServerPlayerEntity) (Object) this, Permission.CONTAINER)) {
+        if (!ServerMain.INSTANCE.checkPermission(getServerWorld(), getBlockPos(), this, Permission.CONTAINER)) {
             sendMessage(Permission.CONTAINER.getNoPermissionMsg(this));
             ci.cancel();
         }
@@ -113,6 +115,7 @@ public abstract class MixinServerPlayerEntity extends PlayerEntity implements Pl
         }
     }
 
+    @Unique
     @Nullable
     private Text formatMessage(@NotNull String message, @NotNull EnclosureArea area, ServerPlayerEntity player) {
         if (message.equals("#none")) {
@@ -138,6 +141,7 @@ public abstract class MixinServerPlayerEntity extends PlayerEntity implements Pl
         );
     }
 
+    @Unique
     private void sendFormattedMessage(ServerPlayerEntity player, EnclosureArea area, boolean enter) {
         MutableText text = Text.of(enter ? ServerMain.INSTANCE.getCommonConfig().enterMessageHeader : ServerMain.INSTANCE.getCommonConfig().leaveMessageHeader).copy();
         if (enter) {
@@ -159,14 +163,13 @@ public abstract class MixinServerPlayerEntity extends PlayerEntity implements Pl
         }
         player.sendMessage(text, ServerMain.INSTANCE.getCommonConfig().useActionBarMessage);
     }
+
+    @SuppressWarnings("UnreachableCode")
     @Inject(method = "tick", at = @At("HEAD"))
     private void onTick(CallbackInfo ci) {
         if (server.getTicks() % 10 == 0) {
             ServerPlayerEntity player = (ServerPlayerEntity) (Object) this;
-            EnclosureArea area = ServerMain.INSTANCE.getAllEnclosures((ServerWorld) getWorld()).getArea(getBlockPos());
-            if (area != null) {
-                area = area.areaOf(getBlockPos());
-            }
+            EnclosureArea area = ServerMain.INSTANCE.getSmallestEnclosure(getServerWorld(), getBlockPos());
             if (lastArea != null) {
                 if (area != lastArea) {
                     sendFormattedMessage(player, lastArea, false);
@@ -198,12 +201,12 @@ public abstract class MixinServerPlayerEntity extends PlayerEntity implements Pl
     }
 
     @Override
-    public long getLastTeleportTime() {
+    public long enclosure$getLastTeleportTime() {
         return lastTeleportTime;
     }
 
     @Override
-    public void setLastTeleportTime(long lastTeleportTime) {
+    public void enclosure$setLastTeleportTime(long lastTeleportTime) {
         this.lastTeleportTime = lastTeleportTime;
     }
 }

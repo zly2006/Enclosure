@@ -199,7 +199,9 @@ class BuilderScope<T: argT>(var parent: T) {
                 when (this) {
                     TRUE -> true
                     FALSE -> false
-                    OP -> source.hasPermissionLevel(4)
+                    OP -> source.hasPermissionLevel(
+                        if (minecraftServer.isSingleplayer) 2 else 4 // 2 for LAN, 4 for normal
+                    )
                 }
         }
 
@@ -814,7 +816,7 @@ fun register(dispatcher: CommandDispatcher<ServerCommandSource>, access: Command
                     executes {
                         val player = source.player!!
                         val lastTeleportTimeSpan =
-                            System.currentTimeMillis() - (player as PlayerAccess).lastTeleportTime
+                            System.currentTimeMillis() - (player as PlayerAccess).permissionDeniedMsgTime
                         val cd = ServerMain.commonConfig.teleportCooldown
                         val area = getEnclosure(this)
 
@@ -830,7 +832,7 @@ fun register(dispatcher: CommandDispatcher<ServerCommandSource>, access: Command
                                 ), this
                             )
                         }
-                        (player as PlayerAccess).lastTeleportTime = System.currentTimeMillis()
+                        (player as PlayerAccess).permissionDeniedMsgTime = System.currentTimeMillis()
                         if (ServerMain.commonConfig.showTeleportWarning) {
                             if (!isPositionSafe(area.world, area.teleportPos!!)) {
                                 source.sendMessage(

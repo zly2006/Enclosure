@@ -9,6 +9,7 @@ import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Items;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
 import net.minecraft.world.World;
@@ -25,13 +26,19 @@ public abstract class MixinMobEntity extends LivingEntity {
 
     @Inject(method = "interact", at = @At("HEAD"), cancellable = true)
     private void interact(PlayerEntity player, Hand hand, CallbackInfoReturnable<ActionResult> cir) {
-        if (this instanceof Bucketable && player.getStackInHand(hand).isOf(Items.WATER_BUCKET)) {
-            if (!ServerMain.INSTANCE.checkPermission(getWorld(), getBlockPos(), player, Permission.FISH)) {
-                ServerPlayerEntity serverPlayer = (ServerPlayerEntity) player;
+        if (getWorld() instanceof ServerWorld world) {
+            if (this instanceof Bucketable && player.getStackInHand(hand).isOf(Items.WATER_BUCKET)) {
+                if (!ServerMain.INSTANCE.checkPermission(getWorld(), getBlockPos(), player, Permission.FISH)) {
+                    ServerPlayerEntity serverPlayer = (ServerPlayerEntity) player;
+
+
+//                    createSpawnPacket(world.getChunkManager().chunkLoadingManager.entityTrackers);
+                    // fixme
 //                serverPlayer.networkHandler.sendPacket(createSpawnPacket());
-                serverPlayer.sendMessage(Permission.FISH.getNoPermissionMsg(player));
-                serverPlayer.currentScreenHandler.syncState();
-                cir.setReturnValue(ActionResult.FAIL);
+                    serverPlayer.sendMessage(Permission.FISH.getNoPermissionMsg(player));
+                    serverPlayer.currentScreenHandler.syncState();
+                    cir.setReturnValue(ActionResult.FAIL);
+                }
             }
         }
     }

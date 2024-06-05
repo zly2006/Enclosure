@@ -11,22 +11,22 @@ public class MixinServerInfo implements ServerMetadataAccess {
     Version modVersion;
 
     @Override
-    public String getModName() {
+    public String enclosure$getModName() {
         return modName;
     }
 
     @Override
-    public Version getModVersion() {
+    public Version enclosure$getModVersion() {
         return modVersion;
     }
 
     @Override
-    public void setModVersion(Version modVersion) {
+    public void enclosure$setModVersion(Version modVersion) {
         this.modVersion = modVersion;
     }
 
     @Override
-    public void setModName(String modName) {
+    public void enclosure$setModName(String modName) {
         this.modName = modName;
     }
 }

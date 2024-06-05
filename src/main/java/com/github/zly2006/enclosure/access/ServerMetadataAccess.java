@@ -8,21 +8,21 @@ import net.minecraft.text.Text;
 import java.util.Optional;
 
 public interface ServerMetadataAccess {
-    String getModName();
-    Version getModVersion();
+    String enclosure$getModName();
+    Version enclosure$getModVersion();
 
-    void setModVersion(Version version);
+    void enclosure$setModVersion(Version version);
 
-    void setModName(String name);
+    void enclosure$setModName(String name);
 
     @SuppressWarnings({"OptionalUsedAsFieldOrParameterType", "DataFlowIssue"})
     static ServerMetadata newMetadata(Text text, Optional<ServerMetadata.Players> players, Optional<ServerMetadata.Version> version, Optional<ServerMetadata.Favicon> favicon, Boolean onlineMode, String s, String s1) {
         ServerMetadata metadata = new ServerMetadata(text, players, version, favicon, onlineMode);
-        ((ServerMetadataAccess) metadata).setModName(s);
+        ((ServerMetadataAccess) metadata).enclosure$setModName(s);
         try {
-            ((ServerMetadataAccess) metadata).setModVersion(Version.parse(s1));
+            ((ServerMetadataAccess) metadata).enclosure$setModVersion(Version.parse(s1));
         } catch (VersionParsingException e) {
-            ((ServerMetadataAccess) metadata).setModVersion(null);
+            ((ServerMetadataAccess) metadata).enclosure$setModVersion(null);
         }
         return metadata;
     }

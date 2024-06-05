@@ -12,15 +12,16 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(HopperMinecartEntity.class)
 public abstract class MixinHopperMinecartEntity extends AbstractMinecartEntity {
-    Vec3d lastVelocity;
-    Vec3d lastPosition;
-    BlockPos lastBlockPos;
+    @Unique Vec3d lastVelocity;
+    @Unique Vec3d lastPosition;
+    @Unique BlockPos lastBlockPos;
     public MixinHopperMinecartEntity(EntityType<?> type, World world) {
         super(type, world);
     }

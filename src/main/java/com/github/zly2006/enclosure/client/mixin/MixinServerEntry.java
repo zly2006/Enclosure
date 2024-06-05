@@ -25,14 +25,14 @@ public class MixinServerEntry {
     @Inject(method = "render", at = @At("RETURN"))
     private void onRender(DrawContext context, int index, int y, int x, int entryWidth, int entryHeight, int mouseX, int mouseY, boolean hovered, float tickDelta, CallbackInfo ci) {
         ServerMetadataAccess access = (ServerMetadataAccess) server;
-        if (ServerMainKt.MOD_ID.equals(access.getModName())) {
+        if (ServerMainKt.MOD_ID.equals(access.enclosure$getModName())) {
             int offset = 0;
             if (hovered) {
                 if (mouseX > x + 24 && mouseX < x + 32 &&
                         mouseY > y + 24 && mouseY < y + 32) {
                     offset = 8;
                     screen.setTooltip(
-                            Text.of("This server has enclosure mod installed, version: " + access.getModVersion().getFriendlyString())
+                            Text.of("This server has enclosure mod installed, version: " + access.enclosure$getModVersion().getFriendlyString())
                     );
                 }
             }

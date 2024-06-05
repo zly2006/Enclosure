@@ -12,11 +12,13 @@ import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
 
 @Mixin(FireBlock.class)
 public class MixinFireBlock {
+    @Unique
     private void set(World instance, BlockPos pos, BlockState blockState, int i) {
         if (instance.isClient) return;
         EnclosureList list = ServerMain.INSTANCE.getAllEnclosures((ServerWorld) instance);
@@ -26,6 +28,7 @@ public class MixinFireBlock {
         }
     }
 
+    @Unique
     private void remove(World instance, BlockPos pos, boolean move) {
         if (instance.isClient) return;
         EnclosureList list = ServerMain.INSTANCE.getAllEnclosures((ServerWorld) instance);

@@ -1,30 +1,36 @@
-package com.github.zly2006.enclosure.access;
+package com.github.zly2006.enclosure.access
 
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.Text;
-import org.jetbrains.annotations.Nullable;
+import net.minecraft.entity.player.PlayerEntity
+import net.minecraft.server.network.ServerPlayerEntity
+import net.minecraft.text.Text
 
-public interface PlayerAccess {
+interface PlayerAccess {
     interface MessageProvider {
-        Text get(@Nullable ServerPlayerEntity player);
+        fun get(player: ServerPlayerEntity?): Text?
     }
-    long getLastTeleportTime();
-    void setLastTeleportTime(long time);
-    long getPermissionDeniedMsgTime();
-    void setPermissionDeniedMsgTime(long time);
-    default void sendMessageWithCD(Text text) {
-        if (getPermissionDeniedMsgTime() + 1000 < System.currentTimeMillis()) {
-            setPermissionDeniedMsgTime(System.currentTimeMillis());
-            ((PlayerEntity) this).sendMessage(text, false);
+
+    @Suppress("INAPPLICABLE_JVM_NAME")
+    @get:JvmName("enclosure\$getLastTeleportTime")
+    @set:JvmName("enclosure\$setLastTeleportTime")
+    var lastTeleportTime: Long
+
+    @Suppress("INAPPLICABLE_JVM_NAME")
+    @get:JvmName("enclosure\$getPermissionDeniedMsgTime")
+    @set:JvmName("enclosure\$setPermissionDeniedMsgTime")
+    var permissionDeniedMsgTime: Long
+
+    fun sendMessageWithCD(text: Text?) {
+        if (permissionDeniedMsgTime + 1000 < System.currentTimeMillis()) {
+            permissionDeniedMsgTime = System.currentTimeMillis()
+            (this as PlayerEntity).sendMessage(text, false)
         }
     }
-    default void sendMessageWithCD(MessageProvider provider) {
-        if (this instanceof ServerPlayerEntity) {
-            sendMessageWithCD(provider.get((ServerPlayerEntity) this));
-        }
-        else {
-            sendMessageWithCD(provider.get(null));
+
+    fun sendMessageWithCD(provider: MessageProvider) {
+        if (this is ServerPlayerEntity) {
+            sendMessageWithCD(provider.get(this as ServerPlayerEntity))
+        } else {
+            sendMessageWithCD(provider.get(null))
         }
     }
 }
