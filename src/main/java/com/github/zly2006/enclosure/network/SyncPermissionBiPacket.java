@@ -48,6 +48,6 @@ public class SyncPermissionBiPacket implements CustomPayload {
 
     @Override
     public Id<? extends CustomPayload> getId() {
-        return null;
+        return ID;
     }
 }
