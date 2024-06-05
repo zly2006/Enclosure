@@ -13,3 +13,4 @@ accessible field net/minecraft/util/UserCache$Entry profile Lcom/mojang/authlib/
 accessible field net/minecraft/util/UserCache byName Ljava/util/Map;
 extendable class net/minecraft/datafixer/DataFixTypes
 accessible field net/minecraft/server/world/ServerChunkLoadingManager entityTrackers Lit/unimi/dsi/fastutil/ints/Int2ObjectMap;
+accessible field net/minecraft/server/world/ServerChunkLoadingManager$EntityTracker entry Lnet/minecraft/server/network/EntityTrackerEntry;

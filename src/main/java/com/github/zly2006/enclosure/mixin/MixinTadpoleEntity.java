@@ -2,30 +2,31 @@ package com.github.zly2006.enclosure.mixin;
 
 import com.github.zly2006.enclosure.ServerMain;
 import com.github.zly2006.enclosure.utils.Permission;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.passive.TadpoleEntity;
+import net.minecraft.entity.Bucketable;
+import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.network.packet.s2c.play.EntityTrackerUpdateS2CPacket;
+import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
-import net.minecraft.world.World;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-@Mixin(TadpoleEntity.class)
-public abstract class MixinTadpoleEntity extends Entity {
-    public MixinTadpoleEntity(EntityType<?> type, World world) {
-        super(type, world);
-    }
+import java.util.Optional;
 
-    @Inject(method = "interactMob", at = @At("HEAD"), cancellable = true)
-    private void interactMob(PlayerEntity player, Hand hand, CallbackInfoReturnable<ActionResult> cir) {
-        if (ServerMain.INSTANCE.checkPermission(getWorld(), getBlockPos(), player, Permission.FISH)) {
-            return;
+@Mixin(Bucketable.class)
+public interface MixinTadpoleEntity {
+    @Inject(method = "tryBucket", at = @At("HEAD"), cancellable = true)
+    private static <T extends LivingEntity & Bucketable>  void interactMob(PlayerEntity player, Hand hand, T entity, CallbackInfoReturnable<Optional<ActionResult>> cir) {
+        if (player instanceof ServerPlayerEntity serverPlayer) {
+            if (!ServerMain.INSTANCE.checkPermission(player.getWorld(), entity.getBlockPos(), player, Permission.FISH)) {
+                player.sendMessage(Permission.FISH.getNoPermissionMsg(player));
+                serverPlayer.networkHandler.sendPacket(entity.createSpawnPacket(serverPlayer.getServerWorld().getChunkManager().chunkLoadingManager.entityTrackers.get(entity.getId()).entry));
+                serverPlayer.networkHandler.sendPacket(new EntityTrackerUpdateS2CPacket(entity.getId(), entity.getDataTracker().getChangedEntries()));
+                cir.setReturnValue(Optional.empty());
+            }
         }
-        player.sendMessage(Permission.FISH.getNoPermissionMsg(player));
-        cir.setReturnValue(ActionResult.FAIL);
     }
 }
