@@ -1,87 +1,70 @@
-package com.github.zly2006.enclosure.network;
+package com.github.zly2006.enclosure.network.play
 
-import com.github.zly2006.enclosure.EnclosureArea;
-import com.github.zly2006.enclosure.ServerMain;
-import com.github.zly2006.enclosure.gui.EnclosureScreenHandler;
-import com.github.zly2006.enclosure.utils.TrT;
-import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
-import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
-import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.network.PacketByteBuf;
-import net.minecraft.network.codec.PacketCodec;
-import net.minecraft.network.packet.CustomPayload;
-import net.minecraft.registry.RegistryKey;
-import net.minecraft.registry.RegistryKeys;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.math.BlockPos;
-
-import static com.github.zly2006.enclosure.ServerMainKt.minecraftServer;
+import com.github.zly2006.enclosure.EnclosureArea
+import com.github.zly2006.enclosure.ServerMain.getEnclosure
+import com.github.zly2006.enclosure.ServerMain.getSmallestEnclosure
+import com.github.zly2006.enclosure.gui.EnclosureScreenHandler
+import com.github.zly2006.enclosure.minecraftServer
+import com.github.zly2006.enclosure.network.NetworkChannels
+import com.github.zly2006.enclosure.network.config.EnclosureInstalledC2SPacket
+import com.github.zly2006.enclosure.utils.TrT
+import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry
+import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking
+import net.minecraft.network.PacketByteBuf
+import net.minecraft.network.codec.PacketCodec
+import net.minecraft.network.packet.CustomPayload
+import net.minecraft.registry.RegistryKey
+import net.minecraft.registry.RegistryKeys
+import net.minecraft.util.Identifier
+import net.minecraft.util.math.BlockPos
 
 // 请求服务器的领地信息，
-public class RequestOpenScreenC2SPPacket implements CustomPayload {
-    String name;
-    Identifier dimId;
-    int[] pos;
+class RequestOpenScreenC2SPPacket(
+    var name: String,
+    var dimId: Identifier,
+    var pos: BlockPos
+) : CustomPayload {
+    override fun getId() = ID
 
-    public static final Id<RequestOpenScreenC2SPPacket> ID = new Id<>(NetworkChannels.OPEN_REQUEST);
-    public static final PacketCodec<PacketByteBuf, RequestOpenScreenC2SPPacket> CODEC = PacketCodec.of(
-            (value, buf) -> {
-                buf.writeString(value.name);
-                buf.writeIdentifier(value.dimId);
-                buf.writeIntArray(value.pos);
+    companion object {
+        val ID: CustomPayload.Id<RequestOpenScreenC2SPPacket?> = CustomPayload.Id(NetworkChannels.OPEN_REQUEST)
+        val CODEC: PacketCodec<PacketByteBuf, RequestOpenScreenC2SPPacket?> = PacketCodec.of(
+            { value: RequestOpenScreenC2SPPacket?, buf: PacketByteBuf ->
+                buf.writeString(value!!.name)
+                buf.writeIdentifier(value.dimId)
+                buf.writeBlockPos(value.pos)
             },
-            buf -> {
-                RequestOpenScreenC2SPPacket packet = new RequestOpenScreenC2SPPacket();
-                packet.name = buf.readString();
-                packet.dimId = buf.readIdentifier();
-                packet.pos = buf.readIntArray();
-                return packet;
+            { buf: PacketByteBuf ->
+                RequestOpenScreenC2SPPacket(
+                    buf.readString(),
+                    buf.readIdentifier(),
+                    buf.readBlockPos()
+                )
             }
-    );
+        )
 
-    @Override
-    public Id<? extends CustomPayload> getId() {
-        return ID;
-    }
-
-    public static void register() {
-        PayloadTypeRegistry.playC2S().register(ID, CODEC);
-        ServerPlayNetworking.registerGlobalReceiver(ID, (payload, context) -> {
-            BlockPos blockPos = new BlockPos(payload.pos[0], payload.pos[1], payload.pos[2]);
-            EnclosureArea area;
-            if (EnclosureInstalledC2SPacket.isInstalled(context.player())) {
-                if (payload.name.isEmpty()) {
-                    ServerWorld world = minecraftServer.getWorld(RegistryKey.of(RegistryKeys.WORLD, payload.dimId));
-                    if (world == null) {
-                        context.player().sendMessage(TrT.of("enclosure.message.no_enclosure"));
-                        return;
+        fun register() {
+            PayloadTypeRegistry.playC2S().register(ID, CODEC)
+            ServerPlayNetworking.registerGlobalReceiver<RequestOpenScreenC2SPPacket>(ID) { payload, context: ServerPlayNetworking.Context ->
+                val area: EnclosureArea?
+                if (EnclosureInstalledC2SPacket.isInstalled(context.player())) {
+                    if (payload.name.isEmpty()) {
+                        val world = minecraftServer.getWorld(RegistryKey.of(RegistryKeys.WORLD, payload.dimId))
+                        if (world == null) {
+                            context.player().sendMessage(TrT.of("enclosure.message.no_enclosure"))
+                            return@registerGlobalReceiver
+                        }
+                        area = getSmallestEnclosure(world, payload.pos)
+                    } else {
+                        area = getEnclosure(payload.name)
                     }
-                    area = ServerMain.INSTANCE.getSmallestEnclosure(world, blockPos);
+                    if (area == null) {
+                        context.player().sendMessage(TrT.of("enclosure.message.no_enclosure"))
+                        return@registerGlobalReceiver
+                    }
+                    EnclosureScreenHandler.open(context.player(), area)
                 }
-                else {
-                    area = ServerMain.INSTANCE.getEnclosure(payload.name);
-                }
-                if (area == null) {
-                    context.player().sendMessage(TrT.of("enclosure.message.no_enclosure"));
-                    return;
-                }
-                EnclosureScreenHandler.open(context.player(), area);
             }
-        });
+        }
     }
-
-    public static void send(MinecraftClient client, String name) {
-        var packet = new RequestOpenScreenC2SPPacket();
-        packet.name = name;
-        packet.dimId = client.player.getWorld().getRegistryKey().getValue();
-        packet.pos = new int[]{
-                client.player.getBlockPos().getX(),
-                client.player.getBlockPos().getY(),
-                client.player.getBlockPos().getZ()
-        };
-        ClientPlayNetworking.send(packet);
-    }
-
 }

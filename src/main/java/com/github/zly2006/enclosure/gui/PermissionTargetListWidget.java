@@ -2,7 +2,7 @@ package com.github.zly2006.enclosure.gui;
 
 import com.github.zly2006.enclosure.EnclosureView;
 import com.github.zly2006.enclosure.client.ClientMain;
-import com.github.zly2006.enclosure.network.UUIDCacheS2CPacket;
+import com.github.zly2006.enclosure.network.config.UUIDCacheS2CPacket;
 import kotlin.jvm.functions.Function2;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;

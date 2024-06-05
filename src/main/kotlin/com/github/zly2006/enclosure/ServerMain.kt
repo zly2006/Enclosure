@@ -9,15 +9,15 @@ import com.github.zly2006.enclosure.config.Converter
 import com.github.zly2006.enclosure.config.LandLimits
 import com.github.zly2006.enclosure.gui.EnclosureScreenHandler
 import com.github.zly2006.enclosure.listeners.SessionListener
-import com.github.zly2006.enclosure.network.EnclosureInstalledC2SPacket
-import com.github.zly2006.enclosure.network.RequestOpenScreenC2SPPacket
+import com.github.zly2006.enclosure.network.config.EnclosureInstalledC2SPacket
+import com.github.zly2006.enclosure.network.play.ConfirmRequestBiPacket
+import com.github.zly2006.enclosure.network.play.RequestOpenScreenC2SPPacket
 import com.github.zly2006.enclosure.utils.Permission
 import com.github.zly2006.enclosure.utils.ResourceLoader
 import com.github.zly2006.enclosure.utils.checkPermission
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import com.google.gson.JsonObject
-import com.mojang.brigadier.CommandDispatcher
 import com.mojang.brigadier.arguments.FloatArgumentType
 import me.lucko.fabric.api.permissions.v0.Options
 import net.fabricmc.api.ModInitializer
@@ -49,7 +49,6 @@ import net.minecraft.registry.RegistryKey
 import net.minecraft.registry.tag.BlockTags
 import net.minecraft.server.MinecraftServer
 import net.minecraft.server.command.CommandManager
-import net.minecraft.server.command.ServerCommandSource
 import net.minecraft.server.network.ServerPlayNetworkHandler
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.server.world.ServerWorld
@@ -537,6 +536,7 @@ object ServerMain: ModInitializer {
         EnclosureScreenHandler.register()
 
         EnclosureInstalledC2SPacket.register()
+        ConfirmRequestBiPacket.register()
         RequestOpenScreenC2SPPacket.register()
 
         // initialize enclosures

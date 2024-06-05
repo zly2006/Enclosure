@@ -2,7 +2,8 @@ package com.github.zly2006.enclosure.command
 
 import com.github.zly2006.enclosure.gui.EnclosureScreenHandler
 import com.github.zly2006.enclosure.minecraftServer
-import com.github.zly2006.enclosure.network.ConfirmRequestS2CPacket
+import com.github.zly2006.enclosure.network.play.ConfirmRequestBiPacket
+import com.github.zly2006.enclosure.network.play.ConfirmRequestBiPacket.Companion.ID
 import com.github.zly2006.enclosure.utils.TrT
 import com.github.zly2006.enclosure.utils.hoverText
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents
@@ -19,15 +20,22 @@ object ConfirmManager {
         ServerTickEvents.START_SERVER_TICK.register {
             tick()
         }
+        ServerPlayNetworking.registerGlobalReceiver(ID) { _, context ->
+            pendingMap -= context.player().uuid // received
+        }
     }
     data class Entry(
         val message: Text?,
         val runnable: () -> Unit,
         val enforceCLI: Boolean
     )
-    val runnableMap: MutableMap<UUID, Entry> = HashMap()
-    val pendingMap: MutableMap<UUID, Long> = HashMap() // pending confirm request packets
+    private val runnableMap: MutableMap<UUID, Entry> = HashMap()
+    private val pendingMap: MutableMap<UUID, Long> = HashMap() // pending confirm request packets
     private const val TIMEOUT = 10000L
+
+    fun execute(uuid: UUID): Boolean {
+        return runnableMap.remove(uuid)?.runnable?.invoke() != null
+    }
 
     /**
      * @param message  the message to send to the player.
@@ -54,7 +62,7 @@ object ConfirmManager {
         val entry = Entry(message, runnable, enforceCLI)
         runnableMap[player?.uuid ?: CONSOLE] = entry
         if (!enforceCLI && player != null && player.currentScreenHandler is EnclosureScreenHandler) {
-            ServerPlayNetworking.send(source.player, ConfirmRequestS2CPacket(text))
+            ServerPlayNetworking.send(source.player, ConfirmRequestBiPacket(text))
             pendingMap[player.uuid] = System.currentTimeMillis()
         } else message?.let { source.sendMessage(it) }
         source.sendMessage(text)

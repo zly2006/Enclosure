@@ -101,7 +101,7 @@ public class ClickableTextWidget implements Element, Drawable, Selectable {
         }
         List<OrderedText> orderedTexts = textRenderer.wrapLines(text, width);
         if (orderedTexts.size() == 1) {
-            renderedWidth = textRenderer.getWidth(orderedTexts.get(0));
+            renderedWidth = textRenderer.getWidth(orderedTexts.getFirst());
         } else {
             renderedWidth = width;
         }

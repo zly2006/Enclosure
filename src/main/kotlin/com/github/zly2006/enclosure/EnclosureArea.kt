@@ -3,7 +3,7 @@ package com.github.zly2006.enclosure
 import com.github.zly2006.enclosure.command.CONSOLE
 import com.github.zly2006.enclosure.command.Session
 import com.github.zly2006.enclosure.gui.EnclosureScreenHandler
-import com.github.zly2006.enclosure.network.SyncPermissionBiPacket
+import com.github.zly2006.enclosure.network.play.SyncPermissionS2CPacket
 import com.github.zly2006.enclosure.utils.*
 import com.github.zly2006.enclosure.utils.Serializable2Text.SerializationSettings
 import net.fabricmc.fabric.api.networking.v1.PacketByteBufs
@@ -279,10 +279,7 @@ open class EnclosureArea : PersistentState, EnclosureView {
                 val buf = PacketByteBufs.create()
                 buf.writeUuid(uuid)
                 buf.writeNbt(permissionsMap[uuid].toNbt())
-                ServerPlayNetworking.send(it, SyncPermissionBiPacket().apply {
-                    this.uuid = uuid
-                    this.permission = permissionsMap[uuid].toNbt()
-                })
+                ServerPlayNetworking.send(it, SyncPermissionS2CPacket(uuid, permissionsMap[uuid].toNbt()))
             }
         }
         markDirty()
@@ -444,7 +441,7 @@ open class EnclosureArea : PersistentState, EnclosureView {
     )
 }
 
-private fun Map<String, Boolean>?.toNbt(): NbtCompound {
+fun Map<String, Boolean>?.toNbt(): NbtCompound {
     val nbt = NbtCompound()
     this?.forEach { (key, value) ->
         nbt.putBoolean(key, value)

@@ -5,8 +5,8 @@ import com.github.zly2006.enclosure.EnclosureList
 import com.github.zly2006.enclosure.ServerMain
 import com.github.zly2006.enclosure.config.LandLimits
 import com.github.zly2006.enclosure.minecraftServer
-import com.github.zly2006.enclosure.network.EnclosureInstalledC2SPacket
-import com.github.zly2006.enclosure.network.SyncSelectionS2CPacket
+import com.github.zly2006.enclosure.network.config.EnclosureInstalledC2SPacket
+import com.github.zly2006.enclosure.network.play.SyncSelectionS2CPacket
 import com.github.zly2006.enclosure.utils.TrT
 import com.github.zly2006.enclosure.utils.Utils
 import com.github.zly2006.enclosure.utils.component6

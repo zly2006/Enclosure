@@ -4,7 +4,8 @@ import com.github.zly2006.enclosure.*
 import com.github.zly2006.enclosure.access.PlayerAccess
 import com.github.zly2006.enclosure.exceptions.PermissionTargetException
 import com.github.zly2006.enclosure.gui.EnclosureScreenHandler
-import com.github.zly2006.enclosure.network.EnclosureInstalledC2SPacket
+import com.github.zly2006.enclosure.network.config.EnclosureInstalledC2SPacket
+import com.github.zly2006.enclosure.network.play.SyncPermissionS2CPacket
 import com.github.zly2006.enclosure.utils.*
 import com.github.zly2006.enclosure.utils.Serializable2Text.SerializationSettings
 import com.mojang.brigadier.Command
@@ -20,6 +21,7 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType
 import com.mojang.brigadier.suggestion.SuggestionsBuilder
 import com.mojang.brigadier.tree.LiteralCommandNode
+import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking
 import net.minecraft.command.CommandRegistryAccess
 import net.minecraft.command.CommandSource
 import net.minecraft.command.argument.*
@@ -355,8 +357,9 @@ private fun getOfflineUUID(context: CommandContext<ServerCommandSource>): UUID {
 fun BuilderScope<*>.registerConfirmCommand() {
     literal("confirm") {
         executes {
-            ConfirmManager.runnableMap.remove(source.uuid)?.run { runnable() }
-                ?: error(TrT.of("enclosure.message.no_task_to_confirm"), this)
+            if (!ConfirmManager.execute(source.uuid)) {
+                error(TrT.of("enclosure.message.no_task_to_confirm"), this)
+            }
         }
     }
 }
@@ -378,7 +381,7 @@ fun register(dispatcher: CommandDispatcher<ServerCommandSource>, access: Command
                 )
                 if (player != null && EnclosureInstalledC2SPacket.isInstalled(player)) {
                     val version = EnclosureInstalledC2SPacket.clientVersion(player)
-                    source.sendMessage(TrT.of("enclosure.about.version.client").append(version.friendlyString))
+                    source.sendMessage(TrT.of("enclosure.about.version.client").append(version!!.friendlyString))
                 }
                 source.sendMessage(TrT.of("enclosure.about.copyright"))
             }
@@ -485,7 +488,10 @@ fun register(dispatcher: CommandDispatcher<ServerCommandSource>, access: Command
                 permission("enclosure.command.admin.clients", BuilderScope.Companion.DefaultPermission.OP)
                 executes {
                     EnclosureInstalledC2SPacket.installedClientMod.forEach {
-                        source.sendMessage(Text.literal(it.key.nameForScoreboard + ": " + it.value.friendlyString))
+                        source.sendMessage(
+                            source.server.playerManager.getPlayer(it.key)!!.name.copy()
+                                .append(Text.literal(": " + it.value.friendlyString))
+                        )
                     }
                 }
             }
@@ -1142,6 +1148,13 @@ fun register(dispatcher: CommandDispatcher<ServerCommandSource>, access: Command
                     } else null
                     if (warning != null) {
                         ConfirmManager.confirm(warning, source.player, false, action)
+                        if (EnclosureInstalledC2SPacket.isInstalled(source.player)) {
+                            // update client
+                            ServerPlayNetworking.send(
+                                source.player,
+                                SyncPermissionS2CPacket(uuid, area.permissionsMap[uuid].toNbt())
+                            )
+                        }
                     } else {
                         action()
                     }

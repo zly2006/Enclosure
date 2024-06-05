@@ -1,57 +1,58 @@
-package com.github.zly2006.enclosure.network;
+package com.github.zly2006.enclosure.network.config
 
-import com.github.zly2006.enclosure.client.ClientMain;
-import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
-import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
-import net.minecraft.network.PacketByteBuf;
-import net.minecraft.network.codec.PacketCodec;
-import net.minecraft.network.packet.CustomPayload;
-import net.minecraft.util.UserCache;
+import com.github.zly2006.enclosure.LOGGER
+import com.github.zly2006.enclosure.client.ClientMain
+import com.github.zly2006.enclosure.network.NetworkChannels
+import net.fabricmc.fabric.api.client.networking.v1.ClientConfigurationNetworking
+import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry
+import net.minecraft.network.PacketByteBuf
+import net.minecraft.network.codec.PacketCodec
+import net.minecraft.network.packet.CustomPayload
+import net.minecraft.util.UserCache
+import java.util.*
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
+class UUIDCacheS2CPacket : CustomPayload {
+    var uuid2name: MutableMap<UUID, String> = HashMap()
 
-import static com.github.zly2006.enclosure.ServerMainKt.LOGGER;
+    constructor()
 
-public class UUIDCacheS2CPacket implements CustomPayload {
-    Map<UUID, String> uuid2name = new HashMap<>();
-    public static final Id<UUIDCacheS2CPacket> ID = new Id<>(NetworkChannels.SYNC_UUID);
-    public static final PacketCodec<PacketByteBuf, UUIDCacheS2CPacket> CODEC = PacketCodec.of(
-            (value, buf) -> {
-                buf.writeMap(value.uuid2name, (b, uuid) -> buf.writeUuid(uuid), PacketByteBuf::writeString);
+    constructor(userCache: UserCache) {
+        userCache.byName.forEach { (name, entry) -> uuid2name[entry.getProfile().id] = name }
+    }
+
+    override fun getId(): CustomPayload.Id<out CustomPayload?> {
+        return ID
+    }
+
+    companion object {
+        val ID = CustomPayload.Id<UUIDCacheS2CPacket>(NetworkChannels.SYNC_UUID)
+        private val CODEC = PacketCodec.of<PacketByteBuf, UUIDCacheS2CPacket>(
+            { value, buf ->
+                buf.writeMap(value!!.uuid2name, PacketByteBuf::writeUuid, PacketByteBuf::writeString)
             },
-            buf -> {
-                UUIDCacheS2CPacket packet = new UUIDCacheS2CPacket();
-                packet.uuid2name = buf.readMap(b -> b.readUuid(), PacketByteBuf::readString);
-                return packet;
+            { buf ->
+                UUIDCacheS2CPacket().apply {
+                    uuid2name = buf.readMap(PacketByteBuf::readUuid, PacketByteBuf::readString)
+                }
             }
-    );
+        )
 
-    public UUIDCacheS2CPacket() { }
-
-    public UUIDCacheS2CPacket(UserCache userCache) {
-        userCache.byName.forEach((name, entry) -> uuid2name.put(entry.getProfile().getId(), name));
-    }
-
-    public static String getName(UUID uuid) {
-        if (ClientMain.uuid2name.containsKey(uuid)) {
-            return ClientMain.uuid2name.get(uuid);
+        @JvmStatic
+        fun getName(uuid: UUID): String? {
+            if (ClientMain.uuid2name.containsKey(uuid)) {
+                return ClientMain.uuid2name[uuid]
+            }
+            return uuid.toString()
         }
-        return uuid.toString();
-    }
 
-    @Override
-    public Id<? extends CustomPayload> getId() {
-        return ID;
-    }
-
-    public static void register() {
-        PayloadTypeRegistry.playS2C().register(ID, CODEC);
-        ClientPlayNetworking.registerGlobalReceiver(ID, (payload, context) -> {
-            ClientMain.uuid2name = payload.uuid2name;
-            LOGGER.info("Received UUID cache from server.");
-            ClientMain.isEnclosureInstalled = true;
-        });
+        @JvmStatic
+        fun register() {
+            PayloadTypeRegistry.configurationS2C().register(ID, CODEC)
+            ClientConfigurationNetworking.registerGlobalReceiver(ID) { payload, _ ->
+                ClientMain.uuid2name = payload!!.uuid2name
+                LOGGER.info("Received UUID cache from server.")
+                ClientMain.isEnclosureInstalled = true
+            }
+        }
     }
 }

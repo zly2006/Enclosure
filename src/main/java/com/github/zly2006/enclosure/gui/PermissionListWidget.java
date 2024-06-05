@@ -205,4 +205,9 @@ public class PermissionListWidget extends ElementListWidget<PermissionListWidget
             return List.of(searchWidget);
         }
     }
+
+    @Override
+    protected boolean isSelectButton(int button) {
+        return true;
+    }
 }

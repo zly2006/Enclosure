@@ -1,74 +1,83 @@
-package com.github.zly2006.enclosure.network;
+package com.github.zly2006.enclosure.network.config
 
-import com.github.zly2006.enclosure.ServerMainKt;
-import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
-import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
-import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
-import net.fabricmc.loader.api.SemanticVersion;
-import net.fabricmc.loader.api.Version;
-import net.fabricmc.loader.api.VersionParsingException;
-import net.minecraft.network.PacketByteBuf;
-import net.minecraft.network.codec.PacketCodec;
-import net.minecraft.network.packet.CustomPayload;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.Text;
-import org.jetbrains.annotations.Nullable;
+import com.github.zly2006.enclosure.LOGGER
+import com.github.zly2006.enclosure.MOD_VERSION
+import com.github.zly2006.enclosure.minecraftServer
+import com.github.zly2006.enclosure.network.NetworkChannels
+import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry
+import net.fabricmc.fabric.api.networking.v1.ServerConfigurationNetworking
+import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents
+import net.fabricmc.loader.api.SemanticVersion
+import net.fabricmc.loader.api.Version
+import net.fabricmc.loader.api.VersionParsingException
+import net.minecraft.network.PacketByteBuf
+import net.minecraft.network.codec.PacketCodec
+import net.minecraft.network.packet.CustomPayload
+import net.minecraft.network.packet.s2c.play.GameMessageS2CPacket
+import net.minecraft.server.MinecraftServer
+import net.minecraft.server.network.ServerPlayNetworkHandler
+import net.minecraft.server.network.ServerPlayerEntity
+import net.minecraft.text.Text
+import java.util.*
 
-import java.util.HashMap;
-import java.util.Map;
+class EnclosureInstalledC2SPacket(var version: Version?) : CustomPayload {
+    override fun getId() = ID
 
-import static com.github.zly2006.enclosure.ServerMainKt.MOD_VERSION;
+    companion object {
+        val installedClientMod: MutableMap<UUID, Version> = HashMap()
 
-public class EnclosureInstalledC2SPacket implements CustomPayload {
-    public EnclosureInstalledC2SPacket(Version version) {
-        this.version = version;
-    }
-
-    Version version;
-    public static final Map<ServerPlayerEntity, Version> installedClientMod = new HashMap<>();
-
-    public static final Id<EnclosureInstalledC2SPacket> ID = new Id<>(NetworkChannels.ENCLOSURE_INSTALLED);
-    public static final PacketCodec<PacketByteBuf, EnclosureInstalledC2SPacket> CODEC = PacketCodec.of(
-            (value, buf) -> buf.writeString(value.version.getFriendlyString()),
-            buf -> {
+        val ID = CustomPayload.Id<EnclosureInstalledC2SPacket>(NetworkChannels.ENCLOSURE_INSTALLED)
+        private val CODEC = PacketCodec.of<PacketByteBuf, EnclosureInstalledC2SPacket>(
+            { value, buf -> buf.writeString(value!!.version!!.friendlyString) },
+            { buf ->
                 try {
-                    return new EnclosureInstalledC2SPacket(Version.parse(buf.readString()));
-                } catch (VersionParsingException e) {
-                    return new EnclosureInstalledC2SPacket(null);
+                    EnclosureInstalledC2SPacket(Version.parse(buf.readString()))
+                } catch (e: VersionParsingException) {
+                    EnclosureInstalledC2SPacket(null)
                 }
             }
-    );
+        )
 
-    public static boolean isInstalled(@Nullable ServerPlayerEntity player) {
-        if (player == null) return false;
-        return installedClientMod.containsKey(player);
-    }
+        fun isInstalled(player: ServerPlayerEntity?): Boolean {
+            if (player == null) return false
+            return installedClientMod.containsKey(player.uuid)
+        }
 
-    public static Version clientVersion(ServerPlayerEntity connection) {
-        return installedClientMod.get(connection);
-    }
+        fun clientVersion(connection: ServerPlayerEntity): Version? {
+            return installedClientMod[connection.uuid]
+        }
 
-    public static void register() {
-        ServerPlayConnectionEvents.DISCONNECT.register((handler, server) ->
-                installedClientMod.remove(handler.player));
-        PayloadTypeRegistry.playC2S().register(ID, CODEC);
-        ServerPlayNetworking.registerGlobalReceiver(ID, (payload, context) -> {
-            Version version = payload.version;
-            if (version instanceof SemanticVersion clientVersion && MOD_VERSION instanceof SemanticVersion serverVersion &&
-                    clientVersion.getVersionComponent(0) == serverVersion.getVersionComponent(0) &&
-                    clientVersion.getVersionComponent(1) >= serverVersion.getVersionComponent(1)) {
-                ServerMainKt.LOGGER.info(context.player().getName().getString() + " joined with a matching enclosure client.");
-                installedClientMod.put(context.player(), version);
+        fun register() {
+            ServerPlayConnectionEvents.DISCONNECT.register(ServerPlayConnectionEvents.Disconnect { handler: ServerPlayNetworkHandler, server: MinecraftServer? ->
+                installedClientMod -= handler.player.uuid
+            })
+            PayloadTypeRegistry.configurationC2S().register(ID, CODEC)
+            ServerConfigurationNetworking.registerGlobalReceiver(ID) { payload, context ->
+                val version = payload!!.version
+                val uuid = context.networkHandler().debugProfile.id
+                if (version is SemanticVersion && MOD_VERSION is SemanticVersion
+                    && version.getVersionComponent(0) == MOD_VERSION.getVersionComponent(0)
+                    && version.getVersionComponent(1) >= MOD_VERSION.getVersionComponent(1)
+                ) {
+                    LOGGER.info(context.networkHandler().debugProfile.name + " joined with a matching enclosure client.")
+                    installedClientMod[uuid] = version
 
-                ServerPlayNetworking.send(context.player(), new UUIDCacheS2CPacket(ServerMainKt.minecraftServer.getUserCache()));
-            } else {
-                context.player().sendMessage(Text.translatable("enclosure.message.outdated", MOD_VERSION.getFriendlyString(), version.getFriendlyString()), false);
+                    context.responseSender().sendPacket(UUIDCacheS2CPacket(minecraftServer.userCache!!))
+                } else if (version != null) {
+                    context.networkHandler().sendPacket(
+                        GameMessageS2CPacket(
+                            Text.translatable(
+                                "enclosure.message.outdated",
+                                MOD_VERSION.friendlyString,
+                                version.friendlyString
+                            ), false
+                        )
+                    )
+//                    context.player().sendMessage(
+//
+//                    )
+                }
             }
-        });
-    }
-
-    @Override
-    public Id<? extends CustomPayload> getId() {
-        return ID;
+        }
     }
 }
