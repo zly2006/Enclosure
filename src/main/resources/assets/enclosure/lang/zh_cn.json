@@ -158,6 +158,7 @@
   "enclosure.permission.cmd_tp": "允许使用/enclosure tp命令",
   "enclosure.permission.consumptively_extinguish": "领地内灭火时消耗水/细雪的权限",
   "enclosure.permission.container": "领地内与容器交互权限",
+  "enclosure.permission.copper": "领地内给铜类方块打蜡/除锈的权限",
   "enclosure.permission.door": "领地内开关门/栅栏门/活板门的权限",
   "enclosure.permission.dragon_destroy": "领地内末影龙能否破坏方块",
   "enclosure.permission.dragon_egg": "领地内触摸龙蛋权限",

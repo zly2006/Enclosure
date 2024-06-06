@@ -158,6 +158,7 @@
   "enclosure.permission.cmd_tp": "Allows to use /enclosure tp command",
   "enclosure.permission.consumptively_extinguish": "Allows to consume water/powder snow when try to quench the fire",
   "enclosure.permission.container": "Allows to interact container",
+  "enclosure.permission.copper": "Allows to wax or scrape copper stuff",
   "enclosure.permission.door": "Allows to interact door/fence gate/trapdoor",
   "enclosure.permission.dragon_destroy": "Allows Ender Dragon destroy block",
   "enclosure.permission.dragon_egg": "Allows to touch dragon egg",
