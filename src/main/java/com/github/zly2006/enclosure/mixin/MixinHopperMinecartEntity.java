@@ -19,7 +19,6 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(HopperMinecartEntity.class)
 public abstract class MixinHopperMinecartEntity extends AbstractMinecartEntity {
-    @Unique Vec3d lastVelocity;
     @Unique Vec3d lastPosition;
     @Unique BlockPos lastBlockPos;
     public MixinHopperMinecartEntity(EntityType<?> type, World world) {
@@ -28,7 +27,6 @@ public abstract class MixinHopperMinecartEntity extends AbstractMinecartEntity {
 
     @Inject(method = "tick", at = @At("HEAD"))
     private void onMoveStart(CallbackInfo ci) {
-        lastVelocity = getVelocity();
         lastPosition = getPos();
         lastBlockPos = getBlockPos();
     }
@@ -42,14 +40,14 @@ public abstract class MixinHopperMinecartEntity extends AbstractMinecartEntity {
                 RayCast rayCast = new RayCast(lastPosition, getPos());
                 if (a1 != null && !a1.hasPubPerm(Permission.CONTAINER)) {
                     if (rayCast.intersect(a1.toBox()) != null) {
-                        setVelocity(lastVelocity);
-                        setPos(lastPosition.x, lastPosition.y, lastPosition.z);
+                        setVelocity(Vec3d.ZERO);
+                        refreshPositionAfterTeleport(lastPosition);
                     }
                 }
                 if (a2 != null && !a2.hasPubPerm(Permission.CONTAINER)) {
                     if (rayCast.intersect(a2.toBox()) != null) {
-                        setVelocity(lastVelocity);
-                        setPos(lastPosition.x, lastPosition.y, lastPosition.z);
+                        setVelocity(Vec3d.ZERO);
+                        refreshPositionAfterTeleport(lastPosition);
                     }
                 }
             }
