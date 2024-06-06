@@ -34,10 +34,8 @@ class SyncPermissionS2CPacket(
             if (clientSide) {
                 ClientPlayNetworking.registerGlobalReceiver(ID) { payload, _ ->
                     val screen = MinecraftClient.getInstance().currentScreen
-                    if (screen is PermissionScreen) {
-                        if (screen.uuid == payload!!.uuid) {
-                            screen.syncPermission(payload.permission)
-                        }
+                    if (screen is PermissionScreen && screen.uuid == payload!!.uuid) {
+                        screen.syncPermission(payload.permission)
                     }
                 }
             }

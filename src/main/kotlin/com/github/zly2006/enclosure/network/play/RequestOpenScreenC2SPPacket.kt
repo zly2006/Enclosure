@@ -27,14 +27,14 @@ class RequestOpenScreenC2SPPacket(
     override fun getId() = ID
 
     companion object {
-        val ID: CustomPayload.Id<RequestOpenScreenC2SPPacket?> = CustomPayload.Id(NetworkChannels.OPEN_REQUEST)
-        val CODEC: PacketCodec<PacketByteBuf, RequestOpenScreenC2SPPacket?> = PacketCodec.of(
-            { value: RequestOpenScreenC2SPPacket?, buf: PacketByteBuf ->
-                buf.writeString(value!!.name)
+        val ID = CustomPayload.Id<RequestOpenScreenC2SPPacket>(NetworkChannels.OPEN_REQUEST)
+        private val CODEC = PacketCodec.of<PacketByteBuf, RequestOpenScreenC2SPPacket>(
+            { value, buf ->
+                buf.writeString(value.name)
                 buf.writeIdentifier(value.dimId)
                 buf.writeBlockPos(value.pos)
             },
-            { buf: PacketByteBuf ->
+            { buf ->
                 RequestOpenScreenC2SPPacket(
                     buf.readString(),
                     buf.readIdentifier(),
@@ -45,7 +45,7 @@ class RequestOpenScreenC2SPPacket(
 
         fun register() {
             PayloadTypeRegistry.playC2S().register(ID, CODEC)
-            ServerPlayNetworking.registerGlobalReceiver<RequestOpenScreenC2SPPacket>(ID) { payload, context: ServerPlayNetworking.Context ->
+            ServerPlayNetworking.registerGlobalReceiver(ID) { payload, context: ServerPlayNetworking.Context ->
                 val area: EnclosureArea?
                 if (EnclosureInstalledC2SPacket.isInstalled(context.player())) {
                     if (payload.name.isEmpty()) {
