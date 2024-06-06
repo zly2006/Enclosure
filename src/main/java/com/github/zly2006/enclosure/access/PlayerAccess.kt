@@ -4,6 +4,7 @@ import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.text.Text
 
+@JvmDefaultWithCompatibility
 interface PlayerAccess {
     interface MessageProvider {
         fun get(player: ServerPlayerEntity?): Text?

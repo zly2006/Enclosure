@@ -1,5 +1,6 @@
 package com.github.zly2006.enclosure.network.play
 
+import com.github.zly2006.enclosure.ServerMain.clientSide
 import com.github.zly2006.enclosure.gui.PermissionScreen
 import com.github.zly2006.enclosure.network.NetworkChannels
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking
@@ -30,11 +31,13 @@ class SyncPermissionS2CPacket(
         @JvmStatic
         fun register() {
             PayloadTypeRegistry.playS2C().register(ID, CODEC)
-            ClientPlayNetworking.registerGlobalReceiver(ID) { payload, _ ->
-                val screen = MinecraftClient.getInstance().currentScreen
-                if (screen is PermissionScreen) {
-                    if (screen.uuid == payload!!.uuid) {
-                        screen.syncPermission(payload.permission)
+            if (clientSide) {
+                ClientPlayNetworking.registerGlobalReceiver(ID) { payload, _ ->
+                    val screen = MinecraftClient.getInstance().currentScreen
+                    if (screen is PermissionScreen) {
+                        if (screen.uuid == payload!!.uuid) {
+                            screen.syncPermission(payload.permission)
+                        }
                     }
                 }
             }

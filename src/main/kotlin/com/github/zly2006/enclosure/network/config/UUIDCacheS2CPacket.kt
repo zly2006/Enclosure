@@ -1,6 +1,7 @@
 package com.github.zly2006.enclosure.network.config
 
 import com.github.zly2006.enclosure.LOGGER
+import com.github.zly2006.enclosure.ServerMain.clientSide
 import com.github.zly2006.enclosure.client.ClientMain
 import com.github.zly2006.enclosure.network.NetworkChannels
 import net.fabricmc.fabric.api.client.networking.v1.ClientConfigurationNetworking
@@ -48,10 +49,12 @@ class UUIDCacheS2CPacket : CustomPayload {
         @JvmStatic
         fun register() {
             PayloadTypeRegistry.configurationS2C().register(ID, CODEC)
-            ClientConfigurationNetworking.registerGlobalReceiver(ID) { payload, _ ->
-                ClientMain.uuid2name = payload!!.uuid2name
-                LOGGER.info("Received UUID cache from server.")
-                ClientMain.isEnclosureInstalled = true
+            if (clientSide) {
+                ClientConfigurationNetworking.registerGlobalReceiver(ID) { payload, _ ->
+                    ClientMain.uuid2name = payload!!.uuid2name
+                    LOGGER.info("Received UUID cache from server.")
+                    ClientMain.isEnclosureInstalled = true
+                }
             }
         }
     }

@@ -10,8 +10,11 @@ import com.github.zly2006.enclosure.config.LandLimits
 import com.github.zly2006.enclosure.gui.EnclosureScreenHandler
 import com.github.zly2006.enclosure.listeners.SessionListener
 import com.github.zly2006.enclosure.network.config.EnclosureInstalledC2SPacket
+import com.github.zly2006.enclosure.network.config.UUIDCacheS2CPacket
 import com.github.zly2006.enclosure.network.play.ConfirmRequestBiPacket
 import com.github.zly2006.enclosure.network.play.RequestOpenScreenC2SPPacket
+import com.github.zly2006.enclosure.network.play.SyncPermissionS2CPacket
+import com.github.zly2006.enclosure.network.play.SyncSelectionS2CPacket
 import com.github.zly2006.enclosure.utils.Permission
 import com.github.zly2006.enclosure.utils.ResourceLoader
 import com.github.zly2006.enclosure.utils.checkPermission
@@ -20,6 +23,7 @@ import com.google.gson.GsonBuilder
 import com.google.gson.JsonObject
 import com.mojang.brigadier.arguments.FloatArgumentType
 import me.lucko.fabric.api.permissions.v0.Options
+import net.fabricmc.api.EnvType
 import net.fabricmc.api.ModInitializer
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents
@@ -55,10 +59,7 @@ import net.minecraft.server.world.ServerWorld
 import net.minecraft.text.Style
 import net.minecraft.text.Text
 import net.minecraft.text.TextColor
-import net.minecraft.util.ActionResult
-import net.minecraft.util.Formatting
-import net.minecraft.util.Hand
-import net.minecraft.util.TypedActionResult
+import net.minecraft.util.*
 import net.minecraft.util.hit.BlockHitResult
 import net.minecraft.util.hit.HitResult
 import net.minecraft.util.math.BlockPos
@@ -91,6 +92,7 @@ const val DATA_VERSION = 2
 lateinit var minecraftServer: MinecraftServer
 
 object ServerMain: ModInitializer {
+    val clientSide = FabricLoader.getInstance().environmentType == EnvType.CLIENT
     init {
         val directory = File(FabricLoader.getInstance().configDir.toFile(), MOD_ID)
         if (!directory.exists() || directory.isFile) {
@@ -419,7 +421,8 @@ object ServerMain: ModInitializer {
         ServerLifecycleEvents.SERVER_STARTING.register(ServerStarting { server: MinecraftServer? ->
             minecraftServer = server!!
         })
-        UseBlockCallback.EVENT.register { player: PlayerEntity, world: World, hand: Hand, hitResult: BlockHitResult ->
+        val id = Identifier.of("enclosure", "use_block_callback")
+        UseBlockCallback.EVENT.register(id) { player: PlayerEntity, world: World, hand: Hand, hitResult: BlockHitResult ->
             if (player is ServerPlayerEntity) {
                 val state = world.getBlockState(hitResult.blockPos)
                 val block = state.block
@@ -458,7 +461,8 @@ object ServerMain: ModInitializer {
             }
             return@register ActionResult.PASS
         }
-        UseItemCallback.EVENT.register { player: PlayerEntity, _, hand: Hand ->
+        UseBlockCallback.EVENT.addPhaseOrdering(SessionListener.ID, id)
+        UseItemCallback.EVENT.register { player, _, hand ->
             if (player is ServerPlayerEntity) {
                 val hitResult = Item.raycast(player.world, player, RaycastContext.FluidHandling.ANY)
                 val blockPos = if (hitResult.type == HitResult.Type.MISS) player.blockPos else hitResult.blockPos
@@ -538,6 +542,9 @@ object ServerMain: ModInitializer {
         EnclosureInstalledC2SPacket.register()
         ConfirmRequestBiPacket.register()
         RequestOpenScreenC2SPPacket.register()
+        UUIDCacheS2CPacket.register()
+        SyncSelectionS2CPacket.register()
+        SyncPermissionS2CPacket.register()
 
         // initialize enclosures
 

@@ -5,10 +5,7 @@ import com.github.zly2006.enclosure.command.ClientSession
 import com.github.zly2006.enclosure.gui.EnclosureScreen
 import com.github.zly2006.enclosure.gui.EnclosureScreenHandler
 import com.github.zly2006.enclosure.network.config.EnclosureInstalledC2SPacket
-import com.github.zly2006.enclosure.network.config.UUIDCacheS2CPacket
 import com.github.zly2006.enclosure.network.play.RequestOpenScreenC2SPPacket
-import com.github.zly2006.enclosure.network.play.SyncPermissionS2CPacket
-import com.github.zly2006.enclosure.network.play.SyncSelectionS2CPacket
 import net.fabricmc.api.ClientModInitializer
 import net.fabricmc.api.EnvType
 import net.fabricmc.api.Environment
@@ -31,11 +28,8 @@ import java.util.*
 @Environment(EnvType.CLIENT)
 class ClientMain : ClientModInitializer {
     override fun onInitializeClient() {
-        UUIDCacheS2CPacket.register()
-        SyncSelectionS2CPacket.register()
         HandledScreens.register(EnclosureScreenHandler.ENCLOSURE_SCREEN_HANDLER, ::EnclosureScreen)
         EnclosureWorldRenderer.register()
-        SyncPermissionS2CPacket.register()
         C2SConfigurationChannelEvents.REGISTER.register { _, sender, _, channels ->
             if (EnclosureInstalledC2SPacket.ID.id in channels) {
                 sender.sendPacket(EnclosureInstalledC2SPacket(MOD_VERSION))

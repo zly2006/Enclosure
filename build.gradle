@@ -53,6 +53,9 @@ allprojects {
     }
 
     kotlin {
+        compilerOptions {
+            freeCompilerArgs.add("-Xjvm-default=all")
+        }
         jvmToolchain(21)
     }
 

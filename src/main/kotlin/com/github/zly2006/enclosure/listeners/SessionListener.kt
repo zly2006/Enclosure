@@ -19,14 +19,19 @@ import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.server.world.ServerWorld
 import net.minecraft.util.ActionResult
 import net.minecraft.util.Hand
+import net.minecraft.util.Identifier
 import net.minecraft.util.hit.BlockHitResult
 import net.minecraft.util.math.BlockPos
 import net.minecraft.util.math.Direction
 import net.minecraft.world.World
 import java.util.*
 
-class SessionListener private constructor() : ServerPlayConnectionEvents.Join,
-    ServerPlayConnectionEvents.Disconnect, AttackBlockCallback, UseBlockCallback, AfterPlayerChange {
+class SessionListener private constructor() :
+    ServerPlayConnectionEvents.Join,
+    ServerPlayConnectionEvents.Disconnect,
+    AttackBlockCallback,
+    UseBlockCallback,
+    AfterPlayerChange {
     override fun afterChangeWorld(player: ServerPlayerEntity, origin: ServerWorld, destination: ServerWorld) {
         getSession(player)?.reset(destination)
     }
@@ -83,14 +88,15 @@ class SessionListener private constructor() : ServerPlayConnectionEvents.Join,
     }
 
     companion object {
+        val ID = Identifier.of("enclosure", "session_listener")
         @JvmStatic
         fun register() {
             val listener = SessionListener()
-            ServerPlayConnectionEvents.JOIN.register(listener)
-            ServerPlayConnectionEvents.DISCONNECT.register(listener)
-            AttackBlockCallback.EVENT.register(listener)
-            UseBlockCallback.EVENT.register(listener)
-            ServerEntityWorldChangeEvents.AFTER_PLAYER_CHANGE_WORLD.register(listener)
+            ServerPlayConnectionEvents.JOIN.register(ID, listener)
+            ServerPlayConnectionEvents.DISCONNECT.register(ID, listener)
+            AttackBlockCallback.EVENT.register(ID, listener)
+            UseBlockCallback.EVENT.register(ID, listener)
+            ServerEntityWorldChangeEvents.AFTER_PLAYER_CHANGE_WORLD.register(ID, listener)
         }
 
         private fun getSession(player: UUID): Session? {

@@ -1,5 +1,6 @@
 package com.github.zly2006.enclosure.network.play
 
+import com.github.zly2006.enclosure.ServerMain.clientSide
 import com.github.zly2006.enclosure.client.ClientMain
 import com.github.zly2006.enclosure.command.Session
 import com.github.zly2006.enclosure.network.NetworkChannels
@@ -12,7 +13,6 @@ import net.minecraft.network.codec.PacketCodec
 import net.minecraft.network.packet.CustomPayload
 import net.minecraft.util.math.BlockPos
 
-@Environment(EnvType.CLIENT)
 class SyncSelectionS2CPacket(var pos1: BlockPos, var pos2: BlockPos) : CustomPayload {
     override fun getId(): CustomPayload.Id<out CustomPayload?> {
         return ID
@@ -31,12 +31,14 @@ class SyncSelectionS2CPacket(var pos1: BlockPos, var pos2: BlockPos) : CustomPay
         @JvmStatic
         fun register() {
             PayloadTypeRegistry.playS2C().register(ID, CODEC)
-            ClientPlayNetworking.registerGlobalReceiver(ID) { payload, _ ->
-                if (ClientMain.clientSession == null) {
-                    ClientMain.clientSession = Session(null)
+            if (clientSide) {
+                ClientPlayNetworking.registerGlobalReceiver(ID) { payload, _ ->
+                    if (ClientMain.clientSession == null) {
+                        ClientMain.clientSession = Session(null)
+                    }
+                    ClientMain.clientSession!!.pos1 = payload!!.pos1
+                    ClientMain.clientSession!!.pos2 = payload.pos2
                 }
-                ClientMain.clientSession!!.pos1 = payload!!.pos1
-                ClientMain.clientSession!!.pos2 = payload.pos2
             }
         }
     }
