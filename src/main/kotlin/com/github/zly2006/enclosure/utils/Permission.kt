@@ -115,6 +115,7 @@ class Permission(
         @JvmField val TELEPORT = Permission("teleport", Target.Both, true, Items.ENDER_PEARL).apply(::register)
         @JvmField val COMMAND_TP = Permission("cmd_tp", Target.Both, true, Items.CHAIN_COMMAND_BLOCK).apply(::register)
         @JvmField val CONTAINER = Permission("container", icon = Items.CHEST).apply(::register)
+        @JvmField val COPPER = Permission("copper", icon = Items.COPPER_BULB).register()
         @JvmField val DYE = Permission("dye", icon = Items.BLUE_DYE).apply(::register)
         @JvmField val PICK_BERRIES = Permission("pick_berries", icon = Items.SWEET_BERRIES).apply(::register)
         @JvmField val DOOR = Permission("door", icon = Items.OAK_DOOR).apply(::register)
@@ -179,6 +180,8 @@ class Permission(
         fun getValue(name: String): Permission? {
             return PERMISSIONS[name]
         }
+
+        private fun Permission.register() = apply { register(this) }
 
         fun register(permission: Permission) {
             PERMISSIONS[permission.name] = permission

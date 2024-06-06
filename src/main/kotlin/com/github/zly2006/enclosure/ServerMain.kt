@@ -203,8 +203,6 @@ object ServerMain: ModInitializer {
                 put(Permission.ANVIL) { it.block is AnvilBlock }
                 put(Permission.BED) { it.block is BedBlock }
                 put(Permission.BEACON) { it.block === Blocks.BEACON }
-                put(Permission.CAKE) { it.block === Blocks.CAKE }
-                put(Permission.DOOR) { it.block is DoorBlock || it.block is FenceGateBlock || it.block is TrapdoorBlock }
                 put(Permission.HONEY) { it.block is BeehiveBlock && it.item == Items.GLASS_BOTTLE || it.item == Items.SHEARS }
                 put(Permission.DRAGON_EGG) { it.block === Blocks.DRAGON_EGG }
                 put(Permission.NOTE) { it.block === Blocks.NOTE_BLOCK }
@@ -246,7 +244,9 @@ object ServerMain: ModInitializer {
                 put(Permission.VEHICLE) { it.item is BoatItem || it.item is MinecartItem }
                 put(Permission.ALLAY) { it.entity is AllayEntity }
                 put(Permission.CAULDRON) { it.block is AbstractCauldronBlock }
-                put(Permission.COMMAND_TP) { it.entity is ItemFrameEntity }
+                put(Permission.COPPER) { it.block is Oxidizable && (it.item is AxeItem || it.item == Items.HONEYCOMB ) }
+                put(Permission.CAKE) { it.block === Blocks.CAKE }
+                put(Permission.DOOR) { it.block is DoorBlock || it.block is FenceGateBlock || it.block is TrapdoorBlock }
                 put(Permission.PLACE_BLOCK) {
                     if (it.entity is ItemFrameEntity)
                         it.entity.heldItemStack.isOf(Items.AIR) && it.item != Items.AIR
@@ -514,7 +514,7 @@ object ServerMain: ModInitializer {
             return@register ActionResult.PASS
         }
         AttackBlockCallback.EVENT.addPhaseOrdering(SessionListener.ID, id)
-        UseEntityCallback.EVENT.register { player: PlayerEntity, world: World?, hand, entity: Entity, _ ->
+        UseEntityCallback.EVENT.register { player, world, hand, entity, _ ->
             if (entity is ArmorStandEntity) {
                 if (!checkPermission(world!!, entity.getBlockPos(), player, Permission.ARMOR_STAND)) {
                     player.sendMessage(Permission.ARMOR_STAND.getNoPermissionMsg(player))
@@ -541,7 +541,7 @@ object ServerMain: ModInitializer {
                             ))
                             ActionResult.FAIL
                         }
-                    }.firstOrNull { result: ActionResult -> result != ActionResult.PASS } ?: ActionResult.PASS
+                    }.firstOrNull { result -> result != ActionResult.PASS } ?: ActionResult.PASS
             }
             return@register ActionResult.PASS
         }
