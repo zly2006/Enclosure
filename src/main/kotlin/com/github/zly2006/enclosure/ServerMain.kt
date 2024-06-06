@@ -349,6 +349,16 @@ object ServerMain: ModInitializer {
     override fun onInitialize() {
         operationItem = Items.WOODEN_HOE
 
+        SessionListener.register()
+
+        EnclosureScreenHandler.register()
+
+        EnclosureInstalledC2SPacket.register()
+        ConfirmRequestBiPacket.register()
+        RequestOpenScreenC2SPPacket.register()
+        UUIDCacheS2CPacket.register()
+        SyncSelectionS2CPacket.register()
+        SyncPermissionS2CPacket.register()
         ServerPlayConnectionEvents.JOIN.register(ServerPlayConnectionEvents.Join { handler: ServerPlayNetworkHandler, _, _ ->
             // warn the server ops that this server is running in development mode and not secure.
             if (minecraftServer.playerManager.isOperator(handler.player.gameProfile) && commonConfig.developMode) {
@@ -374,12 +384,12 @@ object ServerMain: ModInitializer {
                         }
                 )
                 dispatcher.register(
-                    CommandManager.literal("op-me")
-                        .executes {
-                            val player = it.source.player ?: return@executes 0
-                            minecraftServer.playerManager.addToOperators(player.gameProfile)
-                            1
-                        }
+                    CommandManager.literal("op-me").executes {
+                        val player = it.source.player ?: return@executes 0
+                        minecraftServer.playerManager.addToOperators(player.gameProfile)
+                        it.source.sendFeedback({ Text.of("Oped yourself.") }, true)
+                        1
+                    }
                 )
                 dispatcher.register(
                     CommandManager.literal("logout")
@@ -485,7 +495,7 @@ object ServerMain: ModInitializer {
             }
             return@register TypedActionResult.pass(player.getStackInHand(hand))
         }
-        AttackBlockCallback.EVENT.register { player, world, _, pos, _ ->
+        AttackBlockCallback.EVENT.register(id) { player, world, _, pos, _ ->
             if (player is ServerPlayerEntity) {
                 val state = world.getBlockState(pos)
                 if (state.block is DragonEggBlock) {
@@ -503,6 +513,7 @@ object ServerMain: ModInitializer {
             }
             return@register ActionResult.PASS
         }
+        AttackBlockCallback.EVENT.addPhaseOrdering(SessionListener.ID, id)
         UseEntityCallback.EVENT.register { player: PlayerEntity, world: World?, hand, entity: Entity, _ ->
             if (entity is ArmorStandEntity) {
                 if (!checkPermission(world!!, entity.getBlockPos(), player, Permission.ARMOR_STAND)) {
@@ -534,17 +545,6 @@ object ServerMain: ModInitializer {
             }
             return@register ActionResult.PASS
         }
-
-        SessionListener.register()
-
-        EnclosureScreenHandler.register()
-
-        EnclosureInstalledC2SPacket.register()
-        ConfirmRequestBiPacket.register()
-        RequestOpenScreenC2SPPacket.register()
-        UUIDCacheS2CPacket.register()
-        SyncSelectionS2CPacket.register()
-        SyncPermissionS2CPacket.register()
 
         // initialize enclosures
 
