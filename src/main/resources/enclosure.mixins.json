@@ -66,6 +66,8 @@
     "MixinVehicleEntity",
     "MixinWitherEntity",
     "MixinWitherSkullBlock",
-    "workaround.MixinRegistrySyncManager"
+    "workaround.MixinRegistrySyncManager",
+    "workaround.MixinServerPlayerInteractionManager",
+    "workaround.MixinServerPlayNetworkHandler"
   ]
 }

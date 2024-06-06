@@ -1,5 +1,5 @@
 package com.github.zly2006.enclosure.access;
 
 public interface MiningStatusAccess {
-    boolean success();
+    boolean enclosure$success();
 }
