@@ -11,7 +11,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(ServerPlayerInteractionManager.class)
 public abstract class MixinServerPlayerInteractionManager implements MiningStatusAccess {
     boolean miningSuccess = false;
-    @Inject(method = "method_41250", at = @At("HEAD"))
+    @Inject(method = "onBlockBreakingAction", at = @At("HEAD"))
     private void afterBreakingBlock(BlockPos pos, boolean success, int sequence, String reason, CallbackInfo ci) {
         miningSuccess = success;
     }
