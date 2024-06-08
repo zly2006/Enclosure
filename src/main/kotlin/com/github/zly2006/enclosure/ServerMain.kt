@@ -48,6 +48,7 @@ import net.minecraft.entity.passive.AnimalEntity
 import net.minecraft.entity.passive.SheepEntity
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.item.*
+import net.minecraft.item.HoneycombItem.UNWAXED_TO_WAXED_BLOCKS
 import net.minecraft.network.packet.s2c.play.EntityTrackerUpdateS2CPacket
 import net.minecraft.registry.RegistryKey
 import net.minecraft.registry.tag.BlockTags
@@ -244,7 +245,13 @@ object ServerMain: ModInitializer {
                 put(Permission.VEHICLE) { it.item is BoatItem || it.item is MinecartItem }
                 put(Permission.ALLAY) { it.entity is AllayEntity }
                 put(Permission.CAULDRON) { it.block is AbstractCauldronBlock }
-                put(Permission.COPPER) { it.block is Oxidizable && (it.item is AxeItem || it.item == Items.HONEYCOMB ) }
+                put(Permission.COPPER) {
+                    when (it.item) {
+                        Items.HONEYCOMB -> it.block in UNWAXED_TO_WAXED_BLOCKS.get()
+                        is AxeItem -> it.block is Oxidizable || UNWAXED_TO_WAXED_BLOCKS.get().containsValue(it.block)
+                        else -> false
+                    }
+                }
                 put(Permission.CAKE) { it.block === Blocks.CAKE }
                 put(Permission.DOOR) { it.block is DoorBlock || it.block is FenceGateBlock || it.block is TrapdoorBlock }
                 put(Permission.PLACE_BLOCK) {

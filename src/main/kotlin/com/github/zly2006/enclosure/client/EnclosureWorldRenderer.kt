@@ -89,7 +89,7 @@ object EnclosureWorldRenderer {
         renderLine(linesBuffer, matrix4f, matrix3f, maxX, minY, minZ, 2, maxZ, 0f, 0f, blue, alpha)
     }
 
-    private fun drawSessionFaces(matrices: MatrixStack, session: ClientSession, cameraPos: Vec3d) {
+    fun drawSessionFaces(matrices: MatrixStack, session: ClientSession, cameraPos: Vec3d) {
         val minX = (min(session.pos1.x, session.pos2.x) - cameraPos.getX() - DELTA).toFloat()
         val minY = (min(session.pos1.y, session.pos2.y) - cameraPos.getY() - DELTA).toFloat()
         val minZ = (min(session.pos1.z, session.pos2.z) - cameraPos.getZ() - DELTA).toFloat()

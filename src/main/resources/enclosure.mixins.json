@@ -69,5 +69,8 @@
     "workaround.MixinRegistrySyncManager",
     "workaround.MixinServerPlayerInteractionManager",
     "workaround.MixinServerPlayNetworkHandler"
+  ],
+  "client": [
+    "workaround.MixinCPH"
   ]
 }
