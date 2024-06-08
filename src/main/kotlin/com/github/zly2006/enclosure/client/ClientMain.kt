@@ -13,6 +13,7 @@ import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper
 import net.fabricmc.fabric.api.client.networking.v1.C2SConfigurationChannelEvents
 import net.fabricmc.fabric.api.client.networking.v1.ClientConfigurationConnectionEvents
+import net.fabricmc.fabric.api.client.networking.v1.ClientConfigurationNetworking
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking
 import net.fabricmc.loader.api.FabricLoader
@@ -30,19 +31,11 @@ class ClientMain : ClientModInitializer {
     override fun onInitializeClient() {
         HandledScreens.register(EnclosureScreenHandler.ENCLOSURE_SCREEN_HANDLER, ::EnclosureScreen)
         EnclosureWorldRenderer.register()
-        C2SConfigurationChannelEvents.REGISTER.register { _, sender, _, channels ->
-            if (EnclosureInstalledC2SPacket.ID.id in channels) {
-                sender.sendPacket(EnclosureInstalledC2SPacket(MOD_VERSION))
-            }
-        }
-        ClientConfigurationConnectionEvents.INIT.register { _, _ ->
+        ClientConfigurationConnectionEvents.START.register { _, _ ->
             clientSession = ClientSession()
             uuid2name = hashMapOf()
-            if (FabricLoader.getInstance().isDevelopmentEnvironment) {
-                isEnclosureInstalled = true
-                clientSession!!.pos1 = BlockPos(0, 0, 0)
-                clientSession!!.pos2 = BlockPos(0, 0, 0)
-            }
+            if (ClientConfigurationNetworking.canSend(EnclosureInstalledC2SPacket.ID))
+                ClientConfigurationNetworking.send(EnclosureInstalledC2SPacket(MOD_VERSION))
         }
         ClientPlayConnectionEvents.DISCONNECT.register(ClientPlayConnectionEvents.Disconnect { handler: ClientPlayNetworkHandler?, client: MinecraftClient? ->
             isEnclosureInstalled = false

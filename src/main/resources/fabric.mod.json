@@ -45,7 +45,7 @@
   "accessWidener": "enclosure.accesswidener",
   "depends": {
     "fabricloader": ">=0.13.0",
-    "fabric-api": "*",
+    "fabric-api": ">=0.100",
     "minecraft": [
       ">1.21-beta",
       "1.21"
