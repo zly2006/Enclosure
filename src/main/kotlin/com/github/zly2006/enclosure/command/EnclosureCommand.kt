@@ -458,8 +458,8 @@ fun register(dispatcher: CommandDispatcher<ServerCommandSource>, access: Command
                                 .filter { it.uuid in (player as PlayerAccess).visitedEnclosures }
                             val text = player.name.copy().append(" visited: ")
                             visited.forEach { e ->
-                                text.append(e.serialize(SerializationSettings.Name, player))
-                                    .append("\n")
+                                text.append(e.serialize(SerializationSettings.Summarize, player))
+                                    .append(" ")
                             }
                             source.sendMessage(text)
                         }
