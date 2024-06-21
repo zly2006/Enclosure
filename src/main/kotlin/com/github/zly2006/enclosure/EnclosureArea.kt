@@ -70,6 +70,7 @@ open class EnclosureArea : PersistentState, EnclosureView {
         protected set
     override var father: PermissionHolder? = null
         protected set
+    val uuid: UUID
 
     override val fullName: String
         get() = if (father != null) {
@@ -112,6 +113,11 @@ open class EnclosureArea : PersistentState, EnclosureView {
             permissionsMap[UUID.fromString(playerUuid)] = perm
         }
         owner = compound.getUuid("owner")
+        uuid = if (compound.containsUuid("uuid")) {
+            compound.getUuid("uuid")
+        } else {
+            UUID.randomUUID()
+        }
     }
 
     operator fun Map<String, Boolean>.get(perm: Permission): Boolean? {
@@ -145,6 +151,7 @@ open class EnclosureArea : PersistentState, EnclosureView {
         }
         createdOn = System.currentTimeMillis()
         teleportPos = Vec3d(centerX.toDouble() + 0.5, centerY.toDouble(), centerZ.toDouble() + 0.5)
+        uuid = UUID.randomUUID()
         markDirty()
     }
 
@@ -188,6 +195,7 @@ open class EnclosureArea : PersistentState, EnclosureView {
         nbtTpPos.add(NbtDouble.of(teleportPos!!.getZ()))
         nbt.put("tp_pos", nbtTpPos)
         nbt.putUuid("owner", owner)
+        nbt.putUuid("uuid", uuid)
         return nbt
     }
 

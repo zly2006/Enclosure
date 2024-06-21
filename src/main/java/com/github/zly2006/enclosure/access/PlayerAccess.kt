@@ -3,19 +3,22 @@ package com.github.zly2006.enclosure.access
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.text.Text
+import java.util.*
 
+@Suppress("INAPPLICABLE_JVM_NAME")
 @JvmDefaultWithCompatibility
 interface PlayerAccess {
     interface MessageProvider {
         fun get(player: ServerPlayerEntity?): Text?
     }
 
-    @Suppress("INAPPLICABLE_JVM_NAME")
+    @get:JvmName("enclosure\$getVisitedEnclosures")
+    val visitedEnclosures: MutableSet<UUID>
+
     @get:JvmName("enclosure\$getLastTeleportTime")
     @set:JvmName("enclosure\$setLastTeleportTime")
     var lastTeleportTime: Long
 
-    @Suppress("INAPPLICABLE_JVM_NAME")
     @get:JvmName("enclosure\$getPermissionDeniedMsgTime")
     @set:JvmName("enclosure\$setPermissionDeniedMsgTime")
     var permissionDeniedMsgTime: Long

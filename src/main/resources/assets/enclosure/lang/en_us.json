@@ -139,6 +139,7 @@
   "enclosure.message.unexpected_info": "Unexpected type: only enter|leave are accepted.",
   "enclosure.message.unexpected_optional_boolean": "Unexpected value: please type  true | false | none",
   "enclosure.message.unknown_user": "unknown user",
+  "enclosure.message.unvisited_enclosure": "Unvisited enclosure! You will be able to teleport to this enclosure once you visit it.",
   "enclosure.message.user_not_found": "User not found.",
   "enclosure.permission.admin": "Gives admin permission to the player",
   "enclosure.permission.all": "Gives all permissions to the player",

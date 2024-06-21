@@ -40,4 +40,6 @@ public class Common {
     public String leaveMessageHeader = "";
     @SerializedName("check_update")
     public boolean checkUpdate = true;
+    @SerializedName("restrict_enclosure_tp")
+    public boolean restrictEnclosureTp = false;
 }

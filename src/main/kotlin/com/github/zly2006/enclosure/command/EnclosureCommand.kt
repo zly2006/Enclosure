@@ -449,6 +449,30 @@ fun register(dispatcher: CommandDispatcher<ServerCommandSource>, access: Command
                     }
                 }
             }
+            literal("visited") {
+                argument("player", EntityArgumentType.player()) {
+                    literal("get") {
+                        executes {
+                            val player = EntityArgumentType.getPlayer(this, "player")
+                            val visited = ServerMain.getAllEnclosures()
+                                .filter { it.uuid in (player as PlayerAccess).visitedEnclosures }
+                            val text = player.name.copy().append(" visited: ")
+                            visited.forEach { e ->
+                                text.append(e.serialize(SerializationSettings.Name, player))
+                                    .append("\n")
+                            }
+                            source.sendMessage(text)
+                        }
+                    }
+                    literal("clear") {
+                        executes {
+                            val player = EntityArgumentType.getPlayer(this, "player")
+                            (player as PlayerAccess).visitedEnclosures.clear()
+                            source.sendMessage(Text.literal("Cleared"))
+                        }
+                    }
+                }
+            }
             literal("closest") {
                 permission("enclosure.command.admin.closest", BuilderScope.Companion.DefaultPermission.OP)
                 executes {
@@ -831,6 +855,13 @@ fun register(dispatcher: CommandDispatcher<ServerCommandSource>, access: Command
                                     String.format("%.1f", (cd - lastTeleportTimeSpan) / 1000.0)
                                 ), this
                             )
+                        }
+                        if (!source.hasPermissionLevel(4) && ServerMain.commonConfig.restrictEnclosureTp) {
+                            if (source.player is PlayerAccess) {
+                                if (!(source.player as PlayerAccess).visitedEnclosures.contains(area.uuid)) {
+                                    error(TrT.of("enclosure.message.unvisited_enclosure"), this)
+                                }
+                            }
                         }
                         (player as PlayerAccess).permissionDeniedMsgTime = System.currentTimeMillis()
                         if (ServerMain.commonConfig.showTeleportWarning) {

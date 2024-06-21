@@ -7,6 +7,7 @@ import com.github.zly2006.enclosure.utils.Permission;
 import com.github.zly2006.enclosure.utils.TrT;
 import com.github.zly2006.enclosure.utils.Utils;
 import com.github.zly2006.enclosure.utils.UtilsKt;
+import com.google.common.collect.Sets;
 import com.mojang.authlib.GameProfile;
 import net.minecraft.entity.ItemEntity;
 import net.minecraft.entity.damage.DamageSource;
@@ -14,6 +15,10 @@ import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.NbtElement;
+import net.minecraft.nbt.NbtHelper;
+import net.minecraft.nbt.NbtList;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayNetworkHandler;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -35,10 +40,13 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import java.util.Optional;
+import java.util.Set;
+import java.util.UUID;
 
 import static com.github.zly2006.enclosure.command.EnclosureCommandKt.CONSOLE;
 import static com.github.zly2006.enclosure.utils.Permission.*;
 
+@SuppressWarnings("UnreachableCode")
 @Mixin(ServerPlayerEntity.class)
 public abstract class MixinServerPlayerEntity extends PlayerEntity implements PlayerAccess {
     @Shadow public ServerPlayNetworkHandler networkHandler;
@@ -47,6 +55,7 @@ public abstract class MixinServerPlayerEntity extends PlayerEntity implements Pl
     @Unique @Nullable private EnclosureArea lastArea = null;
     @Unique @Nullable private ServerWorld lastWorld;
     @Unique private long permissionDeniedMsgTime = 0;
+    @Unique Set<UUID> visitedEnclosures = Sets.newHashSet();
 
     @Override
     public long enclosure$getPermissionDeniedMsgTime() {
@@ -56,6 +65,34 @@ public abstract class MixinServerPlayerEntity extends PlayerEntity implements Pl
     @Override
     public void enclosure$setPermissionDeniedMsgTime(long permissionDeniedMsgTime) {
         this.permissionDeniedMsgTime = permissionDeniedMsgTime;
+    }
+
+    @Inject(
+            method = "readCustomDataFromNbt",
+            at = @At("HEAD")
+    )
+    private void readCustomDataFromNbt(NbtCompound nbt, CallbackInfo ci) {
+        visitedEnclosures = Sets.newHashSet();
+        if (nbt.contains("visited_enclosures")) {
+            NbtElement element = nbt.get("visited_enclosures");
+            if (element instanceof NbtList list) {
+                list.forEach(item -> visitedEnclosures.add(NbtHelper.toUuid(item)));
+            }
+        }
+    }
+
+    @Inject(
+            method = "writeCustomDataToNbt",
+            at = @At("HEAD")
+    )
+    private void writeCustomDataToNbt(NbtCompound nbt, CallbackInfo ci) {
+        NbtList list = new NbtList();
+        visitedEnclosures.forEach(uuid -> list.add(NbtHelper.fromUuid(uuid)));
+        nbt.put("visited_enclosures", list);
+    }
+
+    public Set<UUID> enclosure$getVisitedEnclosures() {
+        return visitedEnclosures;
     }
 
     @Shadow public abstract void sendMessage(Text message);
@@ -176,6 +213,7 @@ public abstract class MixinServerPlayerEntity extends PlayerEntity implements Pl
                 }
             }
             if (area != null) {
+                visitedEnclosures.add(area.getUuid());
                 if (!area.hasPerm(player, MOVE)) {
                     player.sendMessage(MOVE.getNoPermissionMsg(player));
                     if (area != lastArea && lastWorld != null && lastPos != null) {
