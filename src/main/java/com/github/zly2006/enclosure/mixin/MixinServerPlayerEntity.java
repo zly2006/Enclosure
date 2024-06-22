@@ -212,7 +212,7 @@ public abstract class MixinServerPlayerEntity extends PlayerEntity implements Pl
                     sendFormattedMessage(player, lastArea, false);
                 }
             }
-            if (area != null) {
+            if (area != null && !isSpectator()) {
                 visitedEnclosures.add(area.getUuid());
                 if (!area.hasPerm(player, MOVE)) {
                     player.sendMessage(MOVE.getNoPermissionMsg(player));
