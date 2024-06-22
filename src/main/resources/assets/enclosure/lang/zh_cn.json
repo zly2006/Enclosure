@@ -139,6 +139,7 @@
   "enclosure.message.unexpected_info": "接收到意外的类型: 期望输入: enter|leave",
   "enclosure.message.unexpected_optional_boolean": "接收到意外的值: 期望输入: true | false | none",
   "enclosure.message.unknown_user": "未知用户",
+  "enclosure.message.unvisited_enclosure": "未访问的领地！你只可以在访问后传送到这个领地。",
   "enclosure.message.user_not_found": "未找到对应用户",
   "enclosure.permission.admin": "管理员权限",
   "enclosure.permission.all": "给予该玩家全部权限",
