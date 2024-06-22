@@ -91,6 +91,14 @@ public abstract class MixinServerPlayerEntity extends PlayerEntity implements Pl
         nbt.put("visited_enclosures", list);
     }
 
+    @Inject(
+            method = "copyFrom",
+            at = @At("HEAD")
+    )
+    private void copyFrom(ServerPlayerEntity oldPlayer, boolean alive, CallbackInfo ci) {
+        visitedEnclosures = Sets.newHashSet(((PlayerAccess) oldPlayer).enclosure$getVisitedEnclosures());
+    }
+
     public Set<UUID> enclosure$getVisitedEnclosures() {
         return visitedEnclosures;
     }
