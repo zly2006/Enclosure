@@ -50,12 +50,13 @@ open class EnclosureArea : PersistentState, EnclosureView {
     }
 
     private var locked = false
-    final override var minX by lockChecker(0)
-    final override var minY by lockChecker(0)
-    final override var minZ by lockChecker(0)
-    final override var maxX by lockChecker(0)
-    final override var maxY by lockChecker(0)
-    final override var maxZ by lockChecker(0)
+    // removed lockChecker due to performance issues
+    final override var minX = 0
+    final override var minY = 0
+    final override var minZ = 0
+    final override var maxX = 0
+    final override var maxY = 0
+    final override var maxZ = 0
     var world: ServerWorld
         protected set
     final override var name = ""

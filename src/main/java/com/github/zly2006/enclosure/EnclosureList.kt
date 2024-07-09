@@ -13,7 +13,8 @@ import net.minecraft.world.PersistentState
 class EnclosureList(world: ServerWorld, isRoot: Boolean) : PersistentState() {
     private val areaMap: MutableMap<String, EnclosureArea> = HashMap()
     private val boundWorld: ServerWorld?
-    val areas = areaMap.values
+    var areas: List<EnclosureArea> = listOf()
+        private set
 
     constructor(nbt: NbtCompound, world: ServerWorld, isRoot: Boolean) : this(world, isRoot) {
         (nbt[ENCLOSURE_LIST_KEY] as? NbtList)?.forEach {
@@ -25,6 +26,8 @@ class EnclosureList(world: ServerWorld, isRoot: Boolean) : PersistentState() {
                 areaMap[name] = EnclosureArea(compound, world)
             }
         }
+
+        updateAreasList()
     }
 
     init {
@@ -75,6 +78,7 @@ class EnclosureList(world: ServerWorld, isRoot: Boolean) : PersistentState() {
     fun remove(name: String): Boolean {
         if (areaMap.containsKey(name)) {
             areaMap.remove(name)
+            updateAreasList()
             markDirty()
             return true
         }
@@ -83,7 +87,13 @@ class EnclosureList(world: ServerWorld, isRoot: Boolean) : PersistentState() {
 
     fun addArea(area: EnclosureArea) {
         areaMap[area.name] = area
+        updateAreasList()
         markDirty()
+    }
+
+    // 添加和删除操作一般很少，慢一点无所谓
+    private fun updateAreasList() {
+        areas = areaMap.values.toList()
     }
 }
 

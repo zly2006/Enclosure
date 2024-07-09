@@ -302,7 +302,6 @@ object ServerMain: ModInitializer {
     fun getSmallestEnclosure(world: ServerWorld, pos: BlockPos?): EnclosureArea? {
         return enclosures[world.registryKey]!!.areas
             .firstOrNull { area: EnclosureArea -> area.isInner(pos!!) }
-            ?.areaOf(pos!!)
     }
 
     fun checkPermission(player: ServerPlayerEntity, permission: Permission, pos: BlockPos): Boolean {
