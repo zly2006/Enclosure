@@ -1,7 +1,6 @@
 package com.github.zly2006.enclosure.mixin;
 
 import com.github.zly2006.enclosure.EnclosureArea;
-import com.github.zly2006.enclosure.EnclosureList;
 import com.github.zly2006.enclosure.ServerMain;
 import com.github.zly2006.enclosure.utils.Permission;
 import net.minecraft.block.WitherSkullBlock;
@@ -18,13 +17,11 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public class MixinWitherSkullBlock {
     @Inject(at = @At("HEAD"), method = "onPlaced(Lnet/minecraft/world/World;Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/entity/SkullBlockEntity;)V", cancellable = true)
     private static void onPlace(World world, BlockPos pos, SkullBlockEntity blockEntity, CallbackInfo ci) {
-        if (world.isClient) {
-            return;
-        }
-        EnclosureList list = ServerMain.INSTANCE.getAllEnclosures((ServerWorld) world);
-        EnclosureArea a = list.getArea(pos);
-        if (a != null && !a.areaOf(pos).hasPubPerm(Permission.WITHER_SPAWN)) {
-            ci.cancel();
+        if (world instanceof ServerWorld serverWorld) {
+            EnclosureArea a = ServerMain.INSTANCE.getSmallestEnclosure(serverWorld, pos);
+            if (a != null && !a.hasPubPerm(Permission.WITHER_SPAWN)) {
+                ci.cancel();
+            }
         }
     }
 }

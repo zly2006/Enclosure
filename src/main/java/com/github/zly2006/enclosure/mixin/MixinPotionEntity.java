@@ -1,7 +1,6 @@
 package com.github.zly2006.enclosure.mixin;
 
 import com.github.zly2006.enclosure.EnclosureArea;
-import com.github.zly2006.enclosure.EnclosureList;
 import com.github.zly2006.enclosure.ServerMain;
 import com.github.zly2006.enclosure.utils.Permission;
 import net.minecraft.block.Block;
@@ -35,9 +34,8 @@ public abstract class MixinPotionEntity extends ThrownItemEntity {
         }
         Block block = getWorld().getBlockState(pos).getBlock();
         if (block instanceof CampfireBlock) {
-            EnclosureList list = ServerMain.INSTANCE.getAllEnclosures((ServerWorld) getWorld());
-            EnclosureArea area = list.getArea(pos);
-            if (area != null && !area.areaOf(pos).hasPubPerm(Permission.USE_CAMPFIRE)) {
+            EnclosureArea area = ServerMain.INSTANCE.getSmallestEnclosure((ServerWorld) getWorld(), pos);
+            if (area != null && !area.hasPubPerm(Permission.USE_CAMPFIRE)) {
                 if (getOwner() instanceof ServerPlayerEntity player) {
                     player.sendMessage(USE_CAMPFIRE.getNoPermissionMsg(player));
                 }

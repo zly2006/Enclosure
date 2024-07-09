@@ -1,7 +1,6 @@
 package com.github.zly2006.enclosure.mixin;
 
 import com.github.zly2006.enclosure.EnclosureArea;
-import com.github.zly2006.enclosure.EnclosureList;
 import com.github.zly2006.enclosure.ServerMain;
 import com.github.zly2006.enclosure.utils.Permission;
 import net.minecraft.block.BlockState;
@@ -26,9 +25,8 @@ public class MixinSculkVeinBlock {
     @Unique
     private static boolean disallow(WorldAccess world, BlockPos pos) {
         if (world instanceof ServerWorld serverWorld) {
-            EnclosureList list = ServerMain.INSTANCE.getAllEnclosures(serverWorld);
-            EnclosureArea area = list.getArea(pos);
-            return area != null && !area.areaOf(pos).hasPubPerm(Permission.SCULK_SPREAD);
+            EnclosureArea area = ServerMain.INSTANCE.getSmallestEnclosure(serverWorld, pos);
+            return area != null && !area.hasPubPerm(Permission.SCULK_SPREAD);
         }
         return false;
     }

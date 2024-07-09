@@ -29,7 +29,7 @@ public abstract class MixinItemFrameEntity extends AbstractDecorationEntity {
     private void onUse(PlayerEntity player, Hand hand, CallbackInfoReturnable<ActionResult> cir) {
         if (player instanceof ServerPlayerEntity serverPlayer) {
             EnclosureArea area = ServerMain.INSTANCE.getSmallestEnclosure((ServerWorld) serverPlayer.getWorld(), getBlockPos());
-            if (area != null && !area.areaOf(getBlockPos()).hasPerm(serverPlayer, Permission.ITEM_FRAME)) {
+            if (area != null && !area.hasPerm(serverPlayer, Permission.ITEM_FRAME)) {
                 player.sendMessage(Permission.ITEM_FRAME.getNoPermissionMsg(serverPlayer));
                 cir.setReturnValue(ActionResult.FAIL);
             }

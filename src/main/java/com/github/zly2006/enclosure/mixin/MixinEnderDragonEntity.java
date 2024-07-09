@@ -1,7 +1,6 @@
 package com.github.zly2006.enclosure.mixin;
 
 import com.github.zly2006.enclosure.EnclosureArea;
-import com.github.zly2006.enclosure.EnclosureList;
 import com.github.zly2006.enclosure.ServerMain;
 import com.github.zly2006.enclosure.utils.Permission;
 import net.minecraft.entity.EntityType;
@@ -22,14 +21,12 @@ public class MixinEnderDragonEntity extends MobEntity {
 
     @Redirect(method = "destroyBlocks", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/World;removeBlock(Lnet/minecraft/util/math/BlockPos;Z)Z"))
     private boolean dragonProtection(World instance, BlockPos pos, boolean move) {
-        if (instance.isClient) {
-            return false;
+        if (instance instanceof ServerWorld serverWorld) {
+            EnclosureArea a = ServerMain.INSTANCE.getSmallestEnclosure(serverWorld, pos);
+            if (a != null && !a.hasPubPerm(Permission.DRAGON_DESTROY)) {
+                return true;
+            }
         }
-        EnclosureList list = ServerMain.INSTANCE.getAllEnclosures((ServerWorld) getWorld());
-        EnclosureArea a = list.getArea(pos);
-        if (a != null && !a.areaOf(pos).hasPubPerm(Permission.DRAGON_DESTROY)) {
-            return true;
-        }
-        return this.getWorld().removeBlock(pos, false);
+        return this.getWorld().removeBlock(pos, move);
     }
 }

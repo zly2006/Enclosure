@@ -154,9 +154,8 @@ class BuilderScope<T: argT>(var parent: T) {
                     action(enclosure)
                 } else {
                     val blockPos = BlockPos.ofFloored(source.position)
-                    ServerMain.getAllEnclosures(source.world).getArea(
-                        blockPos
-                    )?.areaOf(blockPos)?.let { action(it) }
+                    ServerMain.getSmallestEnclosure(source.world, blockPos)
+                        ?.let { action(it) }
                         ?: error(TrT.of("enclosure.message.no_enclosure"), this)
                 }
             }
@@ -180,8 +179,8 @@ class BuilderScope<T: argT>(var parent: T) {
             BuilderScope(parent).apply {
                 builder(t, Command {
                     val blockPos = BlockPos.ofFloored(it.source.position)
-                    ServerMain.getAllEnclosures(it.source.world).getArea(blockPos)
-                        ?.areaOf(blockPos)?.let { area -> action(it, area, t) }
+                    ServerMain.getSmallestEnclosure(it.source.world, blockPos)
+                        ?.let { area -> action(it, area, t) }
                         ?: error(TrT.of("enclosure.message.no_enclosure"), it)
                     1
                 })

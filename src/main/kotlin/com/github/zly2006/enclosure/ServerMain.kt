@@ -265,11 +265,10 @@ object ServerMain: ModInitializer {
 
     fun checkPermission(world: World, pos: BlockPos, player: PlayerEntity?, permission: Permission): Boolean {
         if (world !is ServerWorld) return true
-        val list = getAllEnclosures(world)
-        val area = list.getArea(pos) ?: return true
+        val area = getSmallestEnclosure(world, pos) ?: return true
         return if (player != null) {
-            area.areaOf(pos).hasPerm(player as ServerPlayerEntity, permission)
-        } else area.areaOf(pos).hasPubPerm(permission)
+            area.hasPerm(player as ServerPlayerEntity, permission)
+        } else area.hasPubPerm(permission)
     }
 
     fun getAllEnclosures(world: ServerWorld): EnclosureList {
@@ -309,7 +308,7 @@ object ServerMain: ModInitializer {
     fun checkPermission(player: ServerPlayerEntity, permission: Permission, pos: BlockPos): Boolean {
         if (checkPermission(player, "enclosure.bypass") && permission.canBypass) return true
         val enclosure = getSmallestEnclosure(player.serverWorld, pos)
-        return enclosure?.areaOf(pos)?.hasPerm(player, permission) ?: true
+        return enclosure?.hasPerm(player, permission) ?: true
     }
 
     fun reloadLimits(): Map<String, LandLimits> {

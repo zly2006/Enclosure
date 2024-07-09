@@ -46,7 +46,6 @@
     "MixinLockableContainerBlockEntity",
     "MixinMinecartEntity",
     "MixinMobEntity",
-    "MixinParrotEntity",
     "MixinPistonBlock",
     "MixinPlayerEntity",
     "MixinPotionEntity",

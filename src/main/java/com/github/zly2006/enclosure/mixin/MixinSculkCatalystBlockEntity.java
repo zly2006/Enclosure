@@ -26,7 +26,7 @@ public class MixinSculkCatalystBlockEntity  {
         }
         BlockPos blockPos = BlockPos.ofFloored(emitterPos.offset(Direction.UP, 0.5));
         EnclosureArea area = ServerMain.INSTANCE.getSmallestEnclosure((ServerWorld) livingEntity.getWorld(), blockPos);
-        if (area != null && !area.areaOf(blockPos).hasPubPerm(Permission.SCULK_SPREAD)) {
+        if (area != null && !area.hasPubPerm(Permission.SCULK_SPREAD)) {
             cir.setReturnValue(false);
         }
     }
