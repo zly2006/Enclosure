@@ -18,6 +18,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.Unique;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -30,6 +31,7 @@ public abstract class MixinWorldChunk extends Chunk implements ChunkAccess {
 
     @Shadow public abstract World getWorld();
 
+    @Unique @Nullable
     private List<Enclosure> cache = null;
 
     @NotNull
