@@ -245,17 +245,12 @@ fun sessionOf(source: ServerCommandSource): Session {
 
 private fun landArgument(): RequiredArgumentBuilder<ServerCommandSource, String> {
     return CommandManager.argument("land", StringArgumentType.string())
-        .suggests { _, builder: SuggestionsBuilder ->
+        .suggests { context, builder: SuggestionsBuilder ->
             val res = builder.remainingLowerCase
             if (res.contains(".")) {
-                val enclosure = ServerMain.getEnclosure(
-                    res.substring(
-                        0,
-                        res.lastIndexOf('.')
-                    )
-                )
+                val enclosure = ServerMain.getEnclosure(res.substringBeforeLast('.'))
                 if (enclosure is Enclosure) {
-                    val subRes = res.substring(res.lastIndexOf('.') + 1)
+                    val subRes = res.substringAfterLast('.')
                     enclosure.subEnclosures.areas
                         .filter { it.name.lowercase().startsWith(subRes) }
                         .map { it.fullName }
@@ -329,7 +324,7 @@ private fun createEnclosure(context: CommandContext<ServerCommandSource>) {
     if (!context.source.hasPermissionLevel(4)) {
         checkSessionSize(session, context)
         if (context.source.player != null) {
-            val count = ServerMain.getAllEnclosures(context.source.uuid).size.toLong()
+            val count = ServerMain.getAllEnclosuresForSuggestion(context.source.uuid).size.toLong()
             if (count >= limits.maxLands) {
                 error(
                     TrT.of("enclosure.message.rcle.self")
@@ -569,7 +564,7 @@ fun register(dispatcher: CommandDispatcher<ServerCommandSource>, access: Command
                 argument(offlinePlayerArgument()) {
                     executes {
                         val uuid = getOfflineUUID(this)
-                        val list = ServerMain.getAllEnclosures(uuid)
+                        val list = ServerMain.getAllEnclosuresForSuggestion(uuid)
                         val ret = TrT.of("enclosure.message.list.user", Utils.getDisplayNameByUUID(uuid), list.size)
                         list.forEach(Consumer { e: Enclosure ->
                             ret.append("\n").append(
@@ -885,7 +880,7 @@ fun register(dispatcher: CommandDispatcher<ServerCommandSource>, access: Command
                     if (!area.hasPerm(source.player!!, Permission.ADMIN)) {
                         error(Permission.ADMIN.getNoPermissionMsg(source.player), this)
                     }
-                    if (!area.isInner(BlockPos.ofFloored(source.position))) {
+                    if (!area.contains(BlockPos.ofFloored(source.position))) {
                         error(TrT.of("enclosure.message.res_settp_pos_error"), this)
                     }
                     area.setTeleportPos(source.position, source.rotation.y, source.rotation.x)
@@ -1003,7 +998,7 @@ fun register(dispatcher: CommandDispatcher<ServerCommandSource>, access: Command
                     ConfirmManager.confirm(null, source.player) {
                         val limitsOfReceiver = getLimits(this)
                         if (!source.hasPermissionLevel(4)) {
-                            val count = ServerMain.getAllEnclosures(uuid).size.toLong()
+                            val count = ServerMain.getAllEnclosuresForSuggestion(uuid).size.toLong()
                             if (count > limitsOfReceiver.maxLands) {
                                 error(
                                         TrT.of("enclosure.message.rcle.receiver")

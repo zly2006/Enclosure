@@ -1,5 +1,6 @@
 package com.github.zly2006.enclosure
 
+import com.github.zly2006.enclosure.access.ChunkAccess
 import com.github.zly2006.enclosure.command.BuilderScope
 import com.github.zly2006.enclosure.command.CONSOLE
 import com.github.zly2006.enclosure.command.Session
@@ -275,14 +276,14 @@ object ServerMain: ModInitializer {
         return enclosures[world.registryKey] ?: EnclosureList(world, true)
     }
 
-    fun getAllEnclosures(uuid: UUID): List<Enclosure> {
+    fun getAllEnclosuresForSuggestion(uuid: UUID): List<Enclosure> {
         return getAllEnclosures().filter { res -> uuid == CONSOLE || uuid == res.owner }
     }
 
     fun getAllEnclosures(): List<Enclosure> {
         return enclosures.values
             .asSequence()
-            .map { list: EnclosureList -> list.areas }
+            .map { it.areas }
             .flatten()
             .filterIsInstance<Enclosure>()
             .toList()
@@ -300,14 +301,14 @@ object ServerMain: ModInitializer {
     }
 
     fun getSmallestEnclosure(world: ServerWorld, pos: BlockPos?): EnclosureArea? {
-        return enclosures[world.registryKey]!!.areas
-            .firstOrNull { area: EnclosureArea -> area.isInner(pos!!) }
+        return (world.getChunk(pos) as? ChunkAccess)?.cache
+            ?.firstOrNull { it.contains(pos!!) }
             ?.areaOf(pos!!)
     }
 
     fun checkPermission(player: ServerPlayerEntity, permission: Permission, pos: BlockPos): Boolean {
         if (checkPermission(player, "enclosure.bypass") && permission.canBypass) return true
-        val enclosure = getAllEnclosures(player.getServerWorld()).getArea(pos)
+        val enclosure = getSmallestEnclosure(player.serverWorld, pos)
         return enclosure?.areaOf(pos)?.hasPerm(player, permission) ?: true
     }
 
