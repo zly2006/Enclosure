@@ -47,6 +47,7 @@ public abstract class MixinPlayerEntity extends LivingEntity {
         if (((LivingEntity) this) instanceof ServerPlayerEntity serverPlayer) {
             if (!ServerMain.INSTANCE.checkPermission(serverPlayer, PLACE_BLOCK, pos)) {
                 serverPlayer.sendMessage(PLACE_BLOCK.getNoPermissionMsg(serverPlayer));
+                serverPlayer.currentScreenHandler.syncState();
                 cir.setReturnValue(false);
             }
         }

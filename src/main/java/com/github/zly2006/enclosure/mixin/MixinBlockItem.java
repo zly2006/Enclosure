@@ -20,6 +20,7 @@ public class MixinBlockItem {
         if (context.getPlayer() instanceof ServerPlayerEntity serverPlayer) {
             if (!ServerMain.INSTANCE.checkPermission(serverPlayer, Permission.PLACE_BLOCK, context.getBlockPos())) {
                 serverPlayer.sendMessage(PLACE_BLOCK.getNoPermissionMsg(serverPlayer));
+                serverPlayer.currentScreenHandler.syncState();
                 cir.setReturnValue(false);
             }
         }
