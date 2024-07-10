@@ -124,7 +124,6 @@ class Permission(
         @JvmField val LEASH = Permission("leash", icon = Items.LEAD).apply(::register)
         @JvmField val NAMETAG = Permission("nametag", icon = Items.NAME_TAG).apply(::register)
         @JvmField val NOTE = Permission("note", icon = Items.NOTE_BLOCK).apply(::register)
-        @JvmField val PARROT_COOKIE = Permission("parrot_cookie", icon = Items.COOKIE).apply(::register)
         @JvmField val PVP = Permission("pvp", Target.Enclosure, false, Items.DIAMOND_SWORD).apply(::register)
         @JvmField val PLACE_BLOCK = Permission("place_block", icon = Items.STONE).apply(::register)
         @JvmField val BREAK_BLOCK = Permission("break_block", icon = Items.DIAMOND_PICKAXE).apply(::register)

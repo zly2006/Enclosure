@@ -1,7 +1,6 @@
 package com.github.zly2006.enclosure.mixin;
 
 import com.github.zly2006.enclosure.EnclosureArea;
-import com.github.zly2006.enclosure.EnclosureList;
 import com.github.zly2006.enclosure.ServerMain;
 import com.github.zly2006.enclosure.utils.Permission;
 import net.minecraft.block.BlockState;
@@ -21,19 +20,18 @@ public class MixinFireBlock {
     @Unique
     private void set(World instance, BlockPos pos, BlockState blockState, int i) {
         if (instance.isClient) return;
-        EnclosureList list = ServerMain.INSTANCE.getAllEnclosures((ServerWorld) instance);
-        EnclosureArea area = list.getArea(pos);
-        if (area == null || area.areaOf(pos).hasPubPerm(Permission.FIRE_SPREADING)) {
-            instance.setBlockState(pos, blockState, i);
+        EnclosureArea area = ServerMain.INSTANCE.getSmallestEnclosure((ServerWorld) instance, pos);
+        if (area != null && !area.hasPubPerm(Permission.FIRE_SPREADING)) {
+            return;
         }
+        instance.setBlockState(pos, blockState, i);
     }
 
     @Unique
     private void remove(World instance, BlockPos pos, boolean move) {
         if (instance.isClient) return;
-        EnclosureList list = ServerMain.INSTANCE.getAllEnclosures((ServerWorld) instance);
-        EnclosureArea area = list.getArea(pos);
-        if (area != null && !area.areaOf(pos).hasPubPerm(Permission.FIRE_SPREADING)) {
+        EnclosureArea area = ServerMain.INSTANCE.getSmallestEnclosure((ServerWorld) instance, pos);
+        if (area != null && !area.hasPubPerm(Permission.FIRE_SPREADING)) {
             if (instance.getBlockState(pos).isOf(Blocks.FIRE)) {
                 // 但是允许火熄灭
                 instance.removeBlock(pos, move);

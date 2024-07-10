@@ -13,11 +13,9 @@ import net.fabricmc.loader.api.VersionParsingException
 import net.minecraft.network.PacketByteBuf
 import net.minecraft.network.codec.PacketCodec
 import net.minecraft.network.packet.CustomPayload
-import net.minecraft.network.packet.s2c.play.GameMessageS2CPacket
 import net.minecraft.server.MinecraftServer
 import net.minecraft.server.network.ServerPlayNetworkHandler
 import net.minecraft.server.network.ServerPlayerEntity
-import net.minecraft.text.Text
 import java.util.*
 
 class EnclosureInstalledC2SPacket(var version: Version?) : CustomPayload {
@@ -64,18 +62,7 @@ class EnclosureInstalledC2SPacket(var version: Version?) : CustomPayload {
 
                     context.responseSender().sendPacket(UUIDCacheS2CPacket(minecraftServer.userCache!!))
                 } else if (version != null) {
-                    context.networkHandler().sendPacket(
-                        GameMessageS2CPacket(
-                            Text.translatable(
-                                "enclosure.message.outdated",
-                                MOD_VERSION.friendlyString,
-                                version.friendlyString
-                            ), false
-                        )
-                    )
-//                    context.player().sendMessage(
-//
-//                    )
+
                 }
             }
         }

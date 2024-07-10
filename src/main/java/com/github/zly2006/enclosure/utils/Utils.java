@@ -122,35 +122,30 @@ public class Utils {
     }
 
     public static boolean commonOnPlayerDamage(DamageSource source, BlockPos pos, World world, Permission permission) {
-        if (world.isClient) {
-            return true;
-        }
-        EnclosureArea area = ServerMain.INSTANCE.getAllEnclosures((ServerWorld) world).getArea(pos);
-        if (area != null) {
-            area = area.areaOf(pos);
-        }
-        if (source.getAttacker() instanceof ServerPlayerEntity attacker) {
-            if (area != null && !area.hasPerm(attacker, permission)) {
-                attacker.sendMessage(permission.getNoPermissionMsg(attacker));
-                return false;
+        if (world instanceof ServerWorld serverWorld) {
+            EnclosureArea area = ServerMain.INSTANCE.getSmallestEnclosure(serverWorld, pos);
+            if (source.getAttacker() instanceof ServerPlayerEntity attacker) {
+                if (area != null && !area.hasPerm(attacker, permission)) {
+                    attacker.sendMessage(permission.getNoPermissionMsg(attacker));
+                    return false;
+                }
             }
         }
         return true;
     }
 
     public static boolean commonOnDamage(DamageSource source, BlockPos pos, World world, Permission permission) {
-        if (world.isClient) {
-            return true;
-        }
-        EnclosureArea area = ServerMain.INSTANCE.getSmallestEnclosure((ServerWorld) world, pos);
-        if (area == null) return true;
-        if (source.getAttacker() instanceof ServerPlayerEntity attacker) {
-            if (!area.hasPerm(attacker, permission)) {
-                attacker.sendMessage(permission.getNoPermissionMsg(attacker));
-                return false;
+        if (world instanceof ServerWorld serverWorld) {
+            EnclosureArea area = ServerMain.INSTANCE.getSmallestEnclosure(serverWorld, pos);
+            if (area == null) return true;
+            if (source.getAttacker() instanceof ServerPlayerEntity attacker) {
+                if (!area.hasPerm(attacker, permission)) {
+                    attacker.sendMessage(permission.getNoPermissionMsg(attacker));
+                    return false;
+                }
+            } else {
+                return area.hasPubPerm(permission);
             }
-        } else {
-            return area.hasPubPerm(permission);
         }
         return true;
     }

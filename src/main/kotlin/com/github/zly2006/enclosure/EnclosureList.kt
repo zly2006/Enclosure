@@ -2,6 +2,7 @@ package com.github.zly2006.enclosure
 
 import com.github.zly2006.enclosure.ServerMain.enclosures
 import com.github.zly2006.enclosure.ServerMain.getAllEnclosures
+import com.github.zly2006.enclosure.access.ChunkAccess
 import net.minecraft.nbt.NbtCompound
 import net.minecraft.nbt.NbtList
 import net.minecraft.nbt.NbtString
@@ -9,9 +10,10 @@ import net.minecraft.registry.RegistryWrapper
 import net.minecraft.server.world.ServerWorld
 import net.minecraft.util.math.BlockPos
 import net.minecraft.world.PersistentState
+import net.minecraft.world.chunk.ChunkStatus
 
-class EnclosureList(world: ServerWorld, isRoot: Boolean) : PersistentState() {
-    private val areaMap: MutableMap<String, EnclosureArea> = HashMap()
+class EnclosureList(world: ServerWorld, private val isRoot: Boolean) : PersistentState() {
+    private val areaMap: MutableMap<String, EnclosureArea> = mutableMapOf()
     private val boundWorld: ServerWorld?
     val areas = areaMap.values
 
@@ -54,7 +56,7 @@ class EnclosureList(world: ServerWorld, isRoot: Boolean) : PersistentState() {
      */
     fun getArea(pos: BlockPos): EnclosureArea? {
         for (enclosureArea in areaMap.values) {
-            if (enclosureArea.isInner(pos)) {
+            if (enclosureArea.contains(pos)) {
                 return enclosureArea
             }
         }
@@ -74,7 +76,15 @@ class EnclosureList(world: ServerWorld, isRoot: Boolean) : PersistentState() {
 
     fun remove(name: String): Boolean {
         if (areaMap.containsKey(name)) {
-            areaMap.remove(name)
+            val area = areaMap.remove(name)
+            if (isRoot) {
+                area!!.toBlockBox().streamChunkPos().forEach {
+                    val chunk = boundWorld!!.getChunk(it.x, it.z, ChunkStatus.FULL, false);
+                    if (chunk is ChunkAccess && area is Enclosure) {
+                        chunk.removeCache(area)
+                    }
+                }
+            }
             markDirty()
             return true
         }
@@ -83,6 +93,14 @@ class EnclosureList(world: ServerWorld, isRoot: Boolean) : PersistentState() {
 
     fun addArea(area: EnclosureArea) {
         areaMap[area.name] = area
+        if (isRoot) {
+            area.toBlockBox().streamChunkPos().forEach {
+                val chunk = boundWorld!!.getChunk(it.x, it.z, ChunkStatus.FULL, false);
+                if (chunk is ChunkAccess && area is Enclosure) {
+                    chunk.putCache(area)
+                }
+            }
+        }
         markDirty()
     }
 }

@@ -1,7 +1,6 @@
 package com.github.zly2006.enclosure.mixin;
 
 import com.github.zly2006.enclosure.EnclosureArea;
-import com.github.zly2006.enclosure.EnclosureList;
 import com.github.zly2006.enclosure.ServerMain;
 import com.github.zly2006.enclosure.utils.Permission;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
@@ -31,16 +30,15 @@ public abstract class MixinExplosion {
     @ModifyVariable(at = @At(value = "INVOKE", target = "Lnet/minecraft/util/math/Vec3d;<init>(DDD)V", ordinal = 1), method = "collectBlocksAndDamageEntities")
     private List<Entity> protectEntities(List<Entity> list) {
         if (!world.isClient) {
-            EnclosureList enclosureList = ServerMain.INSTANCE.getAllEnclosures((ServerWorld) world);
-            list.removeIf(e -> {
-                assert e != null;
-                BlockPos pos = e.getBlockPos();
-                EnclosureArea a = enclosureList.getArea(pos);
-                return a != null && !a.areaOf(pos).hasPubPerm(Permission.EXPLOSION);
+            list.removeIf(entity -> {
+                assert entity != null;
+                BlockPos pos = entity.getBlockPos();
+                EnclosureArea a = ServerMain.INSTANCE.getSmallestEnclosure((ServerWorld) world, pos);
+                return a != null && !a.hasPubPerm(Permission.EXPLOSION);
             });
             this.affectedBlocks.removeIf(pos -> {
-                EnclosureArea a = enclosureList.getArea(pos);
-                return a != null && !a.areaOf(pos).hasPubPerm(Permission.EXPLOSION);
+                EnclosureArea a = ServerMain.INSTANCE.getSmallestEnclosure((ServerWorld) world, pos);
+                return a != null && !a.hasPubPerm(Permission.EXPLOSION);
             });
         }
         return list;

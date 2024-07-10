@@ -20,8 +20,8 @@ public class MixinTurtleEggBlock {
     @Inject(method = "tryBreakEgg", at = @At("HEAD"), cancellable = true)
     private void onBreakEgg(World world, BlockState state, BlockPos pos, Entity entity, int inverseChance, CallbackInfo ci) {
         if (!world.isClient && entity instanceof ServerPlayerEntity player) {
-            EnclosureArea area = ServerMain.INSTANCE.getAllEnclosures((ServerWorld) world).getArea(pos);
-            if (area != null && !area.areaOf(pos).hasPerm(player, Permission.BREAK_TURTLE_EGG)) {
+            EnclosureArea area = ServerMain.INSTANCE.getSmallestEnclosure((ServerWorld) world, pos);
+            if (area != null && !area.hasPerm(player, Permission.BREAK_TURTLE_EGG)) {
                 ci.cancel();
             }
         }

@@ -1,7 +1,6 @@
 package com.github.zly2006.enclosure.mixin;
 
 import com.github.zly2006.enclosure.EnclosureArea;
-import com.github.zly2006.enclosure.EnclosureList;
 import com.github.zly2006.enclosure.ServerMain;
 import com.github.zly2006.enclosure.utils.Permission;
 import net.minecraft.block.BlockState;
@@ -27,16 +26,16 @@ import static net.minecraft.block.CampfireBlock.WATERLOGGED;
 
 @Mixin(CampfireBlock.class)
 public class MixinCampfireBlock {
-
-    @Shadow @Final public static BooleanProperty LIT;
+    @Shadow
+    @Final
+    public static BooleanProperty LIT;
 
     @Inject(at = @At("HEAD"), method = "extinguish", cancellable = true)
-    private static void onExtinguish(Entity entity, WorldAccess world, BlockPos pos, BlockState state, CallbackInfo ci){
-        if(world instanceof ServerWorld){
-            EnclosureList list = ServerMain.INSTANCE.getAllEnclosures((ServerWorld) world);
-            EnclosureArea area = list.getArea(pos);
-            if (area != null && !area.areaOf(pos).hasPubPerm(Permission.USE_CAMPFIRE)) {
-                if(entity instanceof ServerPlayerEntity player){
+    private static void onExtinguish(Entity entity, WorldAccess world, BlockPos pos, BlockState state, CallbackInfo ci) {
+        if (world instanceof ServerWorld serverWorld) {
+            EnclosureArea area = ServerMain.INSTANCE.getSmallestEnclosure(serverWorld, pos);
+            if (area != null && !area.hasPubPerm(Permission.USE_CAMPFIRE)) {
+                if (entity instanceof ServerPlayerEntity player) {
                     player.sendMessage(USE_CAMPFIRE.getNoPermissionMsg(player));
                 }
 
@@ -49,11 +48,10 @@ public class MixinCampfireBlock {
     }
 
     @Inject(at = @At("HEAD"), method = "tryFillWithFluid", cancellable = true)
-    private void onFillWithFluid(WorldAccess world, BlockPos pos, BlockState state, FluidState fluidState, CallbackInfoReturnable<Boolean> cir){
-        if(world instanceof ServerWorld){
-            EnclosureList list = ServerMain.INSTANCE.getAllEnclosures((ServerWorld) world);
-            EnclosureArea area = list.getArea(pos);
-            if (area != null && !area.areaOf(pos).hasPubPerm(Permission.USE_CAMPFIRE)) {
+    private void onFillWithFluid(WorldAccess world, BlockPos pos, BlockState state, FluidState fluidState, CallbackInfoReturnable<Boolean> cir) {
+        if (world instanceof ServerWorld serverWorld) {
+            EnclosureArea area = ServerMain.INSTANCE.getSmallestEnclosure(serverWorld, pos);
+            if (area != null && !area.hasPubPerm(Permission.USE_CAMPFIRE)) {
                 cir.setReturnValue(false);
             }
         }

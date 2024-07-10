@@ -58,7 +58,7 @@ public class Enclosure extends EnclosureArea {
     @Override
     public @NotNull EnclosureArea areaOf(@NotNull BlockPos pos) {
         for (EnclosureArea area : subEnclosures.getAreas()) {
-            if (area.isInner(pos)) {
+            if (area.contains(pos)) {
                 return area.areaOf(pos);
             }
         }

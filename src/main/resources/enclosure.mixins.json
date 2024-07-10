@@ -46,7 +46,6 @@
     "MixinLockableContainerBlockEntity",
     "MixinMinecartEntity",
     "MixinMobEntity",
-    "MixinParrotEntity",
     "MixinPistonBlock",
     "MixinPlayerEntity",
     "MixinPotionEntity",
@@ -66,6 +65,7 @@
     "MixinVehicleEntity",
     "MixinWitherEntity",
     "MixinWitherSkullBlock",
+    "MixinWorldChunk",
     "workaround.MixinRegistrySyncManager",
     "workaround.MixinServerPlayerInteractionManager",
     "workaround.MixinServerPlayNetworkHandler"

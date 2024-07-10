@@ -20,9 +20,7 @@ import net.minecraft.text.MutableText
 import net.minecraft.text.Style
 import net.minecraft.text.Text
 import net.minecraft.util.Formatting
-import net.minecraft.util.math.BlockPos
-import net.minecraft.util.math.Box
-import net.minecraft.util.math.Vec3d
+import net.minecraft.util.math.*
 import net.minecraft.world.Heightmap
 import net.minecraft.world.PersistentState
 import java.text.SimpleDateFormat
@@ -200,7 +198,7 @@ open class EnclosureArea : PersistentState, EnclosureView {
     }
 
     open fun areaOf(pos: BlockPos): EnclosureArea {
-        return if (isInner(pos)) {
+        return if (contains(pos)) {
             this
         } else {
             throw RuntimeException("The position $pos is not in the area$name")
@@ -231,7 +229,7 @@ open class EnclosureArea : PersistentState, EnclosureView {
         }
     }
 
-    fun isInner(pos: BlockPos): Boolean {
+    fun contains(pos: BlockPos): Boolean {
         return pos.x >= minX && pos.y >= minY && pos.z >= minZ && pos.x <= maxX && pos.y <= maxY && pos.z <= maxZ
     }
 
@@ -298,7 +296,7 @@ open class EnclosureArea : PersistentState, EnclosureView {
     }
 
     fun distanceTo(pos: Vec3d): Vec3d {
-        if (isInner(BlockPos.ofFloored(pos))) {
+        if (contains(BlockPos.ofFloored(pos))) {
             return Vec3d.ZERO
         }
         var x = 0.0
@@ -447,6 +445,14 @@ open class EnclosureArea : PersistentState, EnclosureView {
         Vec3d.of(BlockPos(minX, minY, minZ)),
         Vec3d.of(BlockPos(maxX + 1, maxY + 1, maxZ + 1))
     )
+
+    fun toBlockBox() = BlockBox(
+        minX, minY, minZ,
+        maxX, maxY, maxZ
+    )
+
+    fun containsChunk(pos: ChunkPos) =
+        intersect(pos.startX, Int.MIN_VALUE, pos.startZ, pos.endX, Int.MAX_VALUE, pos.endZ)
 }
 
 fun Map<String, Boolean>?.toNbt(): NbtCompound {

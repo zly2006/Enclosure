@@ -3,7 +3,6 @@ package com.github.zly2006.enclosure.mixin;
 import com.github.zly2006.enclosure.EnclosureArea;
 import com.github.zly2006.enclosure.ServerMain;
 import com.github.zly2006.enclosure.utils.Permission;
-import net.fabricmc.api.Environment;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.FallingBlockEntity;
@@ -37,8 +36,8 @@ public abstract class MixinFallingBlockEntity extends Entity {
         if (getWorld().isClient) {
             return;
         }
-        EnclosureArea currentArea = ServerMain.INSTANCE.getAllEnclosures((ServerWorld) getWorld()).getArea(getBlockPos());
-        EnclosureArea sourceArea = ServerMain.INSTANCE.getAllEnclosures((ServerWorld) getWorld()).getArea(getFallingBlockPos());
+        EnclosureArea currentArea = ServerMain.INSTANCE.getSmallestEnclosure((ServerWorld) getWorld(), getBlockPos());
+        EnclosureArea sourceArea = ServerMain.INSTANCE.getSmallestEnclosure((ServerWorld) getWorld(), getFallingBlockPos());
         if (currentArea == null || sourceArea == currentArea) {
             return;
         }
