@@ -159,18 +159,14 @@ public class EnclosureScreen extends HandledScreen<EnclosureScreenHandler> imple
             textWidget.y = renderBottom;
             renderBottom += textWidget.calcHeight();
         }
+
         for (ClickableTextWidget textWidget : subLandWidgets) {
             textWidget.y = renderBottom;
         }
         if (!subLandWidgets.isEmpty()) {
-            int subLandsX = 5;
-            for (ClickableTextWidget textWidget : subLandWidgets) {
-                textWidget.x = subLandsX;
-                textWidget.render(context, mouseX, mouseY, delta);
-                subLandsX += textWidget.width + 5;
-            }
             renderBottom += 10;
         }
+
         globalWidget.setY(renderBottom);
         playerWidget.setY(renderBottom);
         unlistedWidget.setY(renderBottom);
@@ -183,6 +179,14 @@ public class EnclosureScreen extends HandledScreen<EnclosureScreenHandler> imple
             permissionTargetListWidget.setTop(renderBottom + 25);
         }
         super.render(context, mouseX, mouseY, delta);
+        if (!subLandWidgets.isEmpty()) {
+            int subLandsX = 5;
+            for (ClickableTextWidget textWidget : subLandWidgets) {
+                textWidget.x = subLandsX;
+                textWidget.render(context, mouseX, mouseY, delta);
+                subLandsX += textWidget.width + 5;
+            }
+        }
         for (ClickableTextWidget textWidget : textWidgets) {
             textWidget.render(context, mouseX, mouseY, delta);
         }
