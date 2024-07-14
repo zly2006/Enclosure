@@ -67,7 +67,7 @@ open class EnclosureArea : PersistentState, EnclosureView {
     final override var createdOn: Long = 0
         protected set
     override var father: PermissionHolder? = null
-        protected set
+        internal set
     val uuid: UUID
 
     override val fullName: String
@@ -198,11 +198,10 @@ open class EnclosureArea : PersistentState, EnclosureView {
     }
 
     open fun areaOf(pos: BlockPos): EnclosureArea {
-        return if (contains(pos)) {
-            this
-        } else {
-            throw RuntimeException("The position $pos is not in the area$name")
+        if (!contains(pos)) {
+            throw IllegalStateException("The position $pos is not in the area$name")
         }
+        return this
     }
 
     fun includesArea(area: EnclosureArea): Boolean {

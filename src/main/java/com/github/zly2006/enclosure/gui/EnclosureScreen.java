@@ -86,16 +86,16 @@ public class EnclosureScreen extends HandledScreen<EnclosureScreenHandler> imple
         }
         String owner = UUIDCacheS2CPacket.getName(area.getOwner());
         assert client != null;
-        if (!handler.fatherFullName.isEmpty()) {
+        if (handler.fatherFullName != null && !handler.fatherFullName.isEmpty()) {
             textWidgets.add(new ClickableTextWidget(client, this, Text.literal("<<< ")
-                .styled(style -> style.withColor(Formatting.DARK_GREEN))
-                .append(Text.literal(handler.fatherFullName).formatted(Formatting.GOLD)),
-                Text.translatable("enclosure.widget.father_land.hover"),
-                button -> {
-                    assert client.player != null;
-                    close();
-                    client.player.networkHandler.sendChatCommand("enclosure gui " + handler.fatherFullName);
-                }, 5, 5, width - 10));
+                    .styled(style -> style.withColor(Formatting.DARK_GREEN))
+                    .append(Text.literal(handler.fatherFullName).formatted(Formatting.GOLD)),
+                    Text.translatable("enclosure.widget.father_land.hover"),
+                    button -> {
+                        assert client.player != null;
+                        close();
+                        client.player.networkHandler.sendChatCommand("enclosure gui " + handler.fatherFullName);
+                    }, 5, 5, width - 10));
         }
         textWidgets.add(new ClickableTextWidget(client, this, Text.empty()
             .append(Text.literal(area.getFullName()).styled(style -> style.withColor(Formatting.GOLD)))

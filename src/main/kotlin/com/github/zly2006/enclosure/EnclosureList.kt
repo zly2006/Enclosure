@@ -16,6 +16,7 @@ class EnclosureList(world: ServerWorld, private val isRoot: Boolean) : Persisten
     private val areaMap: MutableMap<String, EnclosureArea> = mutableMapOf()
     private val boundWorld: ServerWorld?
     val areas = areaMap.values
+    val names get() = areaMap.keys.toList()
 
     constructor(nbt: NbtCompound, world: ServerWorld, isRoot: Boolean) : this(world, isRoot) {
         (nbt[ENCLOSURE_LIST_KEY] as? NbtList)?.forEach {

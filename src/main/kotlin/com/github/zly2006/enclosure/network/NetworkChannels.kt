@@ -9,4 +9,5 @@ object NetworkChannels {
     val SYNC_UUID: Identifier = Identifier.of("enclosure", "packet.uuid")
     val CONFIRM: Identifier = Identifier.of("enclosure", "packet.confirm")
     val SYNC_PERMISSION: Identifier = Identifier.of("enclosure", "packet.sync_permission")
+    val ENCLOSURE_INFO: Identifier = Identifier.of("enclosure", "packet.enclosure_info")
 }

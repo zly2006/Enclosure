@@ -12,10 +12,7 @@ import com.github.zly2006.enclosure.gui.EnclosureScreenHandler
 import com.github.zly2006.enclosure.listeners.SessionListener
 import com.github.zly2006.enclosure.network.config.EnclosureInstalledC2SPacket
 import com.github.zly2006.enclosure.network.config.UUIDCacheS2CPacket
-import com.github.zly2006.enclosure.network.play.ConfirmRequestBiPacket
-import com.github.zly2006.enclosure.network.play.RequestOpenScreenC2SPPacket
-import com.github.zly2006.enclosure.network.play.SyncPermissionS2CPacket
-import com.github.zly2006.enclosure.network.play.SyncSelectionS2CPacket
+import com.github.zly2006.enclosure.network.play.*
 import com.github.zly2006.enclosure.utils.Permission
 import com.github.zly2006.enclosure.utils.ResourceLoader
 import com.github.zly2006.enclosure.utils.checkPermission
@@ -366,6 +363,7 @@ object ServerMain: ModInitializer {
         UUIDCacheS2CPacket.register()
         SyncSelectionS2CPacket.register()
         SyncPermissionS2CPacket.register()
+        EnclosureInfoPayload.register()
         ServerPlayConnectionEvents.JOIN.register(ServerPlayConnectionEvents.Join { handler: ServerPlayNetworkHandler, _, _ ->
             // warn the server ops that this server is running in development mode and not secure.
             if (minecraftServer.playerManager.isOperator(handler.player.gameProfile) && commonConfig.developMode) {

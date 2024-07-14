@@ -16,6 +16,7 @@ import net.minecraft.network.packet.CustomPayload
 import net.minecraft.server.MinecraftServer
 import net.minecraft.server.network.ServerPlayNetworkHandler
 import net.minecraft.server.network.ServerPlayerEntity
+import net.minecraft.text.Text
 import java.util.*
 
 class EnclosureInstalledC2SPacket(var version: Version?) : CustomPayload {
@@ -45,6 +46,8 @@ class EnclosureInstalledC2SPacket(var version: Version?) : CustomPayload {
             return installedClientMod[connection.uuid]
         }
 
+        private val incompatibleVersions = mutableMapOf<UUID, () -> Text>()
+
         fun register() {
             ServerPlayConnectionEvents.DISCONNECT.register(ServerPlayConnectionEvents.Disconnect { handler: ServerPlayNetworkHandler, server: MinecraftServer? ->
                 installedClientMod -= handler.player.uuid
@@ -62,9 +65,21 @@ class EnclosureInstalledC2SPacket(var version: Version?) : CustomPayload {
 
                     context.responseSender().sendPacket(UUIDCacheS2CPacket(minecraftServer.userCache!!))
                 } else if (version != null) {
-
+                    incompatibleVersions[uuid] = {
+                        Text.translatable(
+                            "enclosure.message.outdated",
+                            MOD_VERSION.friendlyString,
+                            version.friendlyString
+                        )
+                    }
                 }
             }
+            ServerPlayConnectionEvents.JOIN.register(ServerPlayConnectionEvents.Join { handler, sender, server ->
+                val message = incompatibleVersions.remove(handler.player.uuid)
+                if (message != null) {
+                    handler.player.sendMessage(message())
+                }
+            })
         }
     }
 }

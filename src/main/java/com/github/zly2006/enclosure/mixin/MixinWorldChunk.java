@@ -39,9 +39,10 @@ public abstract class MixinWorldChunk extends Chunk implements ChunkAccess {
     public List<Enclosure> enclosure$cache() {
         if (cache == null) {
             if (getWorld() instanceof ServerWorld serverWorld) {
-                cache = (List) ServerMain.INSTANCE.getAllEnclosures(serverWorld).getAreas()
+                cache = ServerMain.INSTANCE.getAllEnclosures(serverWorld).getAreas()
                         .stream()
                         .filter(enclosure -> enclosure.containsChunk(getPos()))
+                        .map(enclosure -> (Enclosure) enclosure)
                         .collect(Collectors.toList());
             } else {
                 cache = List.of();

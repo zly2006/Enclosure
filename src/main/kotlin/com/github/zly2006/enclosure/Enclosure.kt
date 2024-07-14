@@ -1,118 +1,93 @@
-package com.github.zly2006.enclosure;
+package com.github.zly2006.enclosure
 
-import com.github.zly2006.enclosure.command.Session;
-import com.github.zly2006.enclosure.utils.Permission;
-import com.github.zly2006.enclosure.utils.TrT;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.registry.RegistryWrapper;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.text.ClickEvent;
-import net.minecraft.text.HoverEvent;
-import net.minecraft.text.MutableText;
-import net.minecraft.util.Formatting;
-import net.minecraft.util.math.BlockPos;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import com.github.zly2006.enclosure.command.Session
+import com.github.zly2006.enclosure.utils.Serializable2Text.SerializationSettings
+import com.github.zly2006.enclosure.utils.TrT
+import com.github.zly2006.enclosure.utils.clickRun
+import com.github.zly2006.enclosure.utils.hoverText
+import net.minecraft.nbt.NbtCompound
+import net.minecraft.registry.RegistryWrapper.WrapperLookup
+import net.minecraft.server.network.ServerPlayerEntity
+import net.minecraft.server.world.ServerWorld
+import net.minecraft.text.MutableText
+import net.minecraft.util.Formatting
+import net.minecraft.util.math.BlockPos
 
-import java.util.UUID;
-
-import static com.github.zly2006.enclosure.EnclosureListKt.SUB_ENCLOSURES_KEY;
-
-public class Enclosure extends EnclosureArea {
-    final EnclosureList subEnclosures;
+class Enclosure : EnclosureArea {
+    @JvmField
+    val subEnclosures: EnclosureList
 
     /**
      * Create an instance from nbt for a specific world.
      * @param compound the nbt compound tag
      */
-    public Enclosure(NbtCompound compound, ServerWorld world) {
-        super(compound, world);
+    constructor(compound: NbtCompound, world: ServerWorld?) : super(compound, world!!) {
         // process sub enclosures
-        NbtCompound sub = compound.getCompound(SUB_ENCLOSURES_KEY);
-        subEnclosures = new EnclosureList(sub, world, false);
-        subEnclosures.getAreas().forEach(this::addChild);
+        val sub = compound.getCompound(SUB_ENCLOSURES_KEY)
+        subEnclosures = EnclosureList(sub, world, false)
+        subEnclosures.areas.forEach(this::addChild)
     }
 
-    public Enclosure(Session session, String name) {
-        super(session, name);
-        subEnclosures = new EnclosureList(session.getWorld(), false);
+    constructor(session: Session, name: String?) : super(session, name!!) {
+        subEnclosures = EnclosureList(session.world, false)
     }
 
-    @NotNull
-    @Override
-    public NbtCompound writeNbt(@NotNull NbtCompound nbt, @Nullable RegistryWrapper.WrapperLookup registryLookup) {
-        NbtCompound compound = super.writeNbt(nbt, registryLookup);
-        NbtCompound sub = new NbtCompound();
-        subEnclosures.writeNbt(sub, registryLookup);
-        compound.put(SUB_ENCLOSURES_KEY, sub);
-        return compound;
+    override fun writeNbt(nbt: NbtCompound, registryLookup: WrapperLookup?): NbtCompound {
+        val compound = super.writeNbt(nbt, registryLookup)
+        val sub = NbtCompound()
+        subEnclosures.writeNbt(sub, registryLookup)
+        compound.put(SUB_ENCLOSURES_KEY, sub)
+        return compound
     }
 
-    @Override
-    public void changeWorld(@NotNull ServerWorld world) {
-        if (world == this.getWorld()) return;
-        super.setWorld(world);
+    override fun changeWorld(world: ServerWorld) {
+        if (world === this.world) return
+        super.world = world
     }
 
-    @Override
-    public @NotNull EnclosureArea areaOf(@NotNull BlockPos pos) {
-        for (EnclosureArea area : subEnclosures.getAreas()) {
+    override fun areaOf(pos: BlockPos): EnclosureArea {
+        for (area in subEnclosures.areas) {
             if (area.contains(pos)) {
-                return area.areaOf(pos);
+                return area.areaOf(pos)
             }
         }
-        return super.areaOf(pos);
+        return super.areaOf(pos)
     }
 
-    public @NotNull EnclosureList getSubEnclosures() {
-        return this.subEnclosures;
-    }
-
-    @Override
-    public @NotNull MutableText serialize(@NotNull SerializationSettings settings, @Nullable ServerPlayerEntity player) {
+    override fun serialize(settings: SerializationSettings, player: ServerPlayerEntity?): MutableText {
         if (settings == SerializationSettings.Full) {
-            MutableText text = super.serialize(settings, player);
-            if (subEnclosures.getAreas().size() > 0) {
-                text.append("\n");
-                text.append(TrT.of("enclosure.message.sub_lands"));
-                for (EnclosureArea area : subEnclosures.getAreas()) {
-                    text.append(area.serialize(SerializationSettings.Name, player).styled(
-                            style -> style.withColor(Formatting.GOLD)
-                                    .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, area.serialize(SerializationSettings.Hover, player)))
-                                    .withClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, "/enclosure info " + area.getFullName()))));
-                    text.append(" ");
+            val text = super.serialize(settings, player)
+            if (subEnclosures.areas.isNotEmpty()) {
+                text.append("\n")
+                text.append(TrT.of("enclosure.message.sub_lands"))
+                for (area in subEnclosures.areas) {
+                    text.append(area.serialize(SerializationSettings.Name, player).styled {
+                        it.withColor(Formatting.GOLD)
+                            .hoverText(area.serialize(SerializationSettings.Hover, player))
+                            .clickRun("/enclosure info ${area.fullName}")
+                    })
+                    text.append(" ")
                 }
             }
-            return text;
-        }
-        else {
-            return super.serialize(settings, player);
+            return text
+        } else {
+            return super.serialize(settings, player)
         }
     }
 
-    @Override
-    public boolean hasPerm(@NotNull UUID uuid, @NotNull Permission perm) {
-        return super.hasPerm(uuid, perm);
+    override fun onRemoveChild(child: PermissionHolder) {
+        if (child is EnclosureArea) child.father = null
+        subEnclosures.remove(child.name)
+        markDirty()
     }
 
-    @Override
-    public void onRemoveChild(@NotNull PermissionHolder child) {
-        if (child instanceof EnclosureArea)
-            ((EnclosureArea) child).setFather(null);
-        subEnclosures.remove(child.getName());
-        markDirty();
-    }
-
-    @Override
-    public void addChild(@NotNull PermissionHolder child) {
-        if (child instanceof EnclosureArea area) {
-            area.setFather(this);
-            subEnclosures.addArea(area);
-            markDirty();
-        }
-        else {
-            throw new IllegalArgumentException("child must be an instance of EnclosureArea");
+    override fun addChild(child: PermissionHolder) {
+        if (child is EnclosureArea) {
+            child.father = this
+            subEnclosures.addArea(child)
+            markDirty()
+        } else {
+            throw IllegalArgumentException("child must be an instance of EnclosureArea")
         }
     }
 }
