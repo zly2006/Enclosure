@@ -361,6 +361,10 @@ open class EnclosureArea : PersistentState, EnclosureView {
                         TrT.of("enclosure.info.created_on") + literalText(SimpleDateFormat().format(Date(createdOn))).gold()
             }
 
+            SerializationSettings.NameHover -> {
+                serialize(SerializationSettings.Name, player).gold().hoverText(serialize(SerializationSettings.Hover, player))
+            }
+
             SerializationSettings.Summarize -> {
                 val text = serialize(SerializationSettings.Name, player).gold().styled {
                     it.withClickEvent(ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, "/enclosure tp $fullName"))

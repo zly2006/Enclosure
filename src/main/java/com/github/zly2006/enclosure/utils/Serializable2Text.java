@@ -9,6 +9,7 @@ public interface Serializable2Text {
     enum SerializationSettings {
         Hover,
         Name,
+        NameHover,
         Summarize,
         Full,
         BarredFull,

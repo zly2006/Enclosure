@@ -7,6 +7,7 @@ import net.minecraft.nbt.NbtCompound
 import net.minecraft.nbt.NbtList
 import net.minecraft.nbt.NbtString
 import net.minecraft.registry.RegistryWrapper
+import net.minecraft.server.world.ChunkTicketType
 import net.minecraft.server.world.ServerWorld
 import net.minecraft.util.math.BlockPos
 import net.minecraft.world.PersistentState
@@ -103,6 +104,34 @@ class EnclosureList(world: ServerWorld, private val isRoot: Boolean) : Persisten
             }
         }
         markDirty()
+    }
+
+    fun tickTickets(world: ServerWorld) {
+        areas.forEach { area ->
+            if (area.ticket != null) {
+                area.ticket!!.remainingTicks--
+                if (area.ticket!!.remainingTicks <= 0) {
+                    area.toBlockBox().streamChunkPos().forEach {
+                        world.chunkManager.removeTicket(ChunkTicketType.FORCED, it, area.ticket!!.level, it)
+                    }
+                    // todo: message
+                    area.ticket = null
+                }
+            }
+        }
+    }
+
+    fun initTickets(world: ServerWorld) {
+        areas.forEach { area ->
+            if (area.ticket != null) {
+                if (area.ticket!!.remainingTicks > 0) {
+                    area.toBlockBox().streamChunkPos().forEach {
+                        world.chunkManager.addTicket(ChunkTicketType.FORCED, it, area.ticket!!.level, it)
+                    }
+                    // todo: message
+                }
+            }
+        }
     }
 }
 

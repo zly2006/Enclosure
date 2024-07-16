@@ -26,6 +26,7 @@ import net.fabricmc.api.ModInitializer
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents.ServerStarting
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerWorldEvents
 import net.fabricmc.fabric.api.event.player.AttackBlockCallback
 import net.fabricmc.fabric.api.event.player.UseBlockCallback
@@ -592,6 +593,12 @@ object ServerMain: ModInitializer {
             playerSessions[CONSOLE] = Session(null)
             Converter.convert()
             runCatching { checkUpdateThread.start() }
+            enclosures.forEach { (key, list) ->
+                list.initTickets(it.getWorld(key)!!)
+            }
+        }
+        ServerTickEvents.START_WORLD_TICK.register {
+            enclosures[it.registryKey]!!.tickTickets(it)
         }
         ServerLifecycleEvents.SERVER_STOPPING.register {
             checkUpdateThread.interrupt()
