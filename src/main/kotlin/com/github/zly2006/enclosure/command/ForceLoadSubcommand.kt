@@ -2,7 +2,9 @@ package com.github.zly2006.enclosure.command
 
 import com.github.zly2006.enclosure.Enclosure
 import com.github.zly2006.enclosure.EnclosureArea
+import com.github.zly2006.enclosure.ServerMain
 import com.github.zly2006.enclosure.utils.Serializable2Text.SerializationSettings.Name
+import com.github.zly2006.enclosure.utils.Serializable2Text.SerializationSettings.NameHover
 import com.github.zly2006.enclosure.utils.checkPermission
 import com.mojang.authlib.GameProfile
 import me.lucko.fabric.api.permissions.v0.Options
@@ -89,7 +91,39 @@ fun BuilderScope<*>.registerForceLoad() {
         }
         literal("list") {
             executes {
-                TODO()
+                var has = false
+                for (enclosure in ServerMain.getAllEnclosures()) {
+                    if (enclosure.ticket != null) {
+                        has = true
+                        val time = buildString {
+                            val ticks = enclosure.ticket!!.remainingTicks
+                            val seconds = ticks / 20
+                            val minutes = seconds / 60
+                            val hours = minutes / 60
+                            if (hours != 0) append(hours).append("h")
+                            if (minutes % 60 != 0) append(minutes % 60).append("m")
+                            if (seconds % 60 != 0) append(seconds % 60).append("s")
+                            if (ticks % 20 != 0) append(ticks % 20).append("gt")
+                        }
+                        source.sendFeedback(
+                            {
+                                Text.literal("Force loading ")
+                                    .append(enclosure.serialize(NameHover, null))
+                                    .append(" with level ${enclosure.ticket!!.level}")
+                                    .append(" for $time ")
+                                    .append(" by ")
+                                    .append(
+                                        source.server.playerManager.getPlayer(enclosure.ticket!!.executor.id)?.styledDisplayName
+                                            ?: Text.literal(enclosure.ticket!!.executor.name)
+                                    )
+                            },
+                            false
+                        )
+                    }
+                }
+                if (!has) {
+                    source.sendFeedback({ Text.literal("No force loading tickets") }, false)
+                }
             }
         }
     }
