@@ -46,9 +46,9 @@ class BuilderScope<T: argT>(var parent: T) {
                 error(e.text, it)
             } catch (e: CommandSyntaxException) {
                 throw e
-            } catch (e: Exception) {
+            } catch (e: Throwable) {
                 LOGGER.error("Error while executing command: " + it.input, e)
-                error(TrT.of("enclosure.message.error").append(e.message), it)
+                error(TrT.of("enclosure.message.error").append("${e.javaClass.simpleName}: ${e.message}"), it)
             }
         }
     }

@@ -16,6 +16,7 @@ import net.minecraft.nbt.NbtList
 import net.minecraft.registry.RegistryWrapper
 import net.minecraft.server.command.ServerCommandSource
 import net.minecraft.server.network.ServerPlayerEntity
+import net.minecraft.server.world.ChunkTicketType
 import net.minecraft.server.world.ServerWorld
 import net.minecraft.text.ClickEvent
 import net.minecraft.text.MutableText
@@ -422,6 +423,15 @@ open class EnclosureArea : PersistentState, EnclosureView {
 
     final override fun markDirty() {
         ServerMain.getAllEnclosures(world).markDirty()
+        if (ticket != null) {
+            toBlockBox().streamChunkPos().forEach {
+                val level = world.chunkManager.ticketManager.simulationDistanceTracker.getLevel(it.toLong())
+                if (level > ticket!!.level) {
+                    world.chunkManager.addTicket(ChunkTicketType.FORCED, it, ticket!!.level, it)
+                }
+            }
+        }
+        super.markDirty()
     }
 
     fun setTeleportPos(teleportPos: Vec3d?, yaw: Float, pitch: Float) {

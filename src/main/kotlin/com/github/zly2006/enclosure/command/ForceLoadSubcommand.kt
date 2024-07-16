@@ -20,17 +20,37 @@ fun BuilderScope<*>.registerForceLoad() {
         )
         area.ticket = ticket
         area.markDirty()
-        source.sendMessage(
-            Text.literal("Force loading ")
-                .append(area.serialize(Name, null))
-                .append(" with level $level")
+        source.sendFeedback(
+            {
+                Text.literal("Force loading ")
+                    .append(area.serialize(Name, null))
+                    .append(" with level $level")
+            }, true
         )
+    }
+
+    fun cancelForceLoad(source: ServerCommandSource, area: Enclosure) {
+        if (area.ticket != null) {
+            area.ticket!!.remainingTicks = 0
+            area.markDirty()
+            source.sendFeedback(
+                {
+                    Text.literal("Force loading for ")
+                        .append(area.serialize(Name, null))
+                        .append(" canceled")
+                },
+                true
+            )
+        }
+        else {
+            source.sendError(Text.literal("No force loading tickets for ").append(area.serialize(Name, null)))
+        }
     }
 
     literal("force-load") {
         argument(landArgument()) {
+            permission("enclosure.command.force_load")
             literal("blocks") {
-                permission("enclosure.command.force_load")
                 val level = ChunkLevels.getLevelFromType(ChunkLevelType.BLOCK_TICKING)
                 executes {
                     val maxTime = Options.get(source, "enclosure.load.max_time", 21600) { it.toInt() }
@@ -42,7 +62,6 @@ fun BuilderScope<*>.registerForceLoad() {
                 }
             }
             literal("entities") {
-                permission("enclosure.command.force_load")
                 val level = ChunkLevels.getLevelFromType(ChunkLevelType.ENTITY_TICKING)
                 executes {
                     val maxTime = Options.get(source, "enclosure.load.max_time", 21600) { it.toInt() }
@@ -52,6 +71,20 @@ fun BuilderScope<*>.registerForceLoad() {
                     }
                     forceLoad(source, land, maxTime * 20, level)
                 }
+            }
+            literal("cancel") {
+                executes {
+                    val land = getEnclosure(this)
+                    if (land !is Enclosure) {
+                        error(Text.literal("Only enclosure can be force loaded"), this)
+                    }
+                    cancelForceLoad(source, land)
+                }
+            }
+        }
+        literal("list") {
+            executes {
+                TODO()
             }
         }
     }

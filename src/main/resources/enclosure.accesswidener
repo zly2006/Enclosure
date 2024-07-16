@@ -16,3 +16,7 @@ accessible field net/minecraft/server/world/ServerChunkLoadingManager entityTrac
 accessible field net/minecraft/server/world/ServerChunkLoadingManager$EntityTracker entry Lnet/minecraft/server/network/EntityTrackerEntry;
 accessible field net/minecraft/inventory/DoubleInventory first Lnet/minecraft/inventory/Inventory;
 accessible field net/minecraft/inventory/DoubleInventory second Lnet/minecraft/inventory/Inventory;
+accessible field net/minecraft/server/world/ChunkTicketManager simulationDistanceTracker Lnet/minecraft/world/SimulationDistanceLevelPropagator;
+accessible field net/minecraft/server/world/ServerChunkManager ticketManager Lnet/minecraft/server/world/ChunkTicketManager;
+accessible method net/minecraft/world/SimulationDistanceLevelPropagator getLevel (J)I
+accessible field net/minecraft/server/world/ChunkTicketManager ticketsByPosition Lit/unimi/dsi/fastutil/longs/Long2ObjectOpenHashMap;
