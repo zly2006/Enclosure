@@ -9,6 +9,7 @@ import net.minecraft.server.command.CommandManager
 fun BuilderScope<*>.registerMusic() {
     literal("music") {
         literal("set") {
+            permission("enclosure.command.music.set")
             argument(
                 CommandManager.argument("music", IdentifierArgumentType.identifier())
                     .suggests(SuggestionProviders.AVAILABLE_SOUNDS)

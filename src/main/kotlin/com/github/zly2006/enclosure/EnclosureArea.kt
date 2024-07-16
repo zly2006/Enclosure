@@ -6,6 +6,7 @@ import com.github.zly2006.enclosure.gui.EnclosureScreenHandler
 import com.github.zly2006.enclosure.network.play.SyncPermissionS2CPacket
 import com.github.zly2006.enclosure.utils.*
 import com.github.zly2006.enclosure.utils.Serializable2Text.SerializationSettings
+import com.mojang.authlib.GameProfile
 import net.fabricmc.fabric.api.networking.v1.PacketByteBufs
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking
 import net.minecraft.nbt.NbtCompound
@@ -72,6 +73,12 @@ open class EnclosureArea : PersistentState, EnclosureView {
     override var father: PermissionHolder? = null
         internal set
     val uuid: UUID
+    class ForceLoadTicket(
+        val executor: GameProfile,
+        var remainingTicks: Int,
+        val level: Int
+    )
+    var ticket: ForceLoadTicket? = null
 
     override val fullName: String
         get() = if (father != null) {
@@ -124,6 +131,14 @@ open class EnclosureArea : PersistentState, EnclosureView {
         } else {
             null
         }
+        ticket = if (compound.contains("ticket", NbtElement.COMPOUND_TYPE.toInt())) {
+            val ticket = compound.getCompound("ticket")
+            ForceLoadTicket(
+                GameProfile(ticket.getUuid("executor"), ticket.getString("executor_name")),
+                ticket.getInt("remaining_ticks"),
+                ticket.getInt("level")
+            )
+        } else null
     }
 
     operator fun Map<String, Boolean>.get(perm: Permission): Boolean? {
@@ -204,6 +219,14 @@ open class EnclosureArea : PersistentState, EnclosureView {
         nbt.putUuid("uuid", uuid)
         if (music != null) {
             nbt.putString("music", music.toString())
+        }
+        if (ticket != null) {
+            val ticketNbt = NbtCompound()
+            ticketNbt.putUuid("executor", ticket!!.executor.id)
+            ticketNbt.putString("executor_name", ticket!!.executor.name)
+            ticketNbt.putInt("remaining_ticks", ticket!!.remainingTicks)
+            ticketNbt.putInt("level", ticket!!.level)
+            nbt.put("ticket", ticketNbt)
         }
         return nbt
     }

@@ -213,6 +213,7 @@ fun register(dispatcher: CommandDispatcher<ServerCommandSource>, access: Command
 
         literal("experimental") {
             registerMusic()
+            registerForceLoad()
         }
     }
     return dispatcher.register(node.parent)

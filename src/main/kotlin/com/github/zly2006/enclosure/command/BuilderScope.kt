@@ -175,13 +175,12 @@ class BuilderScope<T: argT>(var parent: T) {
             "enclosure.bypass" to DefaultPermission.OP
         )
     }
-    fun permission(s: String, defaultPermission: DefaultPermission) {
-        val old = parent.requirement
+    fun permission(s: String, defaultPermission: DefaultPermission = DefaultPermission.OP) {
         if (!map.containsKey(s)) {
             map[s] = defaultPermission
         }
         parent.requires { source ->
-            checkPermission(source, s) && old.test(source)
+            checkPermission(source, s)
         }
     }
 }

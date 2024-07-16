@@ -17,7 +17,7 @@ import net.minecraft.util.math.BlockPos
 fun BuilderScope<*>.registerAdmin() {
     literal("admin") {
         literal("reload") {
-            permission("enclosure.command.admin.reload", BuilderScope.Companion.DefaultPermission.OP)
+            permission("enclosure.command.admin.reload")
             literal("all") {
                 executes {
                     ServerMain.reloadCommon()
@@ -39,7 +39,7 @@ fun BuilderScope<*>.registerAdmin() {
             }
         }
         literal("limit_exceeded") {
-            permission("enclosure.command.admin.limit_exceeded", BuilderScope.Companion.DefaultPermission.OP)
+            permission("enclosure.command.admin.limit_exceeded")
             literal("size") {
                 executes {
                     ServerMain.getAllEnclosures().flatMap {
@@ -77,7 +77,7 @@ fun BuilderScope<*>.registerAdmin() {
             }
         }
         literal("visited") {
-            permission("enclosure.command.admin.visited", BuilderScope.Companion.DefaultPermission.OP)
+            permission("enclosure.command.admin.visited")
             argument("player", EntityArgumentType.player()) {
                 literal("get") {
                     executes {
@@ -102,7 +102,7 @@ fun BuilderScope<*>.registerAdmin() {
             }
         }
         literal("closest") {
-            permission("enclosure.command.admin.closest", BuilderScope.Companion.DefaultPermission.OP)
+            permission("enclosure.command.admin.closest")
             executes {
                 val enclosure = ServerMain.getAllEnclosures(source.world).areas
                     .minByOrNull {
@@ -125,7 +125,7 @@ fun BuilderScope<*>.registerAdmin() {
             }
         }
         literal("perm-info") {
-            permission("enclosure.command.admin.perm_info", BuilderScope.Companion.DefaultPermission.OP)
+            permission("enclosure.command.admin.perm_info")
             argument(permissionArgument(com.github.zly2006.enclosure.utils.Permission.Target.Both)) {
                 executes {
                     val permission = Permission.getValue(StringArgumentType.getString(this, "permission"))
@@ -139,7 +139,7 @@ fun BuilderScope<*>.registerAdmin() {
             }
         }
         literal("clients") {
-            permission("enclosure.command.admin.clients", BuilderScope.Companion.DefaultPermission.OP)
+            permission("enclosure.command.admin.clients")
             executes {
                 EnclosureInstalledC2SPacket.installedClientMod.forEach {
                     source.sendMessage(
