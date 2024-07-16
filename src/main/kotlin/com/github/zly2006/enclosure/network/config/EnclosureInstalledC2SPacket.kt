@@ -37,6 +37,11 @@ class EnclosureInstalledC2SPacket(var version: Version?) : CustomPayload {
             }
         )
 
+        @JvmStatic
+        fun experimentalFunctionality(player: ServerPlayerEntity?): Boolean {
+            return player != null && installedClientMod.containsKey(player.uuid) && installedClientMod[player.uuid]!! >= MOD_VERSION
+        }
+
         fun isInstalled(player: ServerPlayerEntity?): Boolean {
             if (player == null) return false
             return installedClientMod.containsKey(player.uuid)

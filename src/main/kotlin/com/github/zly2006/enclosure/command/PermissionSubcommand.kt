@@ -139,20 +139,20 @@ fun BuilderScope<*>.registerPermissions() {
 
     literal("trust") {
         permission("enclosure.command.trust", BuilderScope.Companion.DefaultPermission.TRUE)
-        optionalEnclosure({ area ->
-            val uuid = getOfflineUUID(this)
-            if (area.hasPerm(source.player!!, Permission.ADMIN)) {
-                area.setPermission(source, uuid, Permission.TRUSTED, true)
-                source.sendFeedback(
-                    { TrT.of("enclosure.message.added_user", Utils.getDisplayNameByUUID(uuid)) },
-                    true
-                )
-            } else {
-                error(Permission.ADMIN.getNoPermissionMsg(source.player), this)
+        argument(offlinePlayerArgument()) {
+            optionalEnclosure { area ->
+                val uuid = getOfflineUUID(this)
+                if (area.hasPerm(source.player!!, Permission.ADMIN)) {
+                    area.setPermission(source, uuid, Permission.TRUSTED, true)
+                    source.sendFeedback(
+                        { TrT.of("enclosure.message.added_user", Utils.getDisplayNameByUUID(uuid)) },
+                        true
+                    )
+                } else {
+                    error(Permission.ADMIN.getNoPermissionMsg(source.player), this)
+                }
             }
-        }, { node, command ->
-            node.then(offlinePlayerArgument().executes(command))
-        })
+        }
     }
     literal("give") {
         permission("enclosure.command.give", BuilderScope.Companion.DefaultPermission.TRUE)

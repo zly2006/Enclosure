@@ -364,6 +364,7 @@ object ServerMain: ModInitializer {
         SyncSelectionS2CPacket.register()
         SyncPermissionS2CPacket.register()
         EnclosureInfoPayload.register()
+        BackgroundMusicPayload.register()
         ServerPlayConnectionEvents.JOIN.register(ServerPlayConnectionEvents.Join { handler: ServerPlayNetworkHandler, _, _ ->
             // warn the server ops that this server is running in development mode and not secure.
             if (minecraftServer.playerManager.isOperator(handler.player.gameProfile) && commonConfig.developMode) {

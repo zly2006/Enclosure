@@ -3,12 +3,15 @@ package com.github.zly2006.enclosure.mixin;
 import com.github.zly2006.enclosure.EnclosureArea;
 import com.github.zly2006.enclosure.ServerMain;
 import com.github.zly2006.enclosure.access.PlayerAccess;
+import com.github.zly2006.enclosure.network.config.EnclosureInstalledC2SPacket;
+import com.github.zly2006.enclosure.network.play.BackgroundMusicPayload;
 import com.github.zly2006.enclosure.utils.Permission;
 import com.github.zly2006.enclosure.utils.TrT;
 import com.github.zly2006.enclosure.utils.Utils;
 import com.github.zly2006.enclosure.utils.UtilsKt;
 import com.google.common.collect.Sets;
 import com.mojang.authlib.GameProfile;
+import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.entity.ItemEntity;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.effect.StatusEffectInstance;
@@ -217,6 +220,9 @@ public abstract class MixinServerPlayerEntity extends PlayerEntity implements Pl
             EnclosureArea area = ServerMain.INSTANCE.getSmallestEnclosure(getServerWorld(), getBlockPos());
             if (lastArea != null) {
                 if (area != lastArea) {
+                    if (EnclosureInstalledC2SPacket.experimentalFunctionality(player)) {
+                        ServerPlayNetworking.send(player, new BackgroundMusicPayload(null, null));
+                    }
                     sendFormattedMessage(player, lastArea, false);
                 }
             }
@@ -233,6 +239,9 @@ public abstract class MixinServerPlayerEntity extends PlayerEntity implements Pl
                     }
                 }
                 if (area != lastArea) {
+                    if (area.getMusic() != null && EnclosureInstalledC2SPacket.experimentalFunctionality(player)) {
+                        ServerPlayNetworking.send(player, new BackgroundMusicPayload(area.getFullName(), area.getMusic()));
+                    }
                     sendFormattedMessage(player, area, true);
                 }
                 // glowing effect

@@ -133,10 +133,6 @@ class BuilderScope<T: argT>(var parent: T) {
         }
     }
 
-    fun optionalEnclosure(action: CommandContext<ServerCommandSource>.(EnclosureArea) -> Unit, builder: (argT, Command<ServerCommandSource>) -> Unit) {
-        optionalEnclosure(listOf(0), { _, c -> builder(parent, c) }) { a, _ -> action(a) }
-    }
-
     fun <T: Any?> optionalEnclosure(list: List<T>, builder: BuilderScope<*>.(T, Command<ServerCommandSource>) -> Unit, action: CommandContext<ServerCommandSource>.(EnclosureArea, T) -> Unit) {
         list.forEach { t ->
             val node = landArgument()

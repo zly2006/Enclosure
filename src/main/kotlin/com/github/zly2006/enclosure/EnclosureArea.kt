@@ -10,6 +10,7 @@ import net.fabricmc.fabric.api.networking.v1.PacketByteBufs
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking
 import net.minecraft.nbt.NbtCompound
 import net.minecraft.nbt.NbtDouble
+import net.minecraft.nbt.NbtElement
 import net.minecraft.nbt.NbtList
 import net.minecraft.registry.RegistryWrapper
 import net.minecraft.server.command.ServerCommandSource
@@ -20,6 +21,7 @@ import net.minecraft.text.MutableText
 import net.minecraft.text.Style
 import net.minecraft.text.Text
 import net.minecraft.util.Formatting
+import net.minecraft.util.Identifier
 import net.minecraft.util.math.*
 import net.minecraft.world.Heightmap
 import net.minecraft.world.PersistentState
@@ -47,6 +49,7 @@ open class EnclosureArea : PersistentState, EnclosureView {
         }
     }
 
+    var music: Identifier? = null
     private var locked = false
     final override var minX by lockChecker(0)
     final override var minY by lockChecker(0)
@@ -115,6 +118,11 @@ open class EnclosureArea : PersistentState, EnclosureView {
             compound.getUuid("uuid")
         } else {
             UUID.randomUUID()
+        }
+        music = if (compound.contains("music", NbtElement.STRING_TYPE.toInt())) {
+            Identifier.of(compound.getString("music"))
+        } else {
+            null
         }
     }
 
@@ -194,6 +202,9 @@ open class EnclosureArea : PersistentState, EnclosureView {
         nbt.put("tp_pos", nbtTpPos)
         nbt.putUuid("owner", owner)
         nbt.putUuid("uuid", uuid)
+        if (music != null) {
+            nbt.putString("music", music.toString())
+        }
         return nbt
     }
 

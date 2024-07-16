@@ -37,8 +37,8 @@ typealias argT = ArgumentBuilder<ServerCommandSource, *>
 @JvmField
 val CONSOLE = UUID(0, 0)
 
-fun error(sst: Text, context: CommandContext<ServerCommandSource>): Nothing {
-    throw SimpleCommandExceptionType(sst).createWithContext(StringReader(context.input))
+fun error(text: Text, context: CommandContext<ServerCommandSource>): Nothing {
+    throw SimpleCommandExceptionType(text).createWithContext(StringReader(context.input))
 }
 
 fun getEnclosure(context: CommandContext<ServerCommandSource>): EnclosureArea {
@@ -210,6 +210,10 @@ fun register(dispatcher: CommandDispatcher<ServerCommandSource>, access: Command
         registerSelection()
         registerPermissions()
         registerMessages(access)
+
+        literal("experimental") {
+            registerMusic()
+        }
     }
     return dispatcher.register(node.parent)
 }
