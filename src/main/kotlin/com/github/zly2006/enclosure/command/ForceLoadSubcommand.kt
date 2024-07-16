@@ -9,9 +9,12 @@ import me.lucko.fabric.api.permissions.v0.Options
 import net.minecraft.server.command.ServerCommandSource
 import net.minecraft.server.world.ChunkLevelType
 import net.minecraft.server.world.ChunkLevels
+import net.minecraft.server.world.ChunkTicketType
 import net.minecraft.text.Text
+import net.minecraft.util.math.ChunkPos
 
 const val MAX_CHUNK_LEVEL = 33 // ChunkLevels.getLevelFromType(ChunkLevelType.FULL)
+val FORCED = ChunkTicketType.create<ChunkPos>("enclosure.forced", Comparator.comparingLong { it.toLong() })
 
 fun BuilderScope<*>.registerForceLoad() {
     fun forceLoad(source: ServerCommandSource, area: Enclosure, ticks: Int, level: Int) {

@@ -1,6 +1,7 @@
 package com.github.zly2006.enclosure
 
 import com.github.zly2006.enclosure.command.CONSOLE
+import com.github.zly2006.enclosure.command.FORCED
 import com.github.zly2006.enclosure.command.MAX_CHUNK_LEVEL
 import com.github.zly2006.enclosure.command.Session
 import com.github.zly2006.enclosure.gui.EnclosureScreenHandler
@@ -426,7 +427,7 @@ open class EnclosureArea : PersistentState, EnclosureView {
         ServerMain.getAllEnclosures(world).markDirty()
         if (ticket != null) {
             toBlockBox().streamChunkPos().forEach {
-                world.chunkManager.addTicket(ChunkTicketType.FORCED, it, MAX_CHUNK_LEVEL - ticket!!.level, it)
+                world.chunkManager.addTicket(FORCED, it, MAX_CHUNK_LEVEL - ticket!!.level, it)
             }
         }
         super.markDirty()
