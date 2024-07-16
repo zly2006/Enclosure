@@ -3,12 +3,14 @@ package com.github.zly2006.enclosure
 import com.github.zly2006.enclosure.ServerMain.enclosures
 import com.github.zly2006.enclosure.ServerMain.getAllEnclosures
 import com.github.zly2006.enclosure.access.ChunkAccess
-import com.github.zly2006.enclosure.utils.Serializable2Text
+import com.github.zly2006.enclosure.command.MAX_CHUNK_LEVEL
 import com.github.zly2006.enclosure.utils.Serializable2Text.SerializationSettings.NameHover
 import net.minecraft.nbt.NbtCompound
 import net.minecraft.nbt.NbtList
 import net.minecraft.nbt.NbtString
 import net.minecraft.registry.RegistryWrapper
+import net.minecraft.server.world.ChunkLevelType
+import net.minecraft.server.world.ChunkLevels
 import net.minecraft.server.world.ChunkTicketType
 import net.minecraft.server.world.ServerWorld
 import net.minecraft.text.Text
@@ -114,8 +116,8 @@ class EnclosureList(world: ServerWorld, private val isRoot: Boolean) : Persisten
             if (area.ticket != null) {
                 area.ticket!!.remainingTicks--
                 if (area.ticket!!.remainingTicks <= 0) {
-                    area.ticket = null
                     removeTicket(area, world)
+                    area.ticket = null
                     world.server.playerManager.broadcast(
                         Text.literal("Force loading for ").append(area.serialize(NameHover, null)).append(" expired."), false
                     )
@@ -130,13 +132,15 @@ class EnclosureList(world: ServerWorld, private val isRoot: Boolean) : Persisten
         area.toBlockBox().streamChunkPos().forEach {
             val chunk = world.getChunkAsView(it.x, it.z)
             if (chunk is ChunkAccess) {
-                val targetLevel = chunk.cache.mapNotNull { it.ticket }.minOfOrNull { it.level }
-                world.chunkManager.ticketManager.ticketsByPosition.remove(it.toLong())
-                if (targetLevel != null) {
-                    world.chunkManager.addTicket(ChunkTicketType.FORCED, it, targetLevel, it)
+                val targetLevel = chunk.cache
+                    .filter { it.ticket != null && it != area }
+                    .minOfOrNull { it.ticket!!.level }
+                    ?: ChunkLevels.getLevelFromType(ChunkLevelType.FULL) // chunk border level
+                if (targetLevel > area.ticket!!.level) {
+                    world.chunkManager.removeTicket(ChunkTicketType.FORCED, it, MAX_CHUNK_LEVEL - area.ticket!!.level, it)
                 }
             } else {
-                world.chunkManager.removeTicket(ChunkTicketType.FORCED, it, area.ticket!!.level, it)
+                world.chunkManager.removeTicket(ChunkTicketType.FORCED, it, MAX_CHUNK_LEVEL - area.ticket!!.level, it)
             }
         }
     }
@@ -146,7 +150,7 @@ class EnclosureList(world: ServerWorld, private val isRoot: Boolean) : Persisten
             if (area.ticket != null) {
                 if (area.ticket!!.remainingTicks > 0) {
                     area.toBlockBox().streamChunkPos().forEach {
-                        world.chunkManager.addTicket(ChunkTicketType.FORCED, it, area.ticket!!.level, it)
+                        world.chunkManager.addTicket(ChunkTicketType.FORCED, it, MAX_CHUNK_LEVEL - area.ticket!!.level, it)
                     }
                     // todo: message
                 }

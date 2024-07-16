@@ -11,6 +11,8 @@ import net.minecraft.server.world.ChunkLevelType
 import net.minecraft.server.world.ChunkLevels
 import net.minecraft.text.Text
 
+const val MAX_CHUNK_LEVEL = 33 // ChunkLevels.getLevelFromType(ChunkLevelType.FULL)
+
 fun BuilderScope<*>.registerForceLoad() {
     fun forceLoad(source: ServerCommandSource, area: Enclosure, ticks: Int, level: Int) {
         val ticket = EnclosureArea.ForceLoadTicket(
