@@ -88,7 +88,7 @@ fun BuilderScope<*>.registerForceLoad() {
     literal("force-load") {
         argument(landArgument()) {
             permission("enclosure.command.force_load")
-            fun registerCommands(level: Int) {
+            fun BuilderScope<*>.registerCommands(level: Int) {
                 executes {
                     val maxTime =
                         if (checkPermission(source, "enclosure.bypass")) Int.MAX_VALUE
@@ -120,7 +120,7 @@ fun BuilderScope<*>.registerForceLoad() {
                                 else {
                                     error(Text.literal("Time must be positive"), this)
                                 }
-                            } ?: error(Text.literal("Invalid time format, must be 12h34m56s788gt"), this)
+                            } ?: error(Text.literal("Invalid time format, must be 12h34m56s78gt"), this)
                         }
                     }
                 }
@@ -148,13 +148,13 @@ fun BuilderScope<*>.registerForceLoad() {
                     if (enclosure.ticket != null) {
                         has = true
                         val ticks = enclosure.ticket!!.remainingTicks
-                        val time = getTimeString(ticks)
                         source.sendFeedback(
                             {
                                 Text.literal("Force loading ")
                                     .append(enclosure.serialize(NameHover, null))
                                     .append(" with level ${enclosure.ticket!!.level}")
-                                    .append(" for $time ")
+                                    .append(" for ")
+                                    .append(getTimeString(ticks))
                                     .append(" by ")
                                     .append(
                                         source.server.playerManager.getPlayer(enclosure.ticket!!.executor.id)?.styledDisplayName
@@ -173,14 +173,12 @@ fun BuilderScope<*>.registerForceLoad() {
     }
 }
 
-private fun getTimeString(ticks: Int) {
-    buildString {
-        val seconds = ticks / 20
-        val minutes = seconds / 60
-        val hours = minutes / 60
-        if (hours != 0) append(hours).append("h")
-        if (minutes % 60 != 0) append(minutes % 60).append("m")
-        if (seconds % 60 != 0) append(seconds % 60).append("s")
-        if (ticks % 20 != 0) append(ticks % 20).append("gt")
-    }
+private fun getTimeString(ticks: Int) = buildString {
+    val seconds = ticks / 20
+    val minutes = seconds / 60
+    val hours = minutes / 60
+    if (hours != 0) append(hours).append("h")
+    if (minutes % 60 != 0) append(minutes % 60).append("m")
+    if (seconds % 60 != 0) append(seconds % 60).append("s")
+    if (ticks % 20 != 0) append(ticks % 20).append("gt")
 }
