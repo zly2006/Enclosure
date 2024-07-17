@@ -23,26 +23,32 @@ fun BuilderScope<*>.registerForceLoad() {
     fun forceLoad(source: ServerCommandSource, area: Enclosure, ticks: Int, level: Int) {
         val maxTime = Options.get(source, "enclosure.load.max_time", 21600) { it.toInt() }
         val ticket = EnclosureArea.ForceLoadTicket(
-            source.player?.gameProfile ?: GameProfile(CONSOLE, "Server"),
-            if (checkPermission(source, "enclosure.bypass")) Int.MAX_VALUE else ticks,
-            level
+            source.player?.gameProfile ?: GameProfile(CONSOLE, "Server"), ticks, level
         )
-        val totalTicksRemaining = ServerMain.getAllEnclosures()
-            .filter { it.ticket?.executor?.id == source.uuid }
-            .sumOf { it.ticket!!.remainingTicks }
-        if (totalTicksRemaining > maxTime * 20) {
-            source.sendError(Text.literal("You have reached the maximum force loading time: " + getTimeString(maxTime)))
-            return
-        }
-        if (totalTicksRemaining + ticks > maxTime * 20) {
-            ticket.remainingTicks = maxTime * 20 - totalTicksRemaining
-            source.sendError(
-                Text.literal(
-                    "You can only force load for ${getTimeString(maxTime * 20)}. " +
-                            "The remaining time is set to ${getTimeString(ticket.remainingTicks)}"
+        if (!checkPermission(source, "enclosure.bypass")) {
+            val totalTicksRemaining = ServerMain.getAllEnclosures()
+                .filter { it.ticket?.executor?.id == source.uuid }
+                .sumOf { it.ticket!!.remainingTicks }
+            if (totalTicksRemaining > maxTime * 20) {
+                source.sendError(
+                    Text.literal(
+                        "You have reached the maximum force loading time: " + getTimeString(
+                            maxTime
+                        )
+                    )
                 )
-            )
-            return
+                return
+            }
+            if (totalTicksRemaining + ticks > maxTime * 20) {
+                ticket.remainingTicks = maxTime * 20 - totalTicksRemaining
+                source.sendError(
+                    Text.literal(
+                        "You can only force load for ${getTimeString(maxTime * 20)}. " +
+                                "The remaining time is set to ${getTimeString(ticket.remainingTicks)}"
+                    )
+                )
+                return
+            }
         }
         area.ticket = ticket
         area.markDirty()
@@ -57,6 +63,12 @@ fun BuilderScope<*>.registerForceLoad() {
 
     fun cancelForceLoad(source: ServerCommandSource, area: Enclosure) {
         if (area.ticket != null) {
+            if (!checkPermission(source, "enclosure.bypass")) {
+                if (source.uuid != area.ticket!!.executor.id) {
+                    source.sendError(Text.literal("You can only cancel your own force loading tickets"))
+                    return
+                }
+            }
             area.ticket!!.remainingTicks = 0
             area.markDirty()
             source.sendFeedback(
@@ -78,7 +90,9 @@ fun BuilderScope<*>.registerForceLoad() {
             permission("enclosure.command.force_load")
             fun registerCommands(level: Int) {
                 executes {
-                    val maxTime = Options.get(source, "enclosure.load.max_time", 21600) { it.toInt() }
+                    val maxTime =
+                        if (checkPermission(source, "enclosure.bypass")) Int.MAX_VALUE
+                        else Options.get(source, "enclosure.load.max_time", 21600) { it.toInt() }
                     val land = getEnclosure(this)
                     if (land !is Enclosure) {
                         error(Text.literal("Only enclosure can be force loaded"), this)
