@@ -6,7 +6,6 @@ import com.github.zly2006.enclosure.LOGGER
 import com.github.zly2006.enclosure.ServerMain
 import com.github.zly2006.enclosure.utils.Serializable2Text.SerializationSettings
 import com.github.zly2006.enclosure.utils.TrT
-import com.github.zly2006.enclosure.utils.plus
 import com.mojang.brigadier.arguments.StringArgumentType
 import com.mojang.brigadier.context.CommandContext
 import net.minecraft.server.command.ServerCommandSource
@@ -118,7 +117,7 @@ private fun createEnclosure(context: CommandContext<ServerCommandSource>) {
     val list = ServerMain.getAllEnclosures(session.world)
     val intersectArea = sessionOf(context.source).intersect(list)
     if (intersectArea != null) {
-        error(TrT.of("enclosure.message.intersected") + intersectArea.serialize(SerializationSettings.Name, context.source.player), context)
+        error(TrT.of("enclosure.message.intersected", intersectArea.serialize(SerializationSettings.Name, context.source.player)), context)
     }
     val enclosure = Enclosure(session, name)
     val limits = getLimits(context)

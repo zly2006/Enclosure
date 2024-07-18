@@ -115,6 +115,8 @@
   "enclosure.message.selection_updated": "选区已更新",
   "enclosure.message.session_invalid": "只有这么几个点，也没办法确定一个领地诶QaQ...",
   "enclosure.message.set_message": "设定 %s 信息",
+  "enclosure.message.enter": "玩家进入",
+  "enclosure.message.leave": "玩家离开",
   "enclosure.message.set_permission": "设置 %1$s 在领地 %4$s 中的权限 %2$s 为 %3$s",
   "enclosure.message.set_pos_1": "对角点1设置 %s",
   "enclosure.message.set_pos_2": "对角点2设置于 %s",

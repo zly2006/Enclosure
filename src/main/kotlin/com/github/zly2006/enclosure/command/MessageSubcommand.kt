@@ -93,7 +93,7 @@ fun BuilderScope<*>.registerMessages(access: CommandRegistryAccess) {
                         it.replace("&", "§").replace("§§", "&")
                     }
                 }
-                source.sendMessage(TrT.of("enclosure.message.set_message", l))
+                source.sendMessage(TrT.of("enclosure.message.set_message", TrT.of("enclosure.message.$l")))
             }
         }
         literal("rich") {
