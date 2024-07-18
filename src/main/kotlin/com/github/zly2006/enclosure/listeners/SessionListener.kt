@@ -44,7 +44,7 @@ class SessionListener private constructor() :
                 session.pos1 = pos
                 session.enable()
                 session.trySync()
-                player.sendMessage(TrT.of("enclosure.message.set_pos_1").append(pos.toShortString()))
+                player.sendMessage(TrT.of("enclosure.message.set_pos_1", pos.toShortString()))
             }
             return ActionResult.SUCCESS
         }
@@ -71,7 +71,7 @@ class SessionListener private constructor() :
                     session.pos2 = hitResult.blockPos
                     session.enable()
                     session.trySync()
-                    player.sendMessage(TrT.of("enclosure.message.set_pos_2").append(hitResult.blockPos.toShortString()))
+                    player.sendMessage(TrT.of("enclosure.message.set_pos_2", hitResult.blockPos.toShortString()))
                 }
                 return ActionResult.FAIL
             }

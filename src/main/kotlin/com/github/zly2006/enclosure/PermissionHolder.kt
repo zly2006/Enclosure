@@ -56,7 +56,9 @@ interface PermissionHolder : Serializable2Text {
     fun hasPubPerm(perm: Permission): Boolean {
         if (!perm.target.fitEnclosure()) {
             throw PermissionTargetException(
-                TrT.of("enclosure.message.permission_target_error")+(Text.literal(perm.target.name))
+                TrT.of("enclosure.message.permission_target_error",
+                    Text.literal(perm.target.name)
+                )
             )
         }
         return hasPerm(CONSOLE, perm)
@@ -69,11 +71,15 @@ interface PermissionHolder : Serializable2Text {
         }
         if (uuid == CONSOLE && !perm.target.fitEnclosure()) {
             throw PermissionTargetException(
-                TrT.of("enclosure.message.permission_target_error").append(perm.target.name)
+                TrT.of("enclosure.message.permission_target_error",
+                    perm.target.name
+                )
             )
         } else if (uuid != CONSOLE && !perm.target.fitPlayer()) {
             throw PermissionTargetException(
-                TrT.of("enclosure.message.permission_target_error").append(perm.target.name)
+                TrT.of("enclosure.message.permission_target_error",
+                    perm.target.name
+                )
             )
         }
         perm.setValue(permissionsMap[uuid]!!, value)
@@ -89,9 +95,9 @@ interface PermissionHolder : Serializable2Text {
         val text = Text.literal("")
         map.forEach { (key: String?, value: Boolean) ->
             if (value) {
-                text.append(Text.literal(key).setStyle(Style.EMPTY.withColor(Formatting.GREEN)))
+                text.append(Text.literal(key).green())
             } else {
-                text.append(Text.literal(key).setStyle(Style.EMPTY.withColor(Formatting.RED)))
+                text.append(Text.literal(key).red())
             }
             text.append(" ")
         }

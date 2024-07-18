@@ -1,6 +1,7 @@
 package com.github.zly2006.enclosure.config;
 
 import com.github.zly2006.enclosure.*;
+import com.github.zly2006.enclosure.utils.TrT;
 import com.mojang.authlib.GameProfile;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtDouble;
@@ -8,7 +9,6 @@ import net.minecraft.nbt.NbtList;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.MutableText;
-import net.minecraft.text.Text;
 import net.minecraft.world.World;
 import org.yaml.snakeyaml.Yaml;
 
@@ -189,18 +189,18 @@ public class Converter {
                     MutableText status = null;
                     for (EnclosureArea area : enclosureList.getAreas()) {
                         if (enclosure.equals(area)) {
-                            status = Text.literal(ServerMain.INSTANCE.getTranslation().get("enclosure.message.existed").getAsString());
+                            status = TrT.of("enclosure.message.existed");
                         } else if (enclosure.intersect(area)) {
-                            status = Text.literal(ServerMain.INSTANCE.getTranslation().get("enclosure.message.intersected").getAsString()).append(area.getFullName());
+                            status = TrT.of("enclosure.message.intersected", area.getFullName());
                         } else if (enclosure.getName().equals(area.getName())) {
-                            status = Text.literal(ServerMain.INSTANCE.getTranslation().get("enclosure.message.name_in_use").getAsString());
+                            status = TrT.of("enclosure.message.name_in_use");
                         }
                     }
                     if (status == null) {
                         enclosureList.addArea(enclosure);
                     } else {
-                        LOGGER.error("There was a error land which named \"" + enclosure.getFullName() + "\" while converting.");
-                        LOGGER.error("Error type:" + status);
+                        LOGGER.error("There was a error land which named \"{}\" while converting.", enclosure.getFullName());
+                        LOGGER.error("Error type: {}", status);
                     }
                 }
             });

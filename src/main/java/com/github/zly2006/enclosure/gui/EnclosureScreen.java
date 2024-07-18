@@ -2,12 +2,14 @@ package com.github.zly2006.enclosure.gui;
 
 import com.github.zly2006.enclosure.EnclosureView;
 import com.github.zly2006.enclosure.network.config.UUIDCacheS2CPacket;
+import com.github.zly2006.enclosure.utils.UtilsKt;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.Element;
 import net.minecraft.client.gui.screen.ingame.HandledScreen;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.entity.player.PlayerInventory;
+import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import org.jetbrains.annotations.Nullable;
@@ -54,7 +56,7 @@ public class EnclosureScreen extends HandledScreen<EnclosureScreenHandler> imple
             .size(100, 20)
             .position(5, 35)
             .build());
-        playerWidget = addDrawableChild(ButtonWidget.builder(Text.translatable("enclosure.widget.player"), button -> {
+        playerWidget = addDrawableChild(ButtonWidget.builder(Text.translatable("enclosure.widget.showplayer"), button -> {
                 assert client != null;
                 button.active = false;
                 unlistedWidget.active = true;
@@ -98,37 +100,16 @@ public class EnclosureScreen extends HandledScreen<EnclosureScreenHandler> imple
                     }, 5, 5, width - 10));
         }
         textWidgets.add(new ClickableTextWidget(client, this, Text.empty()
-            .append(Text.literal(area.getFullName()).styled(style -> style.withColor(Formatting.GOLD)))
-            .append(" ")
-            .append(Text.translatable("enclosure.info.created_by"))
-            .append(" ")
-            .append(owner == null ?
-                Text.translatable("enclosure.message.unknown_user").styled(style -> style.withColor(Formatting.RED)) :
-                Text.literal(owner).styled(style -> style.withColor(Formatting.GOLD)))
-            .append(", ")
-            .append(Text.translatable("enclosure.info.created_on"))
-            .append(Text.literal(new SimpleDateFormat().format(area.getCreatedOn())).styled(style -> style.withColor(Formatting.GOLD))),
+            .append(Text.translatable("enclosure.info.created",
+                Text.literal(area.getFullName()).styled(style -> style.withColor(Formatting.GOLD)),
+                (owner == null ?
+                Text.translatable("enclosure.message.unknown_user").styled(style -> style.withColor(Formatting.RED)) : Text.literal(owner).styled(style -> style.withColor(Formatting.GOLD))),
+                Text.literal(new SimpleDateFormat().format(area.getCreatedOn())).styled(style -> style.withColor(Formatting.GOLD))
+            )),
             null, null,
             5, 5, width - 10));
-        textWidgets.add(new ClickableTextWidget(client, this, Text.translatable("enclosure.message.select.from")
-            .append(Text.literal("[").styled(style -> style.withColor(Formatting.DARK_GREEN)))
-            .append(Text.literal(String.valueOf(area.getMinX())).styled(style -> style.withColor(Formatting.GREEN)))
-            .append(Text.literal(", ").styled(style -> style.withColor(Formatting.DARK_GREEN)))
-            .append(Text.literal(String.valueOf(area.getMinY())).styled(style -> style.withColor(Formatting.GREEN)))
-            .append(Text.literal(", ").styled(style -> style.withColor(Formatting.DARK_GREEN)))
-            .append(Text.literal(String.valueOf(area.getMinZ())).styled(style -> style.withColor(Formatting.GREEN)))
-            .append(Text.literal("]").styled(style -> style.withColor(Formatting.DARK_GREEN)))
-            .append(Text.translatable("enclosure.message.select.to"))
-            .append(Text.literal("[").styled(style -> style.withColor(Formatting.DARK_GREEN)))
-            .append(Text.literal(String.valueOf(area.getMaxX())).styled(style -> style.withColor(Formatting.GREEN)))
-            .append(Text.literal(", ").styled(style -> style.withColor(Formatting.DARK_GREEN)))
-            .append(Text.literal(String.valueOf(area.getMaxY())).styled(style -> style.withColor(Formatting.GREEN)))
-            .append(Text.literal(", ").styled(style -> style.withColor(Formatting.DARK_GREEN)))
-            .append(Text.literal(String.valueOf(area.getMaxZ())).styled(style -> style.withColor(Formatting.GREEN)))
-            .append(Text.literal("]").styled(style -> style.withColor(Formatting.DARK_GREEN)))
-            .append(Text.translatable("enclosure.message.select.world"))
-            .append(Text.literal(handler.worldId.toString()).styled(style -> style.withColor(Formatting.GOLD))),
-            Text.translatable("enclosure.widget.selection_render.hover"),
+        MutableText selectionText = UtilsKt.formatSelection(handler.worldId, area.getMinX(), area.getMinY(), area.getMinZ(), area.getMaxX(), area.getMaxY(), area.getMaxZ());
+        textWidgets.add(new ClickableTextWidget(client, this, selectionText, Text.translatable("enclosure.widget.selection_render.hover"),
             button -> {
                 assert client.player != null;
                 client.player.networkHandler.sendChatCommand("enclosure select land " + handler.fullName);

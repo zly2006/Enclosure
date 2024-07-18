@@ -4,6 +4,7 @@ import com.github.zly2006.enclosure.LOGGER
 import com.github.zly2006.enclosure.MOD_VERSION
 import com.github.zly2006.enclosure.minecraftServer
 import com.github.zly2006.enclosure.network.NetworkChannels
+import com.github.zly2006.enclosure.utils.TrT
 import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry
 import net.fabricmc.fabric.api.networking.v1.ServerConfigurationNetworking
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents
@@ -71,7 +72,7 @@ class EnclosureInstalledC2SPacket(var version: Version?) : CustomPayload {
                     context.responseSender().sendPacket(UUIDCacheS2CPacket(minecraftServer.userCache!!))
                 } else if (version != null) {
                     incompatibleVersions[uuid] = {
-                        Text.translatable(
+                        TrT.of(
                             "enclosure.message.outdated",
                             MOD_VERSION.friendlyString,
                             version.friendlyString

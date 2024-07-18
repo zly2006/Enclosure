@@ -96,24 +96,23 @@ fun formatSelection(
     worldId: Identifier,
     x1: Int, y1: Int, z1: Int,
     x2: Int, y2: Int, z2: Int
-) = TrT.of("enclosure.message.select.from") +
-        literalText("[").darkGreen() +
-        literalText(x1).green() +
-        literalText(", ").darkGreen() +
-        literalText(y1).green() +
-        literalText(", ").darkGreen() +
-        literalText(z1).green() +
-        literalText("]").darkGreen() +
-        TrT.of("enclosure.message.select.to") +
-        literalText("[").darkGreen() +
-        literalText(x2).green() +
-        literalText(", ").darkGreen() +
-        literalText(y2).green() +
-        literalText(", ").darkGreen() +
-        literalText(z2).green() +
-        literalText("]").darkGreen() +
-        TrT.of("enclosure.message.select.world") +
+): MutableText {
+    val fromStr = TrT.of("enclosure.message.select.coordinate",
+        literalText(x1).green(),
+        literalText(y1).green(),
+        literalText(z1).green()
+    )
+    val toStr = TrT.of("enclosure.message.select.coordinate",
+        literalText(x2).green(),
+        literalText(y2).green(),
+        literalText(z2).green()
+    )
+    return TrT.of("enclosure.message.selection",
+        fromStr,
+        toStr,
         literalText(worldId).green()
+    )
+}
 
 fun checkPermission(player: ServerPlayerEntity, perm: String) = checkPermission(player.commandSource, perm)
 

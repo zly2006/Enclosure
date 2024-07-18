@@ -75,19 +75,13 @@ class Session(
         if (r > 0 && !lessThan) {
             return null
         }
-        return if (lessThan) {
-            TrT.of("enclosure.limit." + Utils.camelCaseToSnakeCase(name))
-                .append(TrT.of("enclosure.message.limit_exceeded.0"))
-                .append(limit.toString())
-                .append(TrT.of("enclosure.message.limit_exceeded.1"))
-                .append(Text.literal(value.toString()))
-        } else {
-            TrT.of("enclosure.limit." + Utils.camelCaseToSnakeCase(name))
-                .append(TrT.of("enclosure.message.limit_exceeded.2"))
-                .append(limit.toString())
-                .append(TrT.of("enclosure.message.limit_exceeded.1"))
-                .append(Text.literal(value.toString()))
-        }
+        return TrT.of(
+            if (lessThan) "enclosure.message.limit_exceeded.less"
+            else "enclosure.message.limit_exceeded.greater",
+            TrT.of("enclosure.limit." + Utils.camelCaseToSnakeCase(name)),
+            limit,
+            value
+        )
     }
 
     fun isValid(limits: LandLimits): Text? {

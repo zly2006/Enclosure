@@ -4,12 +4,12 @@ import com.github.zly2006.enclosure.command.Session
 import com.github.zly2006.enclosure.utils.Serializable2Text.SerializationSettings
 import com.github.zly2006.enclosure.utils.TrT
 import com.github.zly2006.enclosure.utils.clickRun
-import com.github.zly2006.enclosure.utils.hoverText
 import net.minecraft.nbt.NbtCompound
 import net.minecraft.registry.RegistryWrapper.WrapperLookup
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.server.world.ServerWorld
 import net.minecraft.text.MutableText
+import net.minecraft.text.Text
 import net.minecraft.util.Formatting
 import net.minecraft.util.math.BlockPos
 
@@ -59,15 +59,13 @@ class Enclosure : EnclosureArea {
             val text = super.serialize(settings, player)
             if (subEnclosures.areas.isNotEmpty()) {
                 text.append("\n")
-                text.append(TrT.of("enclosure.message.sub_lands"))
-                for (area in subEnclosures.areas) {
-                    text.append(area.serialize(SerializationSettings.Name, player).styled {
+                val subLandsText =  subEnclosures.areas.fold(Text.empty()) { acc, area ->
+                    acc.append(area.serialize(SerializationSettings.NameHover, player).styled {
                         it.withColor(Formatting.GOLD)
-                            .hoverText(area.serialize(SerializationSettings.Hover, player))
                             .clickRun("/enclosure info ${area.fullName}")
-                    })
-                    text.append(" ")
+                    }).append(" ")
                 }
+                text.append(TrT.of("enclosure.message.sub_lands", subLandsText))
             }
             return text
         } else {

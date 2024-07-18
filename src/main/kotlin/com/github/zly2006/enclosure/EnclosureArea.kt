@@ -18,11 +18,9 @@ import net.minecraft.nbt.NbtList
 import net.minecraft.registry.RegistryWrapper
 import net.minecraft.server.command.ServerCommandSource
 import net.minecraft.server.network.ServerPlayerEntity
-import net.minecraft.server.world.ChunkTicketType
 import net.minecraft.server.world.ServerWorld
 import net.minecraft.text.ClickEvent
 import net.minecraft.text.MutableText
-import net.minecraft.text.Style
 import net.minecraft.text.Text
 import net.minecraft.util.Formatting
 import net.minecraft.util.Identifier
@@ -403,7 +401,7 @@ open class EnclosureArea : PersistentState, EnclosureView {
 
             SerializationSettings.BarredFull -> {
                 val bar = Text.literal("------------------------------")
-                    .styled { style: Style -> style.withColor(Formatting.YELLOW).withBold(true) }
+                    .styled { it.withColor(Formatting.YELLOW).withBold(true) }
                 Text.empty()
                     .append(bar)
                     .append("\n")

@@ -23,7 +23,7 @@ fun BuilderScope<*>.registerSelection() {
                         session.world = source.world
                         session.action(pos)
                         session.enable()
-                        source.sendMessage(TrT.of("enclosure.message.set_$name").append(pos.toShortString()))
+                        source.sendMessage(TrT.of("enclosure.message.set_$name", pos.toShortString()))
                         session.trySync()
                     }
                 }
@@ -49,21 +49,22 @@ fun BuilderScope<*>.registerSelection() {
                 session.trySync()
                 val intersectArea = session.intersect(ServerMain.getAllEnclosures(session.world))
                 source.sendMessage(
-                    TrT.of("enclosure.message.select.from")
-                        .append(session.pos1.toShortString())
-                        .append(TrT.of("enclosure.message.select.to"))
-                        .append(session.pos2.toShortString())
-                        .append(TrT.of("enclosure.message.select.world"))
-                        .append(session.world.registryKey.value.toString())
+                    TrT.of("enclosure.message.selection",
+                        session.pos1.toShortString(),
+                        session.size().toString(),
+                        session.world.registryKey.value.toString()
+                    )
                 )
                 source.sendMessage(
-                    TrT.of("enclosure.message.total_size")
-                        .append(session.size().toString())
+                    TrT.of("enclosure.message.total_size",
+                        session.size().toString()
+                    )
                 )
                 if (intersectArea != null) {
                     source.sendMessage(
-                        TrT.of("enclosure.message.intersected")
-                            .append(intersectArea.serialize(SerializationSettings.Name, source.player))
+                        TrT.of("enclosure.message.intersected",
+                            intersectArea.serialize(SerializationSettings.Name, source.player)
+                        )
                     )
                 }
             }
@@ -176,8 +177,9 @@ fun BuilderScope<*>.registerSelection() {
                     area.maxY = maxY
                     area.maxZ = maxZ
                     source.sendMessage(
-                        TrT.of("enclosure.message.resized")
-                            .append(area.serialize(SerializationSettings.Name, source.player))
+                        TrT.of("enclosure.message.resized",
+                            area.serialize(SerializationSettings.Name, source.player)
+                        )
                     )
                 }
             }
