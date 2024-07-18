@@ -57,15 +57,13 @@ class Enclosure : EnclosureArea {
     override fun serialize(settings: SerializationSettings, player: ServerPlayerEntity?): MutableText {
         if (settings == SerializationSettings.Full) {
             val text = super.serialize(settings, player)
-            val subLandsText: MutableText = Text.empty()
             if (subEnclosures.areas.isNotEmpty()) {
                 text.append("\n")
-                for (area in subEnclosures.areas) {
-                    subLandsText.append(area.serialize(SerializationSettings.NameHover, player).styled {
+                val subLandsText =  subEnclosures.areas.fold(Text.empty()) { acc, area ->
+                    acc.append(area.serialize(SerializationSettings.NameHover, player).styled {
                         it.withColor(Formatting.GOLD)
                             .clickRun("/enclosure info ${area.fullName}")
-                    })
-                    subLandsText.append(" ")
+                    }).append(" ")
                 }
                 text.append(TrT.of("enclosure.message.sub_lands", subLandsText))
             }
