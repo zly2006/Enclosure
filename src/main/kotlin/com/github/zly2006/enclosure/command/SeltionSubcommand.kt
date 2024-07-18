@@ -23,7 +23,7 @@ fun BuilderScope<*>.registerSelection() {
                         session.world = source.world
                         session.action(pos)
                         session.enable()
-                        source.sendMessage(TrT.of("enclosure.message.set_$name").append(pos.toShortString()))
+                        source.sendMessage(TrT.of("enclosure.message.set_$name", pos.toShortString()))
                         session.trySync()
                     }
                 }
