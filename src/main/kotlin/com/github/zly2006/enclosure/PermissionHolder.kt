@@ -95,9 +95,9 @@ interface PermissionHolder : Serializable2Text {
         val text = Text.literal("")
         map.forEach { (key: String?, value: Boolean) ->
             if (value) {
-                text.append(Text.literal(key).setStyle(Style.EMPTY.withColor(Formatting.GREEN)))
+                text.append(Text.literal(key).green())
             } else {
-                text.append(Text.literal(key).setStyle(Style.EMPTY.withColor(Formatting.RED)))
+                text.append(Text.literal(key).red())
             }
             text.append(" ")
         }

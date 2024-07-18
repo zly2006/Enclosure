@@ -56,9 +56,7 @@ import net.minecraft.server.command.CommandManager
 import net.minecraft.server.network.ServerPlayNetworkHandler
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.server.world.ServerWorld
-import net.minecraft.text.Style
 import net.minecraft.text.Text
-import net.minecraft.text.TextColor
 import net.minecraft.util.*
 import net.minecraft.util.hit.BlockHitResult
 import net.minecraft.util.hit.HitResult
@@ -108,23 +106,7 @@ object ServerMain: ModInitializer {
         val item: Item,
         val entity: Entity?
     )
-    val HEADER: Text = Text.empty()
-        .append(Text.literal("[").styled { style: Style ->
-            style.withColor(
-                TextColor.fromRgb(0x00FF00)
-            )
-        })
-        .append(Text.literal("Enclosure").styled { style: Style ->
-            style.withColor(
-                TextColor.fromRgb(0x00FFFF)
-            )
-        })
-        .append(Text.literal("]").styled { style: Style ->
-            style.withColor(
-                TextColor.fromRgb(0x00FF00)
-            )
-        })
-        .append(Text.literal(" ").formatted(Formatting.RESET))
+
     internal val enclosures: MutableMap<RegistryKey<World>, EnclosureList> = HashMap()
     var operationItem: Item? = null
     var playerSessions: MutableMap<UUID, Session> = HashMap()

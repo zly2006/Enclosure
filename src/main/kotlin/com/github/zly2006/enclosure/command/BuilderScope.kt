@@ -7,6 +7,7 @@ import com.github.zly2006.enclosure.exceptions.PermissionTargetException
 import com.github.zly2006.enclosure.minecraftServer
 import com.github.zly2006.enclosure.utils.TrT
 import com.github.zly2006.enclosure.utils.checkPermission
+import com.github.zly2006.enclosure.utils.clickRun
 import com.github.zly2006.enclosure.utils.hoverText
 import com.mojang.brigadier.Command
 import com.mojang.brigadier.arguments.ArgumentType
@@ -16,7 +17,9 @@ import com.mojang.brigadier.context.CommandContext
 import com.mojang.brigadier.exceptions.CommandSyntaxException
 import net.minecraft.server.command.CommandManager
 import net.minecraft.server.command.ServerCommandSource
-import net.minecraft.text.*
+import net.minecraft.text.MutableText
+import net.minecraft.text.Style
+import net.minecraft.text.Text
 import net.minecraft.util.Formatting
 import net.minecraft.util.math.BlockPos
 
@@ -84,7 +87,7 @@ class BuilderScope<T: argT>(var parent: T) {
                         if (firstPage) Style.EMPTY.withColor(Formatting.GRAY)
                         else Style.EMPTY.withColor(Formatting.DARK_GREEN)
                             .hoverText(Text.of("Page ${page - 1}"))
-                            .withClickEvent(ClickEvent(ClickEvent.Action.RUN_COMMAND, "$command ${page - 1}"))
+                            .clickRun("$command ${page - 1}")
                     )
                 )
                 ret.append("    ")
@@ -92,8 +95,8 @@ class BuilderScope<T: argT>(var parent: T) {
                     TrT.of("enclosure.menu.next").setStyle(
                         if (lastPage) Style.EMPTY.withColor(Formatting.GRAY)
                         else Style.EMPTY.withColor(Formatting.DARK_GREEN)
-                            .withHoverEvent(HoverEvent(HoverEvent.Action.SHOW_TEXT, Text.of("Page ${page + 1}")))
-                            .withClickEvent(ClickEvent(ClickEvent.Action.RUN_COMMAND, "$command ${page + 1}"))
+                            .hoverText(Text.of("Page ${page + 1}"))
+                            .clickRun("$command ${page + 1}")
                     )
                 )
             }

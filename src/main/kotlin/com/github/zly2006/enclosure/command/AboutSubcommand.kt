@@ -20,11 +20,11 @@ fun BuilderScope<*>.registerAbout() {
             })
             source.sendMessage(TrT.of("enclosure.about.team_page"))
             source.sendMessage(
-                TrT.of("enclosure.about.version.server").append(MOD_VERSION.friendlyString)
+                TrT.of("enclosure.about.version.server", MOD_VERSION.friendlyString)
             )
             if (player != null && EnclosureInstalledC2SPacket.isInstalled(player)) {
                 val version = EnclosureInstalledC2SPacket.clientVersion(player)
-                source.sendMessage(TrT.of("enclosure.about.version.client").append(version!!.friendlyString))
+                source.sendMessage(TrT.of("enclosure.about.version.client", version!!.friendlyString))
             }
             source.sendMessage(TrT.of("enclosure.about.copyright"))
         }
