@@ -2,6 +2,7 @@ package com.github.zly2006.enclosure.gui;
 
 import com.github.zly2006.enclosure.EnclosureView;
 import com.github.zly2006.enclosure.network.config.UUIDCacheS2CPacket;
+import com.github.zly2006.enclosure.utils.UtilsKt;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.Element;
@@ -107,20 +108,8 @@ public class EnclosureScreen extends HandledScreen<EnclosureScreenHandler> imple
             )),
             null, null,
             5, 5, width - 10));
-        MutableText fromCoord = Text.translatable("enclosure.message.select.coordinate",
-            Text.literal(String.valueOf(area.getMinX())).styled(style -> style.withColor(Formatting.GREEN)),
-            Text.literal(String.valueOf(area.getMinY())).styled(style -> style.withColor(Formatting.GREEN)),
-            Text.literal(String.valueOf(area.getMinZ())).styled(style -> style.withColor(Formatting.GREEN))
-        );
-        MutableText toCoord = Text.translatable("enclosure.message.select.coordinate",
-            Text.literal(String.valueOf(area.getMaxX())).styled(style -> style.withColor(Formatting.GREEN)),
-            Text.literal(String.valueOf(area.getMaxY())).styled(style -> style.withColor(Formatting.GREEN)),
-            Text.literal(String.valueOf(area.getMaxZ())).styled(style -> style.withColor(Formatting.GREEN))
-        );
-        textWidgets.add(new ClickableTextWidget(client, this, Text.translatable("enclosure.widget.selection",
-                fromCoord,
-                toCoord
-            ), Text.translatable("enclosure.widget.selection_render.hover"),
+        MutableText selectionText = UtilsKt.formatSelection(handler.worldId, area.getMinX(), area.getMinY(), area.getMinZ(), area.getMaxX(), area.getMaxY(), area.getMaxZ());
+        textWidgets.add(new ClickableTextWidget(client, this, selectionText, Text.translatable("enclosure.widget.selection_render.hover"),
             button -> {
                 assert client.player != null;
                 client.player.networkHandler.sendChatCommand("enclosure select land " + handler.fullName);
