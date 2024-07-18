@@ -168,8 +168,9 @@ fun BuilderScope<*>.registerPermissions() {
                         val count = ServerMain.getAllEnclosuresForSuggestion(uuid).size.toLong()
                         if (count > limitsOfReceiver.maxLands) {
                             error(
-                                TrT.of("enclosure.message.rcle.receiver")
-                                    .append(limitsOfReceiver.maxLands.toString()), this
+                                TrT.of("enclosure.message.rcle.receiver",
+                                    limitsOfReceiver.maxLands.toString()
+                                ), this
                             )
                         }
                     }
@@ -177,16 +178,16 @@ fun BuilderScope<*>.registerPermissions() {
                     area.owner = uuid
                     area.setPermission(source, uuid, Permission.ALL, true)
                     source.sendFeedback({
-                        TrT.of("enclosure.message.given.1")
-                            .append(area.serialize(SerializationSettings.Name, source.player))
-                            .append(TrT.of("enclosure.message.given.2"))
-                            .append(Utils.getDisplayNameByUUID(uuid))
+                        TrT.of("enclosure.message.given",
+                            area.serialize(SerializationSettings.Name, source.player),
+                            Utils.getDisplayNameByUUID(uuid)
+                        )
                     }, true)
                     target?.sendMessage(
-                        TrT.of("enclosure.message.received.1")
-                            .append(area.serialize(SerializationSettings.Name, source.player))
-                            .append(TrT.of("enclosure.message.received.2"))
-                            .append(source.displayName)
+                        TrT.of("enclosure.message.received",
+                            area.serialize(SerializationSettings.Name, source.player),
+                            source.displayName
+                        )
                     )
                 }
             }

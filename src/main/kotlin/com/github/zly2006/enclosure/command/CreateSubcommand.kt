@@ -125,8 +125,9 @@ private fun createEnclosure(context: CommandContext<ServerCommandSource>) {
             val count = ServerMain.getAllEnclosuresForSuggestion(context.source.uuid).size.toLong()
             if (count >= limits.maxLands) {
                 error(
-                    TrT.of("enclosure.message.rcle.self")
-                        .append(Text.literal(limits.maxLands.toString())), context
+                    TrT.of("enclosure.message.rcle.self",
+                        Text.literal(limits.maxLands.toString())
+                    ), context
                 )
             }
         }

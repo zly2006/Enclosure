@@ -53,9 +53,10 @@ class Permission(
     }
 
     fun getNoPermissionMsg(player: PlayerEntity?): MutableText {
-        return TrT.of("enclosure.message.no_permission").formatted(Formatting.GOLD)
-            .append(serialize(SerializationSettings.Summarize, (player as? ServerPlayerEntity)!!)
-                .styled { style: Style -> style.withColor(Formatting.RED) })
+        return TrT.of("enclosure.message.no_permission",
+            serialize(SerializationSettings.Summarize, (player as? ServerPlayerEntity)!!)
+                .styled { style: Style -> style.withColor(Formatting.RED) }
+        )
     }
 
     override fun serialize(settings: SerializationSettings, player: ServerPlayerEntity?): MutableText {
@@ -64,11 +65,11 @@ class Permission(
             SerializationSettings.Full -> Text.literal(name)
                 .formatted(Formatting.YELLOW)
                 .hoverText(
-                    TrT.of("enclosure.widget.default_value_is")
-                        .append(" ").append(defaultValue.toString())
+                    TrT.of("enclosure.widget.default_value_is",
+                        defaultValue.toString(),
+                        description.copy().formatted(Formatting.GOLD)
+                    )
                 )
-                .append(" - ")
-                .append(description.copy().formatted(Formatting.GOLD))
 
             SerializationSettings.Summarize -> serialize(
                 SerializationSettings.Name,

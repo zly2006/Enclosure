@@ -98,6 +98,7 @@ public class EnclosureScreen extends HandledScreen<EnclosureScreenHandler> imple
                     }, 5, 5, width - 10));
         }
         textWidgets.add(new ClickableTextWidget(client, this, Text.empty()
+            .append(Text.translatable("enclosure.info.created"))
             .append(Text.literal(area.getFullName()).styled(style -> style.withColor(Formatting.GOLD)))
             .append(" ")
             .append(Text.translatable("enclosure.info.created_by"))

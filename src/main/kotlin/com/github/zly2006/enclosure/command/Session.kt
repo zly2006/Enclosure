@@ -77,16 +77,16 @@ class Session(
         }
         return if (lessThan) {
             TrT.of("enclosure.limit." + Utils.camelCaseToSnakeCase(name))
-                .append(TrT.of("enclosure.message.limit_exceeded.0"))
-                .append(limit.toString())
-                .append(TrT.of("enclosure.message.limit_exceeded.1"))
-                .append(Text.literal(value.toString()))
+                .append(TrT.of("enclosure.message.limit_exceeded.lessthan",
+                    limit.toString(),
+                    Text.literal(value.toString())
+                ))
         } else {
             TrT.of("enclosure.limit." + Utils.camelCaseToSnakeCase(name))
-                .append(TrT.of("enclosure.message.limit_exceeded.2"))
-                .append(limit.toString())
-                .append(TrT.of("enclosure.message.limit_exceeded.1"))
-                .append(Text.literal(value.toString()))
+                .append(TrT.of("enclosure.message.limit_exceeded.morethan",
+                    limit.toString(),
+                    Text.literal(value.toString())
+                ))
         }
     }
 

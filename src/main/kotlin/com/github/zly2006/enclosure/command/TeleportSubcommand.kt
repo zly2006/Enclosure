@@ -70,19 +70,17 @@ fun BuilderScope<*>.registerTeleport() {
                 )
             }
             source.sendMessage(
-                TrT.of("enclosure.message.change_teleport_position.0")
-                    .append(area.serialize(SerializationSettings.Name, source.player))
-                    .append(TrT.of("enclosure.message.change_teleport_position.1"))
-                    .append(
-                        String.format(
-                            "[%.2f, %.2f, %.2f](yaw: %.2f, pitch: %.2f)",
-                            source.position.x,
-                            source.position.y,
-                            source.position.z,
-                            source.rotation.y,
-                            source.rotation.x
-                        )
+                TrT.of("enclosure.message.change_teleport_position",
+                    area.serialize(SerializationSettings.Name, source.player),
+                    String.format(
+                        "[%.2f, %.2f, %.2f](yaw: %.2f, pitch: %.2f)",
+                        source.position.x,
+                        source.position.y,
+                        source.position.z,
+                        source.rotation.y,
+                        source.rotation.x
                     )
+                )
             )
         }
     }
