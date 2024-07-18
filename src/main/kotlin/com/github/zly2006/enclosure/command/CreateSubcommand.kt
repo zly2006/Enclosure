@@ -6,6 +6,7 @@ import com.github.zly2006.enclosure.LOGGER
 import com.github.zly2006.enclosure.ServerMain
 import com.github.zly2006.enclosure.utils.Serializable2Text.SerializationSettings
 import com.github.zly2006.enclosure.utils.TrT
+import com.github.zly2006.enclosure.utils.literalText
 import com.mojang.brigadier.arguments.StringArgumentType
 import com.mojang.brigadier.context.CommandContext
 import net.minecraft.server.command.ServerCommandSource
@@ -126,11 +127,7 @@ private fun createEnclosure(context: CommandContext<ServerCommandSource>) {
         if (context.source.player != null) {
             val count = ServerMain.getAllEnclosuresForSuggestion(context.source.uuid).size.toLong()
             if (count >= limits.maxLands) {
-                error(
-                    TrT.of("enclosure.message.rcle.self",
-                        Text.literal(limits.maxLands.toString())
-                    ), context
-                )
+                error(TrT.of("enclosure.message.rcle.self", literalText(limits.maxLands)), context)
             }
         }
     }
