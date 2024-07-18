@@ -22,7 +22,9 @@ fun BuilderScope<*>.registerRemove() {
                         true
                     } ?: list.remove(res.name)
                     if (success) {
-                        source.sendMessage(TrT.of("enclosure.message.deleted").append(res.fullName))
+                        source.sendMessage(TrT.of("enclosure.message.deleted",
+                            res.fullName)
+                        )
                         LOGGER.info("${source.name} removed ${res.fullName}")
                     } else {
                         error(TrT.of("enclosure.message.no_enclosure"), this)

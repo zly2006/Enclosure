@@ -70,8 +70,9 @@ fun BuilderScope<*>.registerCreate() {
                 val intersectArea = sessionOf(source).intersect(enclosure.subEnclosures)
                 if (intersectArea != null) {
                     error(
-                        TrT.of("enclosure.message.intersected")
-                            .append(intersectArea.serialize(SerializationSettings.Name, source.player)), this
+                        TrT.of("enclosure.message.intersected",
+                            intersectArea.serialize(SerializationSettings.Name, source.player)
+                        ), this
                     )
                 }
                 val limits = getLimits(this)
@@ -80,16 +81,18 @@ fun BuilderScope<*>.registerCreate() {
                     val count = enclosure.subEnclosures.areas.size.toLong()
                     if (count > limits.maxSubLands) {
                         error(
-                            TrT.of("enclosure.message.scle").append(Text.literal(limits.maxSubLands.toString())),
-                            this
+                            TrT.of("enclosure.message.sub_lands.exceed",
+                                Text.literal(limits.maxSubLands.toString())
+                            ),this
                         )
                     }
                 }
                 area.changeWorld(session.world)
                 enclosure.addChild(area)
                 source.sendMessage(
-                    TrT.of("enclosure.message.created")
-                        .append(area.serialize(SerializationSettings.Name, source.player))
+                    TrT.of("enclosure.message.created",
+                        area.serialize(SerializationSettings.Name, source.player)
+                    )
                 )
                 LOGGER.info("Created subzone {} by {}", area.fullName, source.name)
             }
@@ -136,8 +139,9 @@ private fun createEnclosure(context: CommandContext<ServerCommandSource>) {
     session.reset(session.world)
     list.addArea(enclosure)
     context.source.sendMessage(
-        TrT.of("enclosure.message.created")
-            .append(enclosure.serialize(SerializationSettings.Name, context.source.player))
+        TrT.of("enclosure.message.created",
+            enclosure.serialize(SerializationSettings.Name, context.source.player)
+        )
     )
     LOGGER.info(context.source.name + " created enclosure " + enclosure.name)
 }

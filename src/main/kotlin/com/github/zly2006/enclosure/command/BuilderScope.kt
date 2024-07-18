@@ -48,7 +48,7 @@ class BuilderScope<T: argT>(var parent: T) {
                 throw e
             } catch (e: Throwable) {
                 LOGGER.error("Error while executing command: " + it.input, e)
-                error(TrT.of("enclosure.message.error").append("${e.javaClass.simpleName}: ${e.message}"), it)
+                error(TrT.of("enclosure.message.error","${e.javaClass.simpleName}: ${e.message}"), it)
             }
         }
     }
@@ -66,11 +66,10 @@ class BuilderScope<T: argT>(var parent: T) {
             val firstPage = page == 1
             val lastPage = page >= totalPage
 
-            val ret: MutableText = TrT.of("enclosure.menu.page.0")
-                .append(page.toString())
-                .append(TrT.of("enclosure.menu.page.1"))
-                .append(totalPage.toString())
-                .append("\n")
+            val ret: MutableText = TrT.of("enclosure.menu.page",
+                page.toString(),
+                totalPage.toString()
+            ).append("\n")
 
             var i: Int = size * (page - 1)
             while (i < size * page && i < list.size) {

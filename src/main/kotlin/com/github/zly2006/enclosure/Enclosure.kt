@@ -10,6 +10,7 @@ import net.minecraft.registry.RegistryWrapper.WrapperLookup
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.server.world.ServerWorld
 import net.minecraft.text.MutableText
+import net.minecraft.text.Text
 import net.minecraft.util.Formatting
 import net.minecraft.util.math.BlockPos
 
@@ -57,17 +58,18 @@ class Enclosure : EnclosureArea {
     override fun serialize(settings: SerializationSettings, player: ServerPlayerEntity?): MutableText {
         if (settings == SerializationSettings.Full) {
             val text = super.serialize(settings, player)
+            val subLandsText: MutableText = Text.empty()
             if (subEnclosures.areas.isNotEmpty()) {
                 text.append("\n")
-                text.append(TrT.of("enclosure.message.sub_lands"))
                 for (area in subEnclosures.areas) {
-                    text.append(area.serialize(SerializationSettings.Name, player).styled {
+                    subLandsText.append(area.serialize(SerializationSettings.Name, player).styled {
                         it.withColor(Formatting.GOLD)
                             .hoverText(area.serialize(SerializationSettings.Hover, player))
                             .clickRun("/enclosure info ${area.fullName}")
                     })
-                    text.append(" ")
+                    subLandsText.append(" ")
                 }
+                text.append(TrT.of("enclosure.message.sub_lands", subLandsText))
             }
             return text
         } else {

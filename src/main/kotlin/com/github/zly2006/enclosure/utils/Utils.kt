@@ -96,7 +96,7 @@ fun formatSelection(
     worldId: Identifier,
     x1: Int, y1: Int, z1: Int,
     x2: Int, y2: Int, z2: Int
-): String {
+): MutableText {
     val fromStr = TrT.of("enclosure.message.select.coordinate",
         literalText(x1).green(),
         literalText(y1).green(),
