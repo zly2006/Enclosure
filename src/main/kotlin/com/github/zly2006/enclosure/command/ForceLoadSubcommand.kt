@@ -17,7 +17,8 @@ import net.minecraft.text.Text
 import net.minecraft.util.math.ChunkPos
 
 const val MAX_CHUNK_LEVEL = 33 // ChunkLevels.getLevelFromType(ChunkLevelType.FULL)
-val FORCED = ChunkTicketType.create<ChunkPos>("enclosure.forced", Comparator.comparingLong { it.toLong() })
+val FORCED = ChunkTicketType.create<ChunkPos>("enclosure.forced", Comparator.comparingLong { it.toLong() })!!
+val timeRegex = Regex("""^(\d{1,3}h)?(\d{1,2}m)?(\d{1,2}s)?(\d{1,2}gt)?$""")
 
 fun BuilderScope<*>.registerForceLoad() {
     fun forceLoad(source: ServerCommandSource, area: Enclosure, ticks: Int, level: Int) {
@@ -85,46 +86,46 @@ fun BuilderScope<*>.registerForceLoad() {
         }
     }
 
+    fun BuilderScope<*>.registerCommands(level: Int) {
+        executes {
+            val maxTime =
+                if (checkPermission(source, "enclosure.bypass")) Int.MAX_VALUE
+                else Options.get(source, "enclosure.load.max_time", 21600) { it.toInt() }
+            val land = getEnclosure(this)
+            if (land !is Enclosure) {
+                error(Text.literal("Only enclosure can be force loaded"), this)
+            }
+            forceLoad(source, land, maxTime * 20, level)
+        }
+        literal("--time") {
+            argument("time", StringArgumentType.word()) {
+                executes {
+                    val timeString = getArgument("time", String::class.java)
+                    timeRegex.matchEntire(timeString)?.let {
+                        val hours = it.groups[1]?.value?.dropLast(1)?.toIntOrNull() ?: 0
+                        val minutes = it.groups[2]?.value?.dropLast(1)?.toIntOrNull() ?: 0
+                        val seconds = it.groups[3]?.value?.dropLast(1)?.toIntOrNull() ?: 0
+                        val gameTicks = it.groups[4]?.value?.dropLast(2)?.toIntOrNull() ?: 0
+                        val ticks = hours * 72000 + minutes * 1200 + seconds * 20 + gameTicks
+                        if (ticks > 0) {
+                            val land = getEnclosure(this)
+                            if (land !is Enclosure) {
+                                error(Text.literal("Only enclosure can be force loaded"), this)
+                            }
+                            forceLoad(source, land, ticks, level)
+                        }
+                        else {
+                            error(Text.literal("Time must be positive"), this)
+                        }
+                    } ?: error(Text.literal("Invalid time format, must be 12h34m56s78gt"), this)
+                }
+            }
+        }
+    }
+
     literal("force-load") {
         argument(landArgument()) {
             permission("enclosure.command.force_load")
-            fun BuilderScope<*>.registerCommands(level: Int) {
-                executes {
-                    val maxTime =
-                        if (checkPermission(source, "enclosure.bypass")) Int.MAX_VALUE
-                        else Options.get(source, "enclosure.load.max_time", 21600) { it.toInt() }
-                    val land = getEnclosure(this)
-                    if (land !is Enclosure) {
-                        error(Text.literal("Only enclosure can be force loaded"), this)
-                    }
-                    forceLoad(source, land, maxTime * 20, level)
-                }
-                literal("--time") {
-                    argument("time", StringArgumentType.word()) {
-                        val timeRegex = Regex("""^(\d{1,3}h)?(\d{1,2}m)?(\d{1,2}s)?(\d{1,2}gt)?$""")
-                        executes {
-                            val timeString = getArgument("time", String::class.java)
-                            timeRegex.matchEntire(timeString)?.let {
-                                val hours = it.groups[1]?.value?.dropLast(1)?.toIntOrNull() ?: 0
-                                val minutes = it.groups[2]?.value?.dropLast(1)?.toIntOrNull() ?: 0
-                                val seconds = it.groups[3]?.value?.dropLast(1)?.toIntOrNull() ?: 0
-                                val gameTicks = it.groups[4]?.value?.dropLast(2)?.toIntOrNull() ?: 0
-                                val ticks = hours * 72000 + minutes * 1200 + seconds * 20 + gameTicks
-                                if (ticks > 0) {
-                                    val land = getEnclosure(this)
-                                    if (land !is Enclosure) {
-                                        error(Text.literal("Only enclosure can be force loaded"), this)
-                                    }
-                                    forceLoad(source, land, ticks, level)
-                                }
-                                else {
-                                    error(Text.literal("Time must be positive"), this)
-                                }
-                            } ?: error(Text.literal("Invalid time format, must be 12h34m56s78gt"), this)
-                        }
-                    }
-                }
-            }
             literal("blocks") {
                 registerCommands(ChunkLevels.getLevelFromType(ChunkLevelType.BLOCK_TICKING))
             }
