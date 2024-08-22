@@ -15,7 +15,7 @@ fun BuilderScope<*>.registerTeleport() {
             executes {
                 val player = source.player!!
                 val lastTeleportTimeSpan =
-                    System.currentTimeMillis() - (player as PlayerAccess).permissionDeniedMsgTime
+                    System.currentTimeMillis() - (player as PlayerAccess).lastTeleportTime
                 val cd = ServerMain.commonConfig.teleportCooldown
                 val area = getEnclosure(this)
 
@@ -38,7 +38,7 @@ fun BuilderScope<*>.registerTeleport() {
                         }
                     }
                 }
-                (player as PlayerAccess).permissionDeniedMsgTime = System.currentTimeMillis()
+                (player as PlayerAccess).lastTeleportTime = System.currentTimeMillis()
                 if (ServerMain.commonConfig.showTeleportWarning) {
                     if (!isPositionSafe(area.world, area.teleportPos!!, player)) {
                         source.sendMessage(

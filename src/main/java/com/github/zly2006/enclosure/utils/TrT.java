@@ -16,6 +16,7 @@ public class TrT {
                 return Text.translatableWithFallback(key, ServerMain.INSTANCE.getTranslation().get(key).getAsString(), arguments);
             }
         }
+        Text.literal("").getSiblings().removeFirst().getSiblings().clear();
         return Text.translatable(key, arguments);
     }
 

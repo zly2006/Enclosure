@@ -8,6 +8,7 @@ import com.github.zly2006.enclosure.utils.Serializable2Text.SerializationSetting
 import com.github.zly2006.enclosure.utils.checkPermission
 import com.mojang.authlib.GameProfile
 import com.mojang.brigadier.arguments.StringArgumentType
+import com.mojang.brigadier.context.CommandContext
 import me.lucko.fabric.api.permissions.v0.Options
 import net.minecraft.server.command.ServerCommandSource
 import net.minecraft.server.world.ChunkLevelType
@@ -21,7 +22,7 @@ val FORCED = ChunkTicketType.create<ChunkPos>("enclosure.forced", Comparator.com
 val timeRegex = Regex("""^(\d{1,3}h)?(\d{1,2}m)?(\d{1,2}s)?(\d{1,2}gt)?$""")
 
 fun BuilderScope<*>.registerForceLoad() {
-    fun forceLoad(source: ServerCommandSource, area: Enclosure, ticks: Int, level: Int) {
+    fun CommandContext<ServerCommandSource>.forceLoad(area: Enclosure, ticks: Int, level: Int) {
         val maxTime = Options.get(source, "enclosure.load.max_time", 21600) { it.toInt() }
         val ticket = EnclosureArea.ForceLoadTicket(
             source.player?.gameProfile ?: GameProfile(CONSOLE, "Server"), ticks, level
@@ -31,24 +32,20 @@ fun BuilderScope<*>.registerForceLoad() {
                 .filter { it.ticket?.executor?.id == source.uuid }
                 .sumOf { it.ticket!!.remainingTicks }
             if (totalTicksRemaining > maxTime * 20) {
-                source.sendError(
+                error(
                     Text.literal(
-                        "You have reached the maximum force loading time: " + getTimeString(
-                            maxTime
-                        )
-                    )
+                        "You have reached the maximum force loading time: ${getTimeString(maxTime)}"
+                    ), this
                 )
-                return
             }
             if (totalTicksRemaining + ticks > maxTime * 20) {
                 ticket.remainingTicks = maxTime * 20 - totalTicksRemaining
-                source.sendError(
+                error(
                     Text.literal(
                         "You can only force load for ${getTimeString(maxTime * 20)}. " +
                                 "The remaining time is set to ${getTimeString(ticket.remainingTicks)}"
                     )
                 )
-                return
             }
         }
         area.ticket = ticket
@@ -62,12 +59,11 @@ fun BuilderScope<*>.registerForceLoad() {
         )
     }
 
-    fun cancelForceLoad(source: ServerCommandSource, area: Enclosure) {
+    fun CommandContext<ServerCommandSource>.cancelForceLoad(area: Enclosure) {
         if (area.ticket != null) {
             if (!checkPermission(source, "enclosure.bypass")) {
                 if (source.uuid != area.ticket!!.executor.id) {
-                    source.sendError(Text.literal("You can only cancel your own force loading tickets"))
-                    return
+                    error(Text.literal("You can only cancel your own force loading tickets"), this)
                 }
             }
             area.ticket!!.remainingTicks = 0
@@ -82,7 +78,7 @@ fun BuilderScope<*>.registerForceLoad() {
             )
         }
         else {
-            source.sendError(Text.literal("No force loading tickets for ").append(area.serialize(Name, null)))
+            error(Text.literal("No force loading tickets for ").append(area.serialize(Name, null)), this)
         }
     }
 
@@ -95,7 +91,7 @@ fun BuilderScope<*>.registerForceLoad() {
             if (land !is Enclosure) {
                 error(Text.literal("Only enclosure can be force loaded"), this)
             }
-            forceLoad(source, land, maxTime * 20, level)
+            forceLoad(land, maxTime * 20, level)
         }
         literal("--time") {
             argument("time", StringArgumentType.word()) {
@@ -112,7 +108,7 @@ fun BuilderScope<*>.registerForceLoad() {
                             if (land !is Enclosure) {
                                 error(Text.literal("Only enclosure can be force loaded"), this)
                             }
-                            forceLoad(source, land, ticks, level)
+                            forceLoad(land, ticks, level)
                         }
                         else {
                             error(Text.literal("Time must be positive"), this)
@@ -138,7 +134,7 @@ fun BuilderScope<*>.registerForceLoad() {
                     if (land !is Enclosure) {
                         error(Text.literal("Only enclosure can be force loaded"), this)
                     }
-                    cancelForceLoad(source, land)
+                    cancelForceLoad(land)
                 }
             }
         }
