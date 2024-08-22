@@ -37,7 +37,6 @@
     "MixinHopperMinecartEntity",
     "MixinItemEntity",
     "MixinItemFrameEntity",
-    "MixinLanguage",
     "MixinLeadItem",
     "MixinLecternBlockEntity",
     "MixinLecternScreenHandler",

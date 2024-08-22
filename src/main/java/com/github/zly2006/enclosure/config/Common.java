@@ -24,12 +24,8 @@ public class Common {
     public boolean developMode = FabricLoader.getInstance().isDevelopmentEnvironment();
     @SerializedName("allow_rich_message")
     public boolean allowRichMessage = false;
-    @SerializedName("inject_server_language")
-    public boolean injectServerLanguage = true;
     @SerializedName("show_teleport_warning")
     public boolean showTeleportWarning = true;
-    @SerializedName("show_message_prefix")
-    public boolean showMessagePrefix = false;
     @SerializedName("teleport_cooldown")
     public int teleportCooldown = 10000;
     @SerializedName("use_actionbar_message")
