@@ -1,5 +1,5 @@
 plugins {
-    id "fabric-loom" version "1.7-SNAPSHOT" apply false
+    id "fabric-loom" version "1.7.3" apply false
     id "maven-publish"
     id "org.ajoberstar.grgit" version "5.2.2"
     id "org.jetbrains.kotlin.jvm" version "2.0.0"
@@ -19,10 +19,10 @@ allprojects {
         }
         maven { url "https://maven.shedaniel.me" }
 
-        maven {
-            name = "Reden"
-            url = ("https://maven.starlight.cool/artifactory/reden")
-        }
+//        maven {
+//            name = "Reden"
+//            url = ("https://maven.starlight.cool/artifactory/reden")
+//        }
     }
 
     base {
@@ -95,11 +95,10 @@ loom {
 dependencies {
     // todo
 //    modRuntimeOnly "maven.modrinth:luckperms:v5.4.113-fabric"
+//    include(implementation("com.redenmc:brigadier-kotlin-dsl:1.0-SNAPSHOT"))
 
     // SnakeYAML. To convert the old config
     include(modImplementation("org.yaml:snakeyaml:1.33"))
-
-    include(implementation("com.redenmc:brigadier-kotlin-dsl:1.0-SNAPSHOT"))
 
     // Fabric Permissions API. To check the permissions
     include(modImplementation('me.lucko:fabric-permissions-api:0.2-SNAPSHOT'))

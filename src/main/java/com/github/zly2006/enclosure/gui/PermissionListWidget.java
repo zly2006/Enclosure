@@ -12,7 +12,6 @@ import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.gui.widget.ElementListWidget;
 import net.minecraft.client.gui.widget.TextFieldWidget;
-import net.minecraft.item.ItemStack;
 import net.minecraft.text.Style;
 import net.minecraft.text.Text;
 import net.minecraft.text.TranslatableTextContent;
@@ -105,7 +104,7 @@ public class PermissionListWidget extends ElementListWidget<PermissionListWidget
             context.drawText(client.textRenderer, permission.getName(), x + 20, y + 3, 0xFFFFFF, false);
             context.drawText(client.textRenderer, permission.getDescription(), x + 140, y + 3, 0x999999, false);
             permission.getIcon();
-            context.drawItem(new ItemStack(permission.getIcon()), x, y);
+            context.drawItem(permission.getIcon(), x, y);
             if (buttonWidget.isHovered()) {
                 context.drawTooltip(client.textRenderer, List.of(
                         Text.translatable("enclosure.widget.click.left").styled(style -> style.withColor(Formatting.GREEN)),
