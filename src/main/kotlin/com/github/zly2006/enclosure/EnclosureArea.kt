@@ -15,6 +15,7 @@ import net.minecraft.nbt.NbtCompound
 import net.minecraft.nbt.NbtDouble
 import net.minecraft.nbt.NbtElement
 import net.minecraft.nbt.NbtList
+import net.minecraft.network.packet.s2c.play.PositionFlag
 import net.minecraft.registry.RegistryWrapper
 import net.minecraft.server.command.ServerCommandSource
 import net.minecraft.server.network.ServerPlayerEntity
@@ -74,11 +75,13 @@ open class EnclosureArea : PersistentState, EnclosureView {
     override var father: PermissionHolder? = null
         internal set
     val uuid: UUID
+
     class ForceLoadTicket(
         val executor: GameProfile,
         var remainingTicks: Int,
         val level: Int
     )
+
     var ticket: ForceLoadTicket? = null
 
     override val fullName: String
@@ -186,10 +189,23 @@ open class EnclosureArea : PersistentState, EnclosureView {
             val overworld = player.server.overworld
             val spawnPos = overworld.spawnPos
             player.teleport(
-                overworld, spawnPos.x.toDouble() + 0.5, spawnPos.y.toDouble(), spawnPos.z.toDouble() + 0.5, 0f, 0f
+                overworld,
+                spawnPos.x.toDouble() + 0.5,
+                spawnPos.y.toDouble(),
+                spawnPos.z.toDouble() + 0.5,
+                PositionFlag.VALUES,
+                0f,
+                0f,
+                true
             )
         } else {
-            player.teleport(world, x.toDouble(), y.toDouble(), z.toDouble(), 0f, 0f)
+            player.teleport(
+                world, x.toDouble(), y.toDouble(), z.toDouble(),
+                PositionFlag.VALUES,
+                0f,
+                0f,
+                true
+            )
         }
     }
 
@@ -363,7 +379,8 @@ open class EnclosureArea : PersistentState, EnclosureView {
             }
 
             SerializationSettings.NameHover -> {
-                serialize(SerializationSettings.Name, player).gold().hoverText(serialize(SerializationSettings.Hover, player))
+                serialize(SerializationSettings.Name, player).gold()
+                    .hoverText(serialize(SerializationSettings.Hover, player))
             }
 
             SerializationSettings.Summarize -> {
@@ -443,7 +460,7 @@ open class EnclosureArea : PersistentState, EnclosureView {
         if (player.isSleeping) {
             player.wakeUp()
         }
-        player.teleport(world, teleportPos!!.x, teleportPos!!.y, teleportPos!!.z, yaw, pitch)
+        player.teleport(world, teleportPos!!.x, teleportPos!!.y, teleportPos!!.z, PositionFlag.VALUES, yaw, pitch, true)
     }
 
     override fun onRemoveChild(child: PermissionHolder) {

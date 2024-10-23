@@ -73,10 +73,6 @@ public class Utils {
         return ret;
     }
 
-    public static int topYOf(ServerWorld world, int x, int z) {
-        return topYOf(world, x, z, world.getTopY() - 1);
-    }
-
     public static int topYOf(ServerWorld world, int x, int z, int startY) {
         int secondary = Integer.MAX_VALUE;
         int airCount = 0;

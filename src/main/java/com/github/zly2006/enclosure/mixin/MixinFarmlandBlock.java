@@ -5,7 +5,7 @@ import com.github.zly2006.enclosure.utils.Permission;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.FarmlandBlock;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import org.spongepowered.asm.mixin.Mixin;
@@ -17,9 +17,9 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public class MixinFarmlandBlock {
     @Inject(method = "setToDirt", at = @At("HEAD"), cancellable = true)
     private static void onLandedUpon(Entity entity, BlockState state, World world, BlockPos pos, CallbackInfo ci) {
-        if (entity instanceof PlayerEntity player) {
+        if (entity instanceof ServerPlayerEntity player) {
             if (!ServerMain.INSTANCE.checkPermission(world, pos, player, Permission.FARMLAND_DESTROY)) {
-                entity.sendMessage(Permission.FARMLAND_DESTROY.getNoPermissionMsg(player));
+                player.sendMessage(Permission.FARMLAND_DESTROY.getNoPermissionMsg(player));
                 ci.cancel();
             }
         }

@@ -22,7 +22,7 @@ public interface MixinTadpoleEntity {
     private static <T extends LivingEntity & Bucketable>  void interactMob(PlayerEntity player, Hand hand, T entity, CallbackInfoReturnable<Optional<ActionResult>> cir) {
         if (player instanceof ServerPlayerEntity serverPlayer) {
             if (!ServerMain.INSTANCE.checkPermission(player.getWorld(), entity.getBlockPos(), player, Permission.FISH)) {
-                player.sendMessage(Permission.FISH.getNoPermissionMsg(player));
+                serverPlayer.sendMessage(Permission.FISH.getNoPermissionMsg(player));
                 serverPlayer.networkHandler.sendPacket(entity.createSpawnPacket(serverPlayer.getServerWorld().getChunkManager().chunkLoadingManager.entityTrackers.get(entity.getId()).entry));
                 serverPlayer.networkHandler.sendPacket(new EntityTrackerUpdateS2CPacket(entity.getId(), entity.getDataTracker().getChangedEntries()));
                 cir.setReturnValue(Optional.empty());

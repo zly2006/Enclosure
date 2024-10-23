@@ -13,7 +13,6 @@ import net.minecraft.item.Items
 import net.minecraft.registry.RegistryKeys
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.text.MutableText
-import net.minecraft.text.Style
 import net.minecraft.text.Text
 import net.minecraft.util.Formatting
 import net.minecraft.village.raid.Raid
@@ -292,8 +291,8 @@ class Permission(
         val DISPENSER = Permission("dispenser", Target.Enclosure, icon = Items.DISPENSER).apply(::register)
         @JvmField
         val RAID = Permission("raid", Target.Enclosure, defaultValue = true, iconSupplier = {
-            Raid.getOminousBanner(
-                MinecraftClient.getInstance().networkHandler!!.registryManager.getWrapperOrThrow(
+            Raid.createOminousBanner(
+                MinecraftClient.getInstance().networkHandler!!.registryManager.getOrThrow(
                     RegistryKeys.BANNER_PATTERN
                 )
             )

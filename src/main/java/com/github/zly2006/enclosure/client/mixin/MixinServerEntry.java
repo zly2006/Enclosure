@@ -7,6 +7,7 @@ import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.multiplayer.MultiplayerScreen;
 import net.minecraft.client.gui.screen.multiplayer.MultiplayerServerListWidget;
 import net.minecraft.client.network.ServerInfo;
+import net.minecraft.client.render.RenderLayer;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import org.spongepowered.asm.mixin.Final;
@@ -36,7 +37,7 @@ public class MixinServerEntry {
                     );
                 }
             }
-            context.drawTexture(NOTIFY_TEXTURE, x + 24, y + 24, 0, offset, 8, 8, 8, 16);
+            context.drawTexture(RenderLayer::getGuiTexturedOverlay, NOTIFY_TEXTURE, x + 24, y + 24, 0, offset, 8, 8, 8, 16);
         }
     }
 }

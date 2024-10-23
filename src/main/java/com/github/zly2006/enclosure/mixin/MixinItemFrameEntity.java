@@ -30,14 +30,14 @@ public abstract class MixinItemFrameEntity extends AbstractDecorationEntity {
         if (player instanceof ServerPlayerEntity serverPlayer) {
             EnclosureArea area = ServerMain.INSTANCE.getSmallestEnclosure((ServerWorld) serverPlayer.getWorld(), getBlockPos());
             if (area != null && !area.hasPerm(serverPlayer, Permission.ITEM_FRAME)) {
-                player.sendMessage(Permission.ITEM_FRAME.getNoPermissionMsg(serverPlayer));
+                player.sendMessage(Permission.ITEM_FRAME.getNoPermissionMsg(serverPlayer), true);
                 cir.setReturnValue(ActionResult.FAIL);
             }
         }
     }
 
-    @Inject(method = "damage", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/decoration/ItemFrameEntity;dropHeldStack(Lnet/minecraft/entity/Entity;Z)V"), cancellable = true)
-    private void onDamages(DamageSource source, float amount, CallbackInfoReturnable<Boolean> cir) {
+    @Inject(method = "damage", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/decoration/ItemFrameEntity;dropHeldStack(Lnet/minecraft/server/world/ServerWorld;Lnet/minecraft/entity/Entity;Z)V"), cancellable = true)
+    private void onDamages(ServerWorld world, DamageSource source, float amount, CallbackInfoReturnable<Boolean> cir) {
         if (!Utils.commonOnDamage(source, getBlockPos(), getWorld(), Permission.ITEM_FRAME)) {
             cir.setReturnValue(false);
         }

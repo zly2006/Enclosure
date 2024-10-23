@@ -40,7 +40,7 @@ class BackgroundMusicPayload(
                         (mc as ClientAccess).bgm = null
                     } else {
                         (mc as ClientAccess).bgm = MusicSound(
-                            mc.player!!.registryManager.get(RegistryKeys.SOUND_EVENT).getEntry(p.music).orElseThrow(),
+                            mc.player!!.registryManager.toImmutable().getOrThrow(RegistryKeys.SOUND_EVENT).getEntry(p.music).orElseThrow(),
                             12000,
                             24000,
                             true

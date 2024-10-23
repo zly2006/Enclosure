@@ -17,11 +17,11 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public class MixinAbstractSignBlock {
     @Inject(method = "openEditScreen", at = @At("HEAD"), cancellable = true)
     private void openEditScreen(PlayerEntity player, SignBlockEntity blockEntity, boolean front, CallbackInfo ci) {
-        if (player instanceof ServerPlayerEntity) {
+        if (player instanceof ServerPlayerEntity serverPlayer) {
             @SuppressWarnings("DataFlowIssue")
             EnclosureArea area = ServerMain.INSTANCE.getSmallestEnclosure((ServerWorld) blockEntity.getWorld(), blockEntity.getPos());
-            if (area != null && !area.hasPerm((ServerPlayerEntity) player, Permission.EDIT_SIGN)) {
-                player.sendMessage(Permission.EDIT_SIGN.getNoPermissionMsg(player));
+            if (area != null && !area.hasPerm(serverPlayer, Permission.EDIT_SIGN)) {
+                serverPlayer.sendMessage(Permission.EDIT_SIGN.getNoPermissionMsg(player));
                 ci.cancel();
             }
         }

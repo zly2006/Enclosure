@@ -3,6 +3,7 @@ package com.github.zly2006.enclosure.gui;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.ButtonWidget;
+import net.minecraft.client.render.RenderLayer;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 
@@ -45,7 +46,7 @@ public class ConfirmScreen extends Screen {
         int height = 150;
         int x = (parent.width - 200) / 2;
         int y = (parent.height - height) / 2;
-        context.drawTexture(TEXTURE, x, y, 0, 0, 200, 150, 200, 150);
+        context.drawTexture(RenderLayer::getGuiTexturedOverlay, TEXTURE, x, y, 0, 0, 200, 150, 200, 150);
         context.drawTextWrapped(textRenderer, message, x + 10, y + 10, 180, 0xFFFFFF);
         yesButton.setY(y + height - 30);
         noButton.setY(y + height - 30);

@@ -5,6 +5,7 @@ import com.mojang.blaze3d.systems.RenderSystem
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents
 import net.minecraft.client.MinecraftClient
+import net.minecraft.client.gl.ShaderProgramKeys
 import net.minecraft.client.render.*
 import net.minecraft.client.util.math.MatrixStack
 import net.minecraft.util.math.Vec3d
@@ -54,7 +55,7 @@ object EnclosureWorldRenderer {
         val matrix4f = matrices.peek().positionMatrix
         val matrix3f = matrices.peek()
         // Render two points
-        WorldRenderer.drawBox(
+        VertexRendering.drawBox(
             matrices, linesBuffer,
             session.pos1.x - cameraPos.x,
             session.pos1.y - cameraPos.y,
@@ -64,7 +65,7 @@ object EnclosureWorldRenderer {
             session.pos1.z + 1 - cameraPos.z,
             1f, 0.25f, 0.25f, alpha
         )
-        WorldRenderer.drawBox(
+        VertexRendering.drawBox(
             matrices, linesBuffer,
             session.pos2.x - cameraPos.getX(),
             session.pos2.y - cameraPos.getY(),
@@ -103,7 +104,7 @@ object EnclosureWorldRenderer {
         val matrix4f = matrices.peek().positionMatrix
         matrices.push()
         RenderSystem.disableCull()
-        RenderSystem.setShader { GameRenderer.getPositionColorProgram() }
+        RenderSystem.setShader(ShaderProgramKeys.POSITION_COLOR)
         fun drawFace(x1: Float, y1: Float, z1: Float, x2: Float, y2: Float, z2: Float, x3: Float, y3: Float, z3: Float, x4: Float, y4: Float, z4: Float, red: Float, green: Float, blue: Float, alpha: Float) {
             val bufferBuilder = Tessellator.getInstance().begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_COLOR)
             bufferBuilder.vertex(matrix4f, x1, y1, z1).color(red, green, blue, alpha)

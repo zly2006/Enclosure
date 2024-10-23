@@ -5,6 +5,7 @@ import net.minecraft.entity.EntityType;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.vehicle.AbstractMinecartEntity;
 import net.minecraft.entity.vehicle.MinecartEntity;
+import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
 import net.minecraft.world.World;
@@ -23,9 +24,11 @@ public abstract class MixinMinecartEntity extends AbstractMinecartEntity {
 
     @Inject(method = "interact", at = @At("HEAD"), cancellable = true)
     private void onInteract(PlayerEntity player, Hand hand, CallbackInfoReturnable<ActionResult> cir) {
-        if (!ServerMain.INSTANCE.checkPermission(getWorld(), getBlockPos(), player, VEHICLE)) {
-            player.sendMessage(VEHICLE.getNoPermissionMsg(player));
-            cir.setReturnValue(ActionResult.FAIL);
+        if (player instanceof ServerPlayerEntity serverPlayer) {
+            if (!ServerMain.INSTANCE.checkPermission(getWorld(), getBlockPos(), serverPlayer, VEHICLE)) {
+                serverPlayer.sendMessage(VEHICLE.getNoPermissionMsg(serverPlayer));
+                cir.setReturnValue(ActionResult.FAIL);
+            }
         }
     }
 }

@@ -22,6 +22,7 @@ import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtHelper;
 import net.minecraft.nbt.NbtList;
+import net.minecraft.network.packet.s2c.play.PositionFlag;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayNetworkHandler;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -232,7 +233,7 @@ public abstract class MixinServerPlayerEntity extends PlayerEntity implements Pl
                     player.sendMessage(MOVE.getNoPermissionMsg(player));
                     if (area != lastArea && lastWorld != null && lastPos != null) {
                         // teleport back
-                        player.teleport(lastWorld, lastPos.x, lastPos.y, lastPos.z, 0, 0);
+                        player.teleport(lastWorld, lastPos.x, lastPos.y, lastPos.z, PositionFlag.VALUES, 0, 0, true);
                     } else {
                         // kick
                         area.kickPlayer(player);
