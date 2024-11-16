@@ -61,6 +61,7 @@ import net.minecraft.util.*
 import net.minecraft.util.hit.BlockHitResult
 import net.minecraft.util.hit.HitResult
 import net.minecraft.util.math.BlockPos
+import net.minecraft.util.math.ChunkPos
 import net.minecraft.world.PersistentState
 import net.minecraft.world.RaycastContext
 import net.minecraft.world.World
@@ -280,7 +281,7 @@ object ServerMain: ModInitializer {
     }
 
     fun getSmallestEnclosure(world: ServerWorld, pos: BlockPos?): EnclosureArea? {
-        return (world.getChunk(pos) as? ChunkAccess)?.cache
+        return (world.getChunkAsView(ChunkPos(pos).x, ChunkPos(pos).z) as? ChunkAccess)?.cache
             ?.firstOrNull { it.contains(pos!!) }
             ?.areaOf(pos!!)
     }
