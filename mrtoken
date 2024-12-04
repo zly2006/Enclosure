@@ -1,0 +1,2 @@
+MODRINTH_TOKEN=mrp_uKrBirvpVPhu2RDubge32kaV7vjzME807XGg0cCqSoRiIzq6EChN9XvqRSCH ./gradlew clean chiseledBuild publishModrinth
+

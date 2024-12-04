@@ -68,7 +68,7 @@ fun literalText(text: Any): MutableText {
 }
 
 fun ServerWorld.mark4updateChecked(pos: BlockPos): Boolean {
-    if (worldBorder.contains(pos) && pos.y >= bottomY && pos.y < topY) {
+    if (worldBorder.contains(pos) && pos.y >= bottomY && pos.y < bottomY + height) {
         chunkManager.markForUpdate(pos)
         return true
     }

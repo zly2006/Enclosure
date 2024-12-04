@@ -15,6 +15,7 @@ import net.minecraft.nbt.NbtCompound
 import net.minecraft.nbt.NbtDouble
 import net.minecraft.nbt.NbtElement
 import net.minecraft.nbt.NbtList
+import net.minecraft.network.packet.s2c.play.PositionFlag
 import net.minecraft.registry.RegistryWrapper
 import net.minecraft.server.command.ServerCommandSource
 import net.minecraft.server.network.ServerPlayerEntity
@@ -498,6 +499,11 @@ open class EnclosureArea : PersistentState, EnclosureView {
     fun containsChunk(pos: ChunkPos) =
         intersect(pos.startX, Int.MIN_VALUE, pos.startZ, pos.endX, Int.MAX_VALUE, pos.endZ)
 }
+//? if >1.21.2 {
+private fun ServerPlayerEntity.teleport(world: ServerWorld, x: Double, y: Double, z: Double, yaw: Float, pitch: Float) {
+    teleport(world, x, y, z, PositionFlag.VALUES, yaw, pitch, true)
+}
+//?}
 
 fun Map<String, Boolean>?.toNbt(): NbtCompound {
     val nbt = NbtCompound()

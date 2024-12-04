@@ -17,7 +17,7 @@ import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 
 import static com.github.zly2006.enclosure.utils.Permission.TELEPORT;
 
-@Mixin(ChorusFruitItem.class)
+@Mixin(.class)
 public class MixinChorusFruitItem {
     @Inject(method = "finishUsing", locals = LocalCapture.CAPTURE_FAILSOFT, at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/LivingEntity;teleport(DDDZ)Z"), cancellable = true)
     private void tp(ItemStack stack, World world, LivingEntity user, CallbackInfoReturnable<ItemStack> cir, ItemStack itemStack, int i, double d, double e, double f, Vec3d vec3d) {

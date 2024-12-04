@@ -348,7 +348,6 @@ object ServerMain: ModInitializer {
         SyncSelectionS2CPacket.register()
         SyncPermissionS2CPacket.register()
         EnclosureInfoPayload.register()
-        BackgroundMusicPayload.register()
         ServerPlayConnectionEvents.JOIN.register(ServerPlayConnectionEvents.Join { handler: ServerPlayNetworkHandler, _, _ ->
             // warn the server ops that this server is running in development mode and not secure.
             if (minecraftServer.playerManager.isOperator(handler.player.gameProfile) && commonConfig.developMode) {
@@ -473,17 +472,30 @@ object ServerMain: ModInitializer {
                     .map { it.key }
                     .map { permission ->
                         if (checkPermission(player, permission, blockPos)) {
-                            return@map TypedActionResult.pass(player.getStackInHand(hand))
-                        } else {
+                            //? if <1.21.2 {
+                            /*return@map TypedActionResult.pass(player.getStackInHand(hand))
+                            *///?} else {
+                            return@map ActionResult.PASS
+                            //?}
+                        }
+                        else {
                             player.currentScreenHandler.syncState()
                             player.sendMessage(permission.getNoPermissionMsg(player))
-                            return@map TypedActionResult.fail(player.getStackInHand(hand))
+                            //? if <1.21.2 {
+                            /*return@map TypedActionResult.fail(player.getStackInHand(hand))
+                            *///?} else {
+                            return@map ActionResult.FAIL
+                            //?}
                         }
                     }
-                    .filter { result -> result.result != ActionResult.PASS }
-                    .firstOrNull() ?: TypedActionResult.pass(player.getStackInHand(hand))
+                    .filter { result ->
+                        /*? if <1.21.2 {*/ /*result.result *//*?} else {*/ result /*?}*/ != ActionResult.PASS
+                    }
+                    .firstOrNull() ?: /*? if <1.21.2 {*/ /*TypedActionResult.pass(player.getStackInHand(hand))
+                *//*?} else {*/ ActionResult.PASS /*?}*/
             }
-            return@register TypedActionResult.pass(player.getStackInHand(hand))
+            return@register /*? if <1.21.2 {*/ /*TypedActionResult.pass(player.getStackInHand(hand))
+            *//*?} else {*/ ActionResult.PASS /*?}*/
         }
         AttackBlockCallback.EVENT.register(id) { player, world, _, pos, _ ->
             if (player is ServerPlayerEntity) {
@@ -594,3 +606,9 @@ object ServerMain: ModInitializer {
         LOGGER.info("Enclosure enabled now!")
     }
 }
+
+//? if >=1.21.2 {
+private fun PlayerEntity.sendMessage(text: Text) {
+    sendMessage(text, false)
+}
+//?}

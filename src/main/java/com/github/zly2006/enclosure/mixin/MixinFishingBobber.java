@@ -20,7 +20,6 @@ public abstract class MixinFishingBobber extends ProjectileEntity {
 
     @Inject(method = "pullHookedEntity", at = @At("HEAD"), cancellable = true)
     private void onPullEntity(Entity entity, CallbackInfo ci) {
-        System.out.println("pullHookedEntity");
         if (getOwner() instanceof ServerPlayerEntity player) {
             if (!Utils.commonOnDamage(entity.getDamageSources().mobProjectile(this, player), entity)) {
                 ci.cancel();

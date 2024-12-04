@@ -12,6 +12,11 @@ import org.joml.Matrix4f
 import kotlin.math.max
 import kotlin.math.min
 
+//? if >1.21.2 {
+import net.minecraft.client.render.VertexRendering as WorldRenderer
+import net.minecraft.client.gl.ShaderProgramKeys
+//?}
+
 object EnclosureWorldRenderer {
     private const val DELTA = 0.001f
     fun register() {
@@ -103,7 +108,11 @@ object EnclosureWorldRenderer {
         val matrix4f = matrices.peek().positionMatrix
         matrices.push()
         RenderSystem.disableCull()
-        RenderSystem.setShader { GameRenderer.getPositionColorProgram() }
+        //? if <1.21.2 {
+        /*RenderSystem.setShader { GameRenderer.getPositionColorProgram() }
+        *///?} else {
+        RenderSystem.setShader(ShaderProgramKeys.POSITION_COLOR)
+        //?}
         fun drawFace(x1: Float, y1: Float, z1: Float, x2: Float, y2: Float, z2: Float, x3: Float, y3: Float, z3: Float, x4: Float, y4: Float, z4: Float, red: Float, green: Float, blue: Float, alpha: Float) {
             val bufferBuilder = Tessellator.getInstance().begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_COLOR)
             bufferBuilder.vertex(matrix4f, x1, y1, z1).color(red, green, blue, alpha)

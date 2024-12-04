@@ -22,3 +22,5 @@ accessible method net/minecraft/world/SimulationDistanceLevelPropagator getLevel
 accessible field net/minecraft/server/world/ChunkTicketManager ticketsByPosition Lit/unimi/dsi/fastutil/longs/Long2ObjectOpenHashMap;
 accessible method net/minecraft/server/world/ChunkTicketManager getTicketSet (J)Lnet/minecraft/util/collection/SortedArraySet;
 accessible method net/minecraft/server/world/ChunkTicketManager removeTicket (JLnet/minecraft/server/world/ChunkTicket;)V
+accessible method net/minecraft/client/gui/screen/ingame/HandledScreens register (Lnet/minecraft/screen/ScreenHandlerType;Lnet/minecraft/client/gui/screen/ingame/HandledScreens$Provider;)V
+accessible method net/minecraft/entity/projectile/ProjectileEntity <init> (Lnet/minecraft/entity/EntityType;Lnet/minecraft/world/World;)V
