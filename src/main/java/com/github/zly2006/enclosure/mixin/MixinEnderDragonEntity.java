@@ -19,8 +19,8 @@ public class MixinEnderDragonEntity extends MobEntity {
         super(entityType, world);
     }
 
-    @Redirect(method = "destroyBlocks", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/World;removeBlock(Lnet/minecraft/util/math/BlockPos;Z)Z"))
-    private boolean dragonProtection(World instance, BlockPos pos, boolean move) {
+    @Redirect(method = "destroyBlocks", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/world/ServerWorld;removeBlock(Lnet/minecraft/util/math/BlockPos;Z)Z"))
+    private boolean dragonProtection(ServerWorld instance, BlockPos pos, boolean move) {
         if (instance instanceof ServerWorld serverWorld) {
             EnclosureArea a = ServerMain.INSTANCE.getSmallestEnclosure(serverWorld, pos);
             if (a != null && !a.hasPubPerm(Permission.DRAGON_DESTROY)) {

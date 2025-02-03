@@ -19,7 +19,7 @@ public class MixinFarmlandBlock {
     private static void onLandedUpon(Entity entity, BlockState state, World world, BlockPos pos, CallbackInfo ci) {
         if (entity instanceof PlayerEntity player) {
             if (!ServerMain.INSTANCE.checkPermission(world, pos, player, Permission.FARMLAND_DESTROY)) {
-                entity.sendMessage(Permission.FARMLAND_DESTROY.getNoPermissionMsg(player));
+                player.sendMessage(Permission.FARMLAND_DESTROY.getNoPermissionMsg(player), false);
                 ci.cancel();
             }
         }

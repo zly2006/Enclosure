@@ -18,11 +18,11 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(FlowableFluid.class)
 public abstract class MixinFlowableFluid {
-    @Inject(method = "canFlow", at = @At("HEAD"), cancellable = true)
-    private void protectFluid(BlockView world, BlockPos fluidPos, BlockState fluidBlockState, Direction flowDirection, BlockPos flowTo, BlockState flowToBlockState, FluidState fluidState, Fluid fluid, CallbackInfoReturnable<Boolean> cir) {
+    @Inject(method = "canFlowThrough(Lnet/minecraft/world/BlockView;Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/BlockState;Lnet/minecraft/util/math/Direction;Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/BlockState;Lnet/minecraft/fluid/FluidState;)Z", at = @At("HEAD"), cancellable = true)
+    private void protectFluid(BlockView world, BlockPos pos, BlockState state, Direction face, BlockPos fromPos, BlockState fromState, FluidState fluidState, CallbackInfoReturnable<Boolean> cir) {
         if (world instanceof ServerWorld serverWorld) {
-            EnclosureArea from = ServerMain.INSTANCE.getSmallestEnclosure(serverWorld, fluidPos);
-            EnclosureArea to = ServerMain.INSTANCE.getSmallestEnclosure(serverWorld, flowTo);
+            EnclosureArea from = ServerMain.INSTANCE.getSmallestEnclosure(serverWorld, fromPos);
+            EnclosureArea to = ServerMain.INSTANCE.getSmallestEnclosure(serverWorld, pos);
             if (to != null && to != from) {
                 if (!to.hasPubPerm(Permission.FLUID)) {
                     cir.setReturnValue(false);

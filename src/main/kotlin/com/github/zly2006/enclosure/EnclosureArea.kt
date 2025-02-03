@@ -186,10 +186,10 @@ open class EnclosureArea : PersistentState, EnclosureView {
             val overworld = player.server.overworld
             val spawnPos = overworld.spawnPos
             player.teleport(
-                overworld, spawnPos.x.toDouble() + 0.5, spawnPos.y.toDouble(), spawnPos.z.toDouble() + 0.5, 0f, 0f
+                overworld, spawnPos.x.toDouble() + 0.5, spawnPos.y.toDouble(), spawnPos.z.toDouble() + 0.5, setOf(), 0f, 0f, true
             )
         } else {
-            player.teleport(world, x.toDouble(), y.toDouble(), z.toDouble(), 0f, 0f)
+            player.teleport(world, x.toDouble(), y.toDouble(), z.toDouble(), setOf(), 0f, 0f, true)
         }
     }
 
@@ -443,7 +443,7 @@ open class EnclosureArea : PersistentState, EnclosureView {
         if (player.isSleeping) {
             player.wakeUp()
         }
-        player.teleport(world, teleportPos!!.x, teleportPos!!.y, teleportPos!!.z, yaw, pitch)
+        player.teleport(world, teleportPos!!.x, teleportPos!!.y, teleportPos!!.z, setOf(), yaw, pitch, true)
     }
 
     override fun onRemoveChild(child: PermissionHolder) {

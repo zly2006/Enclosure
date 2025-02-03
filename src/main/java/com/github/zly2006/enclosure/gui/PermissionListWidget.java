@@ -206,7 +206,12 @@ public class PermissionListWidget extends ElementListWidget<PermissionListWidget
     }
 
     @Override
-    protected boolean isSelectButton(int button) {
+    protected boolean isSelectedEntry(int index) {
+        return super.isSelectedEntry(index);
+    }
+
+    @Override
+    public boolean isSelected() {
         return true;
     }
 }

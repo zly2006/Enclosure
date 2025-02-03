@@ -292,8 +292,8 @@ class Permission(
         val DISPENSER = Permission("dispenser", Target.Enclosure, icon = Items.DISPENSER).apply(::register)
         @JvmField
         val RAID = Permission("raid", Target.Enclosure, defaultValue = true, iconSupplier = {
-            Raid.getOminousBanner(
-                MinecraftClient.getInstance().networkHandler!!.registryManager.getWrapperOrThrow(
+            Raid.createOminousBanner(
+                MinecraftClient.getInstance().networkHandler!!.registryManager.getOrThrow(
                     RegistryKeys.BANNER_PATTERN
                 )
             )

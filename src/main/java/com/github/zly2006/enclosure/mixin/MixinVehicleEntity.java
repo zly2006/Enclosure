@@ -6,6 +6,7 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.vehicle.VehicleEntity;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.world.World;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -19,7 +20,7 @@ public abstract class MixinVehicleEntity extends Entity {
     }
 
     @Inject(method = "damage", at = @At("HEAD"), cancellable = true)
-    private void onDamage(DamageSource source, float amount, CallbackInfoReturnable<Boolean> cir) {
+    private void onDamage(ServerWorld world, DamageSource source, float amount, CallbackInfoReturnable<Boolean> cir) {
         if (!Utils.commonOnDamage(source, getBlockPos(), getWorld(), Permission.VEHICLE)) {
             cir.setReturnValue(false);
         }

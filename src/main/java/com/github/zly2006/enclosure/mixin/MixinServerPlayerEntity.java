@@ -127,7 +127,7 @@ public abstract class MixinServerPlayerEntity extends PlayerEntity implements Pl
     }
 
     @Inject(method = "damage", at = @At("HEAD"), cancellable = true)
-    private void protectPVP(DamageSource source, float amount, CallbackInfoReturnable<Boolean> cir) {
+    private void protectPVP(ServerWorld world, DamageSource source, float amount, CallbackInfoReturnable<Boolean> cir) {
         if (source.getAttacker() instanceof ServerPlayerEntity attacker) {
             //pvp
             EnclosureArea area = ServerMain.INSTANCE.getSmallestEnclosure((ServerWorld) getWorld(), getBlockPos());
@@ -232,7 +232,7 @@ public abstract class MixinServerPlayerEntity extends PlayerEntity implements Pl
                     player.sendMessage(MOVE.getNoPermissionMsg(player));
                     if (area != lastArea && lastWorld != null && lastPos != null) {
                         // teleport back
-                        player.teleport(lastWorld, lastPos.x, lastPos.y, lastPos.z, 0, 0);
+                        player.teleport(lastWorld, lastPos.x, lastPos.y, lastPos.z, Set.of(), 0, 0, true);
                     } else {
                         // kick
                         area.kickPlayer(player);

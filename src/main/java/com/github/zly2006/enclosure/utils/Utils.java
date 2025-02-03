@@ -74,7 +74,7 @@ public class Utils {
     }
 
     public static int topYOf(ServerWorld world, int x, int z) {
-        return topYOf(world, x, z, world.getTopY() - 1);
+        return topYOf(world, x, z, world.getTopYInclusive());
     }
 
     public static int topYOf(ServerWorld world, int x, int z, int startY) {
