@@ -128,33 +128,42 @@ public class PermissionListWidget extends ElementListWidget<PermissionListWidget
             @Override
             public boolean mouseClicked(double mouseX, double mouseY, int button) {
                 assert client.player != null;
-                if (!visible || !active) {
+                if (!visible || !active || !hovered) {
                     return false;
                 }
-                else if (button == GLFW.GLFW_MOUSE_BUTTON_LEFT) {
+
+                if (button == GLFW.GLFW_MOUSE_BUTTON_LEFT) {
                     Boolean value = getValue();
-                    if (value == null) setValue(true);
-                    else setValue(null);
+                    if (value == null) {
+                        setValue(true);
+                    } else {
+                        setValue(null);
+                    }
 
                     client.player.networkHandler.sendChatCommand("enclosure set " + fullName + " uuid " +
                         uuid.toString() + " " +
                         permission.getName() + " " +
                         Optional.ofNullable(getValue()).map(String::valueOf).orElse("none"));
                     buttonWidget.setMessage(value());
+                    playDownSound(MinecraftClient.getInstance().getSoundManager());
                     return true;
                 }
-                else if (button == GLFW.GLFW_MOUSE_BUTTON_RIGHT) {
+                if (button == GLFW.GLFW_MOUSE_BUTTON_RIGHT) {
                     Boolean value = getValue();
-                    if (value == null) setValue(false);
-                    else setValue(null);
+                    if (value == null) {
+                        setValue(false);
+                    } else {
+                        setValue(null);
+                    }
                     client.player.networkHandler.sendChatCommand("enclosure set " + fullName + " uuid " +
                         uuid.toString() + " " +
                         permission.getName() + " " +
                         Optional.ofNullable(getValue()).map(String::valueOf).orElse("none"));
                     buttonWidget.setMessage(value());
+                    playDownSound(MinecraftClient.getInstance().getSoundManager());
                     return true;
                 }
-                return super.mouseClicked(mouseX, mouseY, button);
+                return false;
             }
         }
     }
