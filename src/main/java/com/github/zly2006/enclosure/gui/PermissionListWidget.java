@@ -9,6 +9,7 @@ import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.Element;
 import net.minecraft.client.gui.Selectable;
 import net.minecraft.client.gui.screen.Screen;
+import net.minecraft.client.gui.tooltip.Tooltip;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.gui.widget.ElementListWidget;
 import net.minecraft.client.gui.widget.TextFieldWidget;
@@ -26,16 +27,22 @@ import java.util.function.Supplier;
 import static com.github.zly2006.enclosure.command.EnclosureCommandKt.CONSOLE;
 
 public class PermissionListWidget extends ElementListWidget<PermissionListWidget.Entry> {
-    private final Screen parent;
+    private final Screen screen;
     private final String fullName;
     private final EnclosureView.ReadOnly area;
     private final UUID uuid;
     private final Permission.Target target;
 
-    public PermissionListWidget(MinecraftClient minecraftClient, Screen parent, String fullName, EnclosureView.ReadOnly area, UUID uuid,
-                                int width, int height, int top, int bottom) {
-        super(minecraftClient, width, height, top, 20);
-        this.parent = parent;
+    public PermissionListWidget(
+            MinecraftClient minecraftClient, Screen screen, String fullName, EnclosureView.ReadOnly area, UUID uuid,
+            int marginTop, int marginBottom, int marginLeft, int marginRight
+    ) {
+        super(minecraftClient,
+                screen.width - marginRight - marginLeft,
+                screen.height - marginTop - marginBottom, marginTop,
+                20 // itemHeight
+        );
+        this.screen = screen;
         this.fullName = fullName;
         this.area = area;
         this.uuid = uuid;
@@ -106,17 +113,17 @@ public class PermissionListWidget extends ElementListWidget<PermissionListWidget
             permission.getIcon();
             context.drawItem(permission.getIcon(), x, y);
             if (buttonWidget.isHovered()) {
-                context.drawTooltip(client.textRenderer, List.of(
-                        Text.translatable("enclosure.widget.click.left").styled(style -> style.withColor(Formatting.GREEN)),
-                        Text.translatable("enclosure.widget.click.right").styled(style -> style.withColor(Formatting.RED))
-                ), mouseX, mouseY);
+                screen.setTooltip(List.of(
+                        Text.translatable("enclosure.widget.click.left").styled(style -> style.withColor(Formatting.GREEN)).asOrderedText(),
+                        Text.translatable("enclosure.widget.click.right").styled(style -> style.withColor(Formatting.RED)).asOrderedText()
+                ));
             }
             else if (hovered) {
-                context.drawTooltip(client.textRenderer,
-                        List.of(permission.getDescription(),
-                                Text.translatable("enclosure.widget.default_value_is").setStyle(Style.EMPTY.withColor(Formatting.GOLD))
-                                        .append(" ").append(value(permission.getDefaultValue()))),
-                        mouseX, mouseY);
+                screen.setTooltip(List.of(permission.getDescription().asOrderedText(),
+                        Text.translatable("enclosure.widget.default_value_is")
+                                .setStyle(Style.EMPTY.withColor(Formatting.GOLD)).append(" ")
+                                .append(value(permission.getDefaultValue())).asOrderedText()
+                ));
             }
         }
 

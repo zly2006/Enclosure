@@ -1,10 +1,13 @@
 package com.github.zly2006.enclosure.gui;
 
+import com.github.zly2006.enclosure.utils.CosTransitionValue;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.Element;
 import net.minecraft.client.gui.screen.ConfirmLinkScreen;
 import net.minecraft.client.gui.screen.Screen;
+import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.screen.ScreenTexts;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
@@ -24,10 +27,7 @@ public class AboutScreen extends Screen {
     public static final int MOD_ICON_TEXTURE_HEIGHT = 80;
 
     private boolean isHovering = false;
-    private long animationStartTime = 0;
-    private float lastAngle = 0;
-    private float startAngle = 0;
-    private float targetAngle = 0;
+    private final CosTransitionValue cosTransitionValue = new CosTransitionValue(500);
 
     public AboutScreen(Screen parent) {
         super(Text.of("About"));
@@ -53,11 +53,17 @@ public class AboutScreen extends Screen {
             button -> ConfirmLinkScreen.open(this, WIKI_ZH), 5, 5, width - 20));
         textWidgets.add(new ClickableTextWidget(client, parent, Text.literal("Click to open English wiki page").formatted(Formatting.UNDERLINE), Text.translatable("enclosure.about.click_to_open"),
             button -> ConfirmLinkScreen.open(this, WIKI_EN), 5, 5, width - 20));
+
+        addDrawableChild(ButtonWidget.builder(ScreenTexts.BACK, button -> client.setScreen(parent))
+                .width(200)
+                .position((width - 200) / 2, height - 25)
+                .build()
+        );
     }
 
     @Override
     public void render(DrawContext context, int mouseX, int mouseY, float delta) {
-        renderInGameBackground(context);
+        super.render(context, mouseX, mouseY, delta);
 
         int renderStart;
         MatrixStack matrices = context.getMatrices();
@@ -71,17 +77,11 @@ public class AboutScreen extends Screen {
 
             if (mouseHoverIcon != isHovering) {
                 isHovering = mouseHoverIcon;
-                animationStartTime = System.currentTimeMillis();
-                startAngle = lastAngle;
-                targetAngle = isHovering ? 360 : 0;
+                cosTransitionValue.setToValue(360 * (isHovering ? 1 : 0));
             }
 
-            float progress = Math.min((System.currentTimeMillis() - animationStartTime) / 500f, 1.0f);
-            float smoothProgress = (float) (1 - Math.cos(progress * Math.PI)) / 2f;
-            lastAngle = startAngle + (targetAngle - startAngle) * smoothProgress;
-
             matrices.translate(renderIconX + MOD_ICON_TEXTURE_WIDTH / 2D, renderIconY + MOD_ICON_TEXTURE_HEIGHT / 2D, 0);
-            matrices.multiply(RotationAxis.POSITIVE_Z.rotationDegrees(lastAngle));
+            matrices.multiply(RotationAxis.POSITIVE_Z.rotationDegrees(cosTransitionValue.calcCurrent()));
 
             context.drawTexture(MOD_ICON_TEXTURE, -MOD_ICON_TEXTURE_WIDTH / 2, -MOD_ICON_TEXTURE_HEIGHT / 2, MOD_ICON_TEXTURE_WIDTH, MOD_ICON_TEXTURE_HEIGHT, 0, 0, 640, 640, 640, 640);
 
