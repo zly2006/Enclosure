@@ -4,7 +4,9 @@ import com.github.zly2006.enclosure.EnclosureView;
 import com.github.zly2006.enclosure.network.config.UUIDCacheS2CPacket;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
+import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.screen.ScreenTexts;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
@@ -35,8 +37,14 @@ public class PermissionScreen extends Screen implements EnclosureGui {
     @Override
     protected void init() {
         super.init();
-        permissionWidgetList = new PermissionListWidget(client, this,
-                fullName, area, uuid, width, height, 20, height);
+        permissionWidgetList = new PermissionListWidget(client, this, fullName, area, uuid,
+                10 * 2 + textRenderer.fontHeight, 30, 0, 0
+        );
+        addDrawableChild(ButtonWidget.builder(ScreenTexts.BACK, button -> client.setScreen(parent))
+                .width(200)
+                .position((width - 200) / 2, height - 25)
+                .build()
+        );
         addDrawableChild(permissionWidgetList);
         setFocused(permissionWidgetList);
     }
@@ -62,22 +70,13 @@ public class PermissionScreen extends Screen implements EnclosureGui {
 
     @Override
     public void render(DrawContext context, int mouseX, int mouseY, float delta) {
-        renderInGameBackground(context);
         super.render(context, mouseX, mouseY, delta);
 
         MutableText title = Text.translatable("enclosure.widget.set_permission",
             (CONSOLE.equals(uuid) ? Text.translatable("enclosure.widget.global") : Text.translatable("enclosure.widget.player", UUIDCacheS2CPacket.getName(uuid))),
             fullName
         );
-        context.drawText(textRenderer, title, 10, 10, 0xffffff, false);
-    }
-
-    public void requestConfirm(Text readString) {
-        assert client != null;
-        client.execute(() -> client.setScreen(new ConfirmScreen(this, readString, () -> {
-            assert client.player != null;
-            client.player.networkHandler.sendCommand("enclosure confirm");
-        })));
+        context.drawCenteredTextWithShadow(textRenderer, title, width / 2, 10, 0xffffff);
     }
 
     public void syncPermission(@NotNull NbtCompound permission) {

@@ -9,6 +9,7 @@ import net.minecraft.client.gui.Element;
 import net.minecraft.client.gui.screen.ingame.HandledScreen;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.entity.player.PlayerInventory;
+import net.minecraft.screen.ScreenTexts;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
@@ -21,7 +22,7 @@ import java.util.UUID;
 
 public class EnclosureScreen extends HandledScreen<EnclosureScreenHandler> implements EnclosureGui {
     final EnclosureView.ReadOnly area;
-    PermissionTargetListWidget<ButtonWidget> permissionTargetListWidget;
+    MemberTargetListWidget<ButtonWidget> memberTargetListWidget;
     ButtonWidget globalWidget;
     ButtonWidget playerWidget;
     ButtonWidget unlistedWidget;
@@ -42,13 +43,20 @@ public class EnclosureScreen extends HandledScreen<EnclosureScreenHandler> imple
         super.init();
         textWidgets.clear();
         subLandWidgets.clear();
-        permissionTargetListWidget = addDrawableChild(new PermissionTargetListWidget<ButtonWidget>(client, area, handler.fullName, this, width, height, 60, height,
+        memberTargetListWidget = addDrawableChild(new MemberTargetListWidget<>(client, area, handler.fullName, this,
+                60, 40, 0, 0,
                 (widget, uuid) -> ButtonWidget.builder(Text.translatable("enclosure.widget.set"), button -> {
                     if (client != null) {
-                        client.setScreen(new PermissionScreen(area, uuid, widget.fullName, widget.parent));
+                        client.setScreen(new PermissionScreen(area, uuid, widget.fullName, widget.screen));
                     }
                 }).size(40, 20).build()
         ));
+        addDrawableChild(ButtonWidget.builder(ScreenTexts.BACK, button -> client.setScreen(null))
+                .width(200)
+                .position((width - 200) / 2, height - 25)
+                .build()
+        );
+
         globalWidget = addDrawableChild(ButtonWidget.builder(Text.translatable("enclosure.widget.global"), button -> {
                 assert client != null;
                 client.setScreen(new PermissionScreen(area, new UUID(0, 0), handler.fullName, this));
@@ -60,7 +68,7 @@ public class EnclosureScreen extends HandledScreen<EnclosureScreenHandler> imple
                 assert client != null;
                 button.active = false;
                 unlistedWidget.active = true;
-                permissionTargetListWidget.showPlayers();
+                    memberTargetListWidget.showPlayers();
             })
             .size(100, 20)
             .position(110, 35)
@@ -69,7 +77,7 @@ public class EnclosureScreen extends HandledScreen<EnclosureScreenHandler> imple
                 assert client != null;
                 button.active = false;
                 playerWidget.active = true;
-                permissionTargetListWidget.showUnlistedPlayers();
+                    memberTargetListWidget.showUnlistedPlayers();
             })
             .size(100, 20)
             .position(215, 35)
@@ -154,10 +162,10 @@ public class EnclosureScreen extends HandledScreen<EnclosureScreenHandler> imple
         aboutWidget.setY(renderBottom);
         if (transferWidget != null) {
             transferWidget.setY(renderBottom + 20);
-            permissionTargetListWidget.setTop(renderBottom + 45);
+            memberTargetListWidget.setTop(renderBottom + 45);
         }
         else {
-            permissionTargetListWidget.setTop(renderBottom + 25);
+            memberTargetListWidget.setTop(renderBottom + 25);
         }
         super.render(context, mouseX, mouseY, delta);
         if (!subLandWidgets.isEmpty()) {
