@@ -26,11 +26,11 @@ import java.util.stream.Stream;
 
 import static com.github.zly2006.enclosure.command.EnclosureCommandKt.CONSOLE;
 
-public class PermissionTargetListWidget<T extends ButtonWidget> extends ElementListWidget<PermissionTargetListWidget.Entry> {
+public class MemberTargetListWidget<T extends ButtonWidget> extends ElementListWidget<MemberTargetListWidget.Entry> {
     final EnclosureView.ReadOnly area;
     final String fullName;
-    final Screen parent;
-    private final Function2<PermissionTargetListWidget<T>, UUID, T> buttonFactory;
+    final Screen screen;
+    private final Function2<MemberTargetListWidget<T>, UUID, T> buttonFactory;
 
     enum Mode {
         Players,
@@ -39,11 +39,18 @@ public class PermissionTargetListWidget<T extends ButtonWidget> extends ElementL
     Mode mode = Mode.Players;
     final SearchEntry searchEntry = new SearchEntry();
 
-    public PermissionTargetListWidget(MinecraftClient minecraftClient, EnclosureView.ReadOnly area, String fullName, Screen parent, int width, int height, int top, int bottom, Function2<PermissionTargetListWidget<T>, UUID, T> buttonFactory) {
-        super(minecraftClient, width, height, top, 20);
+    public MemberTargetListWidget(
+            MinecraftClient minecraftClient, EnclosureView.ReadOnly area, String fullName, Screen screen,
+            int marginTop, int marginBottom, int marginLeft, int marginRight,
+            Function2<MemberTargetListWidget<T>, UUID, T> buttonFactory) {
+        super(minecraftClient,
+                screen.width - marginRight - marginLeft,
+                screen.height - marginTop - marginBottom, marginTop,
+                20 // itemHeight
+        );
         this.area = area;
         this.fullName = fullName;
-        this.parent = parent;
+        this.screen = screen;
         this.buttonFactory = buttonFactory;
     }
 
@@ -90,7 +97,7 @@ public class PermissionTargetListWidget<T extends ButtonWidget> extends ElementL
         PlayerEntry(Text name, UUID uuid) {
             this.name = name;
             this.uuid = uuid;
-            this.setButton = buttonFactory.invoke(PermissionTargetListWidget.this, uuid);
+            this.setButton = buttonFactory.invoke(MemberTargetListWidget.this, uuid);
         }
 
         @Override
@@ -136,7 +143,7 @@ public class PermissionTargetListWidget<T extends ButtonWidget> extends ElementL
                 }
                 entryStream.filter(entry -> entry.name.getString().contains(s))
                         .sorted(Comparator.comparing(o -> o.name.getString()))
-                        .forEach(PermissionTargetListWidget.this::addEntry);
+                        .forEach(MemberTargetListWidget.this::addEntry);
             });
         }
 

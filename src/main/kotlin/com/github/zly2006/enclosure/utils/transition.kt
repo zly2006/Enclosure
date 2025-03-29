@@ -6,7 +6,7 @@ import kotlin.math.cos
 sealed class TransitionValue (
     private val transitionTime: Int
 ){
-    private var lastSetTarget: Long = 0
+    private var lastSetTarget: Long = System.currentTimeMillis()
     private var fromValue: Float = 0F
     private var toValue: Float = 0F
 
