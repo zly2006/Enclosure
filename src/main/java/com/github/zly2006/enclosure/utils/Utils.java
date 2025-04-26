@@ -16,6 +16,7 @@ import net.minecraft.text.*;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
+import net.minecraft.world.Heightmap;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -74,7 +75,7 @@ public class Utils {
     }
 
     public static int topYOf(ServerWorld world, int x, int z) {
-        return topYOf(world, x, z, world.getTopY() - 1);
+        return topYOf(world, x, z, world.getTopY(Heightmap.Type.WORLD_SURFACE, x, z) - 1);
     }
 
     public static int topYOf(ServerWorld world, int x, int z, int startY) {

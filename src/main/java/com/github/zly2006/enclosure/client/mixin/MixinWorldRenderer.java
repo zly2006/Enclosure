@@ -21,30 +21,30 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public class MixinWorldRenderer {
     @Shadow @Final private MinecraftClient client;
 
-    @Inject(
-            method = "render",
-            at = @At(
-                    value = "INVOKE",
-                    target = "Lnet/minecraft/client/render/VertexConsumerProvider$Immediate;draw(Lnet/minecraft/client/render/RenderLayer;)V",
-                    shift = At.Shift.AFTER
-            ),
-            slice = @Slice(
-                    from = @At(
-                            value = "INVOKE",
-                            target = "Lnet/minecraft/client/render/RenderLayer;getWaterMask()Lnet/minecraft/client/render/RenderLayer;",
-                            ordinal = 0
-                    ),
-                    to = @At(
-                            value = "INVOKE",
-                            target = "Lnet/minecraft/client/render/VertexConsumerProvider$Immediate;draw()V",
-                            ordinal = 0
-                    )
-            ),
-            allow = 1
-    )
-    private void onLastRender1(CallbackInfo ci, @Local MatrixStack matrixStack, @Local Vec3d vec3d) {
-        render(matrixStack, vec3d);
-    }
+//    @Inject(
+//            method = "render",
+//            at = @At(
+//                    value = "INVOKE",
+//                    target = "Lnet/minecraft/client/render/VertexConsumerProvider$Immediate;draw(Lnet/minecraft/client/render/RenderLayer;)V",
+//                    shift = At.Shift.AFTER
+//            ),
+//            slice = @Slice(
+//                    from = @At(
+//                            value = "INVOKE",
+//                            target = "Lnet/minecraft/client/render/RenderLayer;getWaterMask()Lnet/minecraft/client/render/RenderLayer;",
+//                            ordinal = 0
+//                    ),
+//                    to = @At(
+//                            value = "INVOKE",
+//                            target = "Lnet/minecraft/client/render/VertexConsumerProvider$Immediate;draw()V",
+//                            ordinal = 0
+//                    )
+//            ),
+//            allow = 1
+//    )
+//    private void onLastRender1(CallbackInfo ci, @Local MatrixStack matrixStack, @Local Vec3d vec3d) {
+//        render(matrixStack, vec3d);
+//    }
 
     @Unique
     private void render(@Local MatrixStack matrixStack, @Local Vec3d vec3d) {
@@ -58,24 +58,24 @@ public class MixinWorldRenderer {
         RenderSystem.disableBlend();
     }
 
-    @Inject(
-            method = "render",
-            at = @At(
-                    value = "INVOKE",
-                    target = "Lnet/minecraft/client/render/WorldRenderer;renderLayer(Lnet/minecraft/client/render/RenderLayer;DDDLorg/joml/Matrix4f;Lorg/joml/Matrix4f;)V",
-                    shift = At.Shift.AFTER
-            ),
-            slice = @Slice(
-                    from = @At(
-                            value = "INVOKE",
-                            target = "Lnet/minecraft/client/render/RenderLayer;getTripwire()Lnet/minecraft/client/render/RenderLayer;",
-                            ordinal = 1
-                    ),
-                    to = @At("TAIL")
-            ),
-            allow = 1
-    )
-    private void onLastRender2(CallbackInfo ci, @Local MatrixStack matrixStack, @Local Vec3d vec3d) {
-        render(matrixStack, vec3d);
-    }
+//    @Inject(
+//            method = "render",
+//            at = @At(
+//                    value = "INVOKE",
+//                    target = "Lnet/minecraft/client/render/WorldRenderer;renderLayer(Lnet/minecraft/client/render/RenderLayer;DDDLorg/joml/Matrix4f;Lorg/joml/Matrix4f;)V",
+//                    shift = At.Shift.AFTER
+//            ),
+//            slice = @Slice(
+//                    from = @At(
+//                            value = "INVOKE",
+//                            target = "Lnet/minecraft/client/render/RenderLayer;getTripwire()Lnet/minecraft/client/render/RenderLayer;",
+//                            ordinal = 1
+//                    ),
+//                    to = @At("TAIL")
+//            ),
+//            allow = 1
+//    )
+//    private void onLastRender2(CallbackInfo ci, @Local MatrixStack matrixStack, @Local Vec3d vec3d) {
+//        render(matrixStack, vec3d);
+//    }
 }

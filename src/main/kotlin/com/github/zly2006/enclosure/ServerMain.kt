@@ -473,17 +473,17 @@ object ServerMain: ModInitializer {
                     .map { it.key }
                     .map { permission ->
                         if (checkPermission(player, permission, blockPos)) {
-                            return@map TypedActionResult.pass(player.getStackInHand(hand))
+                            return@map ActionResult.PASS
                         } else {
                             player.currentScreenHandler.syncState()
                             player.sendMessage(permission.getNoPermissionMsg(player))
-                            return@map TypedActionResult.fail(player.getStackInHand(hand))
+                            return@map ActionResult.FAIL
                         }
                     }
-                    .filter { result -> result.result != ActionResult.PASS }
-                    .firstOrNull() ?: TypedActionResult.pass(player.getStackInHand(hand))
+                    .filter { result -> result != ActionResult.PASS }
+                    .firstOrNull() ?: ActionResult.PASS
             }
-            return@register TypedActionResult.pass(player.getStackInHand(hand))
+            return@register ActionResult.PASS
         }
         AttackBlockCallback.EVENT.register(id) { player, world, _, pos, _ ->
             if (player is ServerPlayerEntity) {
@@ -507,7 +507,7 @@ object ServerMain: ModInitializer {
         UseEntityCallback.EVENT.register { player, world, hand, entity, _ ->
             if (entity is ArmorStandEntity) {
                 if (!checkPermission(world!!, entity.getBlockPos(), player, Permission.ARMOR_STAND)) {
-                    player.sendMessage(Permission.ARMOR_STAND.getNoPermissionMsg(player))
+                    player.sendMessage(Permission.ARMOR_STAND.getNoPermissionMsg(player), true)
                     player.currentScreenHandler.syncState()
                     // We don't need to sync entity in this situation
                     return@register ActionResult.FAIL

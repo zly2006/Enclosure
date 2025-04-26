@@ -15,7 +15,7 @@ public class MixinClient implements ClientAccess {
     @Unique @Nullable
     MusicSound musicSound;
     @Inject(
-            method = "getMusicType",
+            method = "getMusicInstance",
             at = @At(value = "FIELD", target = "Lnet/minecraft/client/MinecraftClient;player:Lnet/minecraft/client/network/ClientPlayerEntity;", ordinal = 0),
             cancellable = true
     )

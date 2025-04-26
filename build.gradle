@@ -74,11 +74,11 @@ base {
     archivesName = project.archives_base_name
 }
 
-if (project.archices_preview_version.empty) {
-    version = project.mod_version + "+" + grgit.branch.current().name // usually branch name is the mc version
-} else {
-    version = project.mod_version + "-" + project.archices_preview_version + "+" + grgit.branch.current().name + "-" + grgit.head().id.substring(0, 8)
-}
+//if (project.archices_preview_version.empty) {
+//    version = project.mod_version + "+" + grgit.branch.current().name // usually branch name is the mc version
+//} else {
+//    version = project.mod_version + "-" + project.archices_preview_version + "+" + grgit.branch.current().name + "-" + grgit.head().id.substring(0, 8)
+//}
 group = project.maven_group
 
 
@@ -101,7 +101,7 @@ dependencies {
     include(modImplementation("org.yaml:snakeyaml:1.33"))
 
     // Fabric Permissions API. To check the permissions
-    include(modImplementation('me.lucko:fabric-permissions-api:0.2-SNAPSHOT'))
+    include(modImplementation('me.lucko:fabric-permissions-api:0.3.3'))
     // REI. To avoid the REI GUI overlap with the Enclosure GUI
     modCompileOnly "me.shedaniel:RoughlyEnoughItems-api-fabric:${project.rei_version}"
 

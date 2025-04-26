@@ -22,6 +22,7 @@ import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtHelper;
 import net.minecraft.nbt.NbtList;
+import net.minecraft.network.packet.s2c.play.PositionFlag;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayNetworkHandler;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -42,6 +43,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
+import java.util.EnumSet;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -127,7 +129,7 @@ public abstract class MixinServerPlayerEntity extends PlayerEntity implements Pl
     }
 
     @Inject(method = "damage", at = @At("HEAD"), cancellable = true)
-    private void protectPVP(DamageSource source, float amount, CallbackInfoReturnable<Boolean> cir) {
+    private void protectPVP(ServerWorld world, DamageSource source, float amount, CallbackInfoReturnable<Boolean> cir) {
         if (source.getAttacker() instanceof ServerPlayerEntity attacker) {
             //pvp
             EnclosureArea area = ServerMain.INSTANCE.getSmallestEnclosure((ServerWorld) getWorld(), getBlockPos());
@@ -232,7 +234,7 @@ public abstract class MixinServerPlayerEntity extends PlayerEntity implements Pl
                     player.sendMessage(MOVE.getNoPermissionMsg(player));
                     if (area != lastArea && lastWorld != null && lastPos != null) {
                         // teleport back
-                        player.teleport(lastWorld, lastPos.x, lastPos.y, lastPos.z, 0, 0);
+                        player.teleport(lastWorld, lastPos.x, lastPos.y, lastPos.z, EnumSet.noneOf(PositionFlag.class), 0, 0, true);
                     } else {
                         // kick
                         area.kickPlayer(player);

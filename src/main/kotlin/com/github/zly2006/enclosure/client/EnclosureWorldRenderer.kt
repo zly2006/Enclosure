@@ -5,8 +5,10 @@ import com.mojang.blaze3d.systems.RenderSystem
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents
 import net.minecraft.client.MinecraftClient
+import net.minecraft.client.gl.ShaderProgramKeys
 import net.minecraft.client.render.*
 import net.minecraft.client.util.math.MatrixStack
+import net.minecraft.util.math.Box
 import net.minecraft.util.math.Vec3d
 import org.joml.Matrix4f
 import kotlin.math.max
@@ -34,6 +36,117 @@ object EnclosureWorldRenderer {
         }
     }
 
+    fun drawBox(
+        vertexConsumer: VertexConsumer,
+        x1: Double,
+        y1: Double,
+        z1: Double,
+        x2: Double,
+        y2: Double,
+        z2: Double,
+        red: Float,
+        green: Float,
+        blue: Float,
+        alpha: Float
+    ) {
+        drawBox(MatrixStack(), vertexConsumer, x1, y1, z1, x2, y2, z2, red, green, blue, alpha, red, green, blue)
+    }
+
+    fun drawBox(
+        matrices: MatrixStack,
+        vertexConsumer: VertexConsumer,
+        box: Box,
+        red: Float,
+        green: Float,
+        blue: Float,
+        alpha: Float
+    ) {
+        drawBox(
+            matrices,
+            vertexConsumer,
+            box.minX,
+            box.minY,
+            box.minZ,
+            box.maxX,
+            box.maxY,
+            box.maxZ,
+            red,
+            green,
+            blue,
+            alpha,
+            red,
+            green,
+            blue
+        )
+    }
+
+    fun drawBox(
+        matrices: MatrixStack,
+        vertexConsumer: VertexConsumer,
+        x1: Double,
+        y1: Double,
+        z1: Double,
+        x2: Double,
+        y2: Double,
+        z2: Double,
+        red: Float,
+        green: Float,
+        blue: Float,
+        alpha: Float
+    ) {
+        drawBox(matrices, vertexConsumer, x1, y1, z1, x2, y2, z2, red, green, blue, alpha, red, green, blue)
+    }
+
+    fun drawBox(
+        matrices: MatrixStack,
+        vertexConsumer: VertexConsumer,
+        x1: Double,
+        y1: Double,
+        z1: Double,
+        x2: Double,
+        y2: Double,
+        z2: Double,
+        red: Float,
+        green: Float,
+        blue: Float,
+        alpha: Float,
+        xAxisRed: Float,
+        yAxisGreen: Float,
+        zAxisBlue: Float
+    ) {
+        val entry = matrices.peek()
+        val f = x1.toFloat()
+        val g = y1.toFloat()
+        val h = z1.toFloat()
+        val i = x2.toFloat()
+        val j = y2.toFloat()
+        val k = z2.toFloat()
+        vertexConsumer.vertex(entry, f, g, h).color(red, yAxisGreen, zAxisBlue, alpha).normal(entry, 1.0f, 0.0f, 0.0f)
+        vertexConsumer.vertex(entry, i, g, h).color(red, yAxisGreen, zAxisBlue, alpha).normal(entry, 1.0f, 0.0f, 0.0f)
+        vertexConsumer.vertex(entry, f, g, h).color(xAxisRed, green, zAxisBlue, alpha).normal(entry, 0.0f, 1.0f, 0.0f)
+        vertexConsumer.vertex(entry, f, j, h).color(xAxisRed, green, zAxisBlue, alpha).normal(entry, 0.0f, 1.0f, 0.0f)
+        vertexConsumer.vertex(entry, f, g, h).color(xAxisRed, yAxisGreen, blue, alpha).normal(entry, 0.0f, 0.0f, 1.0f)
+        vertexConsumer.vertex(entry, f, g, k).color(xAxisRed, yAxisGreen, blue, alpha).normal(entry, 0.0f, 0.0f, 1.0f)
+        vertexConsumer.vertex(entry, i, g, h).color(red, green, blue, alpha).normal(entry, 0.0f, 1.0f, 0.0f)
+        vertexConsumer.vertex(entry, i, j, h).color(red, green, blue, alpha).normal(entry, 0.0f, 1.0f, 0.0f)
+        vertexConsumer.vertex(entry, i, j, h).color(red, green, blue, alpha).normal(entry, -1.0f, 0.0f, 0.0f)
+        vertexConsumer.vertex(entry, f, j, h).color(red, green, blue, alpha).normal(entry, -1.0f, 0.0f, 0.0f)
+        vertexConsumer.vertex(entry, f, j, h).color(red, green, blue, alpha).normal(entry, 0.0f, 0.0f, 1.0f)
+        vertexConsumer.vertex(entry, f, j, k).color(red, green, blue, alpha).normal(entry, 0.0f, 0.0f, 1.0f)
+        vertexConsumer.vertex(entry, f, j, k).color(red, green, blue, alpha).normal(entry, 0.0f, -1.0f, 0.0f)
+        vertexConsumer.vertex(entry, f, g, k).color(red, green, blue, alpha).normal(entry, 0.0f, -1.0f, 0.0f)
+        vertexConsumer.vertex(entry, f, g, k).color(red, green, blue, alpha).normal(entry, 1.0f, 0.0f, 0.0f)
+        vertexConsumer.vertex(entry, i, g, k).color(red, green, blue, alpha).normal(entry, 1.0f, 0.0f, 0.0f)
+        vertexConsumer.vertex(entry, i, g, k).color(red, green, blue, alpha).normal(entry, 0.0f, 0.0f, -1.0f)
+        vertexConsumer.vertex(entry, i, g, h).color(red, green, blue, alpha).normal(entry, 0.0f, 0.0f, -1.0f)
+        vertexConsumer.vertex(entry, f, j, k).color(red, green, blue, alpha).normal(entry, 1.0f, 0.0f, 0.0f)
+        vertexConsumer.vertex(entry, i, j, k).color(red, green, blue, alpha).normal(entry, 1.0f, 0.0f, 0.0f)
+        vertexConsumer.vertex(entry, i, g, k).color(red, green, blue, alpha).normal(entry, 0.0f, 1.0f, 0.0f)
+        vertexConsumer.vertex(entry, i, j, k).color(red, green, blue, alpha).normal(entry, 0.0f, 1.0f, 0.0f)
+        vertexConsumer.vertex(entry, i, j, h).color(red, green, blue, alpha).normal(entry, 0.0f, 0.0f, 1.0f)
+        vertexConsumer.vertex(entry, i, j, k).color(red, green, blue, alpha).normal(entry, 0.0f, 0.0f, 1.0f)
+    }
+
     private fun drawSessionOutline(
         matrices: MatrixStack,
         session: ClientSession,
@@ -54,7 +167,9 @@ object EnclosureWorldRenderer {
         val matrix4f = matrices.peek().positionMatrix
         val matrix3f = matrices.peek()
         // Render two points
-        WorldRenderer.drawBox(
+        val worldRender = MinecraftClient.getInstance().worldRenderer
+
+        drawBox(
             matrices, linesBuffer,
             session.pos1.x - cameraPos.x,
             session.pos1.y - cameraPos.y,
@@ -64,7 +179,7 @@ object EnclosureWorldRenderer {
             session.pos1.z + 1 - cameraPos.z,
             1f, 0.25f, 0.25f, alpha
         )
-        WorldRenderer.drawBox(
+        drawBox(
             matrices, linesBuffer,
             session.pos2.x - cameraPos.getX(),
             session.pos2.y - cameraPos.getY(),
@@ -103,7 +218,8 @@ object EnclosureWorldRenderer {
         val matrix4f = matrices.peek().positionMatrix
         matrices.push()
         RenderSystem.disableCull()
-        RenderSystem.setShader { GameRenderer.getPositionColorProgram() }
+        RenderSystem.setShader(ShaderProgramKeys.POSITION_COLOR)
+        //            GameRenderer.getPositionColorProgram()
         fun drawFace(x1: Float, y1: Float, z1: Float, x2: Float, y2: Float, z2: Float, x3: Float, y3: Float, z3: Float, x4: Float, y4: Float, z4: Float, red: Float, green: Float, blue: Float, alpha: Float) {
             val bufferBuilder = Tessellator.getInstance().begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_COLOR)
             bufferBuilder.vertex(matrix4f, x1, y1, z1).color(red, green, blue, alpha)

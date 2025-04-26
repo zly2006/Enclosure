@@ -15,6 +15,7 @@ import net.minecraft.nbt.NbtCompound
 import net.minecraft.nbt.NbtDouble
 import net.minecraft.nbt.NbtElement
 import net.minecraft.nbt.NbtList
+import net.minecraft.network.packet.s2c.play.PositionFlag
 import net.minecraft.registry.RegistryWrapper
 import net.minecraft.server.command.ServerCommandSource
 import net.minecraft.server.network.ServerPlayerEntity
@@ -186,10 +187,18 @@ open class EnclosureArea : PersistentState, EnclosureView {
             val overworld = player.server.overworld
             val spawnPos = overworld.spawnPos
             player.teleport(
-                overworld, spawnPos.x.toDouble() + 0.5, spawnPos.y.toDouble(), spawnPos.z.toDouble() + 0.5, 0f, 0f
+                overworld, spawnPos.x.toDouble() + 0.5, spawnPos.y.toDouble(), spawnPos.z.toDouble() + 0.5,
+                EnumSet.noneOf(
+                    PositionFlag::class.java
+                ), 0f, 0f, true
             )
         } else {
-            player.teleport(world, x.toDouble(), y.toDouble(), z.toDouble(), 0f, 0f)
+            player.teleport(
+                world, x.toDouble(), y.toDouble(), z.toDouble(),
+                EnumSet.noneOf(
+                    PositionFlag::class.java
+                ), 0f, 0f, true
+            )
         }
     }
 
@@ -443,7 +452,10 @@ open class EnclosureArea : PersistentState, EnclosureView {
         if (player.isSleeping) {
             player.wakeUp()
         }
-        player.teleport(world, teleportPos!!.x, teleportPos!!.y, teleportPos!!.z, yaw, pitch)
+        player.teleport(world, teleportPos!!.x, teleportPos!!.y, teleportPos!!.z,
+            EnumSet.noneOf(
+            PositionFlag::class.java
+        ), yaw, pitch, true)
     }
 
     override fun onRemoveChild(child: PermissionHolder) {
