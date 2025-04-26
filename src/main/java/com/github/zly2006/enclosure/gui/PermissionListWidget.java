@@ -64,7 +64,7 @@ public class PermissionListWidget extends ElementListWidget<PermissionListWidget
         private Text value(Boolean value) {
             return value == null ? Text.translatable("enclosure.widget.none").setStyle(Style.EMPTY.withColor(Formatting.DARK_AQUA))
                     : value ? Text.translatable("enclosure.widget.true").setStyle(Style.EMPTY.withColor(Formatting.GREEN))
-                            : Text.translatable("enclosure.widget.false").setStyle(Style.EMPTY.withColor(Formatting.RED));
+                    : Text.translatable("enclosure.widget.false").setStyle(Style.EMPTY.withColor(Formatting.RED));
         }
         private Text value() {
             return value(getValue());
@@ -141,9 +141,9 @@ public class PermissionListWidget extends ElementListWidget<PermissionListWidget
                     }
 
                     client.player.networkHandler.sendChatCommand("enclosure set " + fullName + " uuid " +
-                        uuid.toString() + " " +
-                        permission.getName() + " " +
-                        Optional.ofNullable(getValue()).map(String::valueOf).orElse("none"));
+                            uuid.toString() + " " +
+                            permission.getName() + " " +
+                            Optional.ofNullable(getValue()).map(String::valueOf).orElse("none"));
                     buttonWidget.setMessage(value());
                     playDownSound(MinecraftClient.getInstance().getSoundManager());
                     return true;
@@ -156,9 +156,9 @@ public class PermissionListWidget extends ElementListWidget<PermissionListWidget
                         setValue(null);
                     }
                     client.player.networkHandler.sendChatCommand("enclosure set " + fullName + " uuid " +
-                        uuid.toString() + " " +
-                        permission.getName() + " " +
-                        Optional.ofNullable(getValue()).map(String::valueOf).orElse("none"));
+                            uuid.toString() + " " +
+                            permission.getName() + " " +
+                            Optional.ofNullable(getValue()).map(String::valueOf).orElse("none"));
                     buttonWidget.setMessage(value());
                     playDownSound(MinecraftClient.getInstance().getSoundManager());
                     return true;
@@ -214,6 +214,7 @@ public class PermissionListWidget extends ElementListWidget<PermissionListWidget
         }
     }
 
+    @Override
     protected boolean isSelectButton(int button) {
         return true;
     }

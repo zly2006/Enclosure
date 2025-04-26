@@ -3,40 +3,48 @@ package com.github.zly2006.enclosure.mixin;
 import com.github.zly2006.enclosure.EnclosureArea;
 import com.github.zly2006.enclosure.ServerMain;
 import com.github.zly2006.enclosure.utils.Permission;
-import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+import net.minecraft.block.BlockState;
 import net.minecraft.entity.Entity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.BlockView;
 import net.minecraft.world.World;
 import net.minecraft.world.explosion.Explosion;
-import net.minecraft.world.explosion.ExplosionImpl;
+import net.minecraft.world.explosion.ExplosionBehavior;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.ModifyVariable;
+import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-import java.util.List;
+@Mixin(ExplosionBehavior.class)
+public abstract class MixinExplosion {
+    @Inject(
+            method = "canDestroyBlock",
+            at = @At("HEAD"),
+            cancellable = true
+    )
+    private void canDestroyBlock(Explosion explosion, BlockView world, BlockPos pos, BlockState state, float power, CallbackInfoReturnable<Boolean> cir) {
+        if (world instanceof ServerWorld serverWorld) {
+            EnclosureArea a = ServerMain.INSTANCE.getSmallestEnclosure(serverWorld, pos);
+            if (a != null && !a.hasPubPerm(Permission.EXPLOSION)) {
+                cir.setReturnValue(false);
+            }
+        }
+    }
 
-@Mixin(Explosion.class)
-public interface MixinExplosion {
-
-//    @Shadow public abstract ServerWorld getWorld();
-
-//    @ModifyVariable(at = @At(value = "INVOKE", target = "Lnet/minecraft/util/math/Vec3d;<init>(DDD)V", ordinal = 1), method = "collectBlocksAndDamageEntities")
-//    private List<Entity> protectEntities(List<Entity> list) {
-//        if (!getWorld().isClient) {
-//            list.removeIf(entity -> {
-//                assert entity != null;
-//                BlockPos pos = entity.getBlockPos();
-//                EnclosureArea a = ServerMain.INSTANCE.getSmallestEnclosure((ServerWorld) getWorld(), pos);
-//                return a != null && !a.hasPubPerm(Permission.EXPLOSION);
-//            });
-//            this.affectedBlocks.removeIf(pos -> {
-//                EnclosureArea a = ServerMain.INSTANCE.getSmallestEnclosure((ServerWorld) getWorld(), pos);
-//                return a != null && !a.hasPubPerm(Permission.EXPLOSION);
-//            });
-//        }
-//        return list;
-//    }
+    @Inject(
+            method = "shouldDamage",
+            at = @At("HEAD"),
+            cancellable = true
+    )
+    private void shouldDamage(Explosion explosion, Entity entity, CallbackInfoReturnable<Boolean> cir) {
+        if (entity.getWorld() instanceof ServerWorld serverWorld) {
+            EnclosureArea a = ServerMain.INSTANCE.getSmallestEnclosure(serverWorld, entity.getBlockPos());
+            if (a != null && !a.hasPubPerm(Permission.EXPLOSION)) {
+                cir.setReturnValue(false);
+            }
+        }
+    }
 }

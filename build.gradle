@@ -54,7 +54,7 @@ dependencies {
     include(modImplementation("org.yaml:snakeyaml:1.33"))
 
     // Fabric Permissions API. To check the permissions
-    include(modImplementation('me.lucko:fabric-permissions-api:0.2-SNAPSHOT'))
+    include(modImplementation('me.lucko:fabric-permissions-api:0.3.3'))
     // REI. To avoid the REI GUI overlap with the Enclosure GUI
     modCompileOnly "me.shedaniel:RoughlyEnoughItems-api-fabric:${project.rei_version}"
 }

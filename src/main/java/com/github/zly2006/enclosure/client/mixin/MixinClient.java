@@ -2,6 +2,7 @@ package com.github.zly2006.enclosure.client.mixin;
 
 import com.github.zly2006.enclosure.access.ClientAccess;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.sound.MusicInstance;
 import net.minecraft.sound.MusicSound;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
@@ -19,9 +20,9 @@ public class MixinClient implements ClientAccess {
             at = @At(value = "FIELD", target = "Lnet/minecraft/client/MinecraftClient;player:Lnet/minecraft/client/network/ClientPlayerEntity;", ordinal = 0),
             cancellable = true
     )
-    private void modifyBgm(CallbackInfoReturnable<MusicSound> cir) {
+    private void modifyBgm(CallbackInfoReturnable<MusicInstance> cir) {
         if (musicSound != null) {
-            cir.setReturnValue(musicSound);
+            cir.setReturnValue(new MusicInstance(musicSound));
         }
     }
 
