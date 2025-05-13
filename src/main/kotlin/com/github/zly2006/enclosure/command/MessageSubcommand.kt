@@ -63,7 +63,7 @@ fun BuilderScope<*>.registerMessages(access: CommandRegistryAccess) {
                         .sendMessage(
                             Text.literal(msg).append(" ").append(ctp).setStyle(
                                 Style.EMPTY.hoverText(ctp)
-                                    .withClickEvent(ClickEvent(ClickEvent.Action.COPY_TO_CLIPBOARD, msg))
+                                    .withClickEvent(ClickEvent.CopyToClipboard(msg))
                             )
                         )
                 }

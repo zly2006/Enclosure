@@ -18,7 +18,10 @@ import net.minecraft.text.Text
 import net.minecraft.util.math.ChunkPos
 
 const val MAX_CHUNK_LEVEL = 33 // ChunkLevels.getLevelFromType(ChunkLevelType.FULL)
-val FORCED = ChunkTicketType.create<ChunkPos>("enclosure.forced", Comparator.comparingLong { it.toLong() })!!
+// 不建议，新版本要求注册类型了，强行这么搞容易让原版客户端进不去服务器
+// val FORCED = ChunkTicketType.create<ChunkPos>("enclosure.forced", Comparator.comparingLong { it.toLong() })!!
+
+val FORCED: ChunkTicketType = ChunkTicketType.FORCED
 val timeRegex = Regex("""^(\d{1,3}h)?(\d{1,2}m)?(\d{1,2}s)?(\d{1,2}gt)?$""")
 
 fun BuilderScope<*>.registerForceLoad() {

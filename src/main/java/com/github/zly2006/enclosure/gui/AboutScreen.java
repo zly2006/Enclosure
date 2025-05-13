@@ -4,6 +4,7 @@ import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.Element;
 import net.minecraft.client.gui.screen.ConfirmLinkScreen;
 import net.minecraft.client.gui.screen.Screen;
+import net.minecraft.client.render.RenderLayer;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
@@ -83,7 +84,7 @@ public class AboutScreen extends Screen {
             matrices.translate(renderIconX + MOD_ICON_TEXTURE_WIDTH / 2D, renderIconY + MOD_ICON_TEXTURE_HEIGHT / 2D, 0);
             matrices.multiply(RotationAxis.POSITIVE_Z.rotationDegrees(lastAngle));
 
-            context.drawTexture(MOD_ICON_TEXTURE, -MOD_ICON_TEXTURE_WIDTH / 2, -MOD_ICON_TEXTURE_HEIGHT / 2, MOD_ICON_TEXTURE_WIDTH, MOD_ICON_TEXTURE_HEIGHT, 0, 0, 640, 640, 640, 640);
+            context.drawTexture(RenderLayer::getGuiTexturedOverlay, MOD_ICON_TEXTURE, -MOD_ICON_TEXTURE_WIDTH / 2, -MOD_ICON_TEXTURE_HEIGHT / 2, MOD_ICON_TEXTURE_WIDTH, MOD_ICON_TEXTURE_HEIGHT, 0, 0, 640, 640, 640, 640);
 
             renderStart = renderIconY + MOD_ICON_TEXTURE_HEIGHT + 20;
         } finally {

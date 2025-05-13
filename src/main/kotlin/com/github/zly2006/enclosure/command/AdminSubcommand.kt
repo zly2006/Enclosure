@@ -115,10 +115,7 @@ fun BuilderScope<*>.registerAdmin() {
                         Text.literal("Closest enclosure: " + enclosure.fullName + ", click to show info")
                             .styled {
                                 it.withClickEvent(
-                                    ClickEvent(
-                                        net.minecraft.text.ClickEvent.Action.RUN_COMMAND,
-                                        "/enclosure info " + enclosure.fullName
-                                    )
+                                    ClickEvent.RunCommand("/enclosure info " + enclosure.fullName)
                                 )
                             })
                 }

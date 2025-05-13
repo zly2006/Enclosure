@@ -21,7 +21,7 @@ public abstract class MixinWitherEntity extends Entity {
         super(type, world);
     }
 
-    @Inject(method = "mobTick", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/World;breakBlock(Lnet/minecraft/util/math/BlockPos;ZLnet/minecraft/entity/Entity;)Z"), cancellable = true)
+    @Inject(method = "mobTick", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/world/ServerWorld;breakBlock(Lnet/minecraft/util/math/BlockPos;ZLnet/minecraft/entity/Entity;)Z"), cancellable = true)
     private void onBreakBlock(CallbackInfo ci, @Local BlockPos blockPos) {
         if (getWorld().isClient) {
             return;

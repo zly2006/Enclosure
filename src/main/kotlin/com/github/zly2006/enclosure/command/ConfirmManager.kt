@@ -57,7 +57,7 @@ object ConfirmManager {
         val text = TrT.of("enclosure.message.dangerous")
         text.style = Style.EMPTY
                 .hoverText(TrT.of("enclosure.message.confirm_event"))
-                .withClickEvent(ClickEvent(ClickEvent.Action.RUN_COMMAND, "/enclosure confirm"))
+                .withClickEvent(ClickEvent.RunCommand("/enclosure confirm"))
                 .withColor(Formatting.YELLOW)
         val entry = Entry(message, runnable, enforceCLI)
         runnableMap[player?.uuid ?: CONSOLE] = entry

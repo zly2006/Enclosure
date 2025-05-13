@@ -20,6 +20,10 @@ import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import com.google.gson.JsonObject
 import com.mojang.brigadier.arguments.FloatArgumentType
+import com.mojang.datafixers.util.Pair
+import com.mojang.serialization.Codec
+import com.mojang.serialization.DataResult
+import com.mojang.serialization.DynamicOps
 import me.lucko.fabric.api.permissions.v0.Options
 import net.fabricmc.api.EnvType
 import net.fabricmc.api.ModInitializer
@@ -39,15 +43,17 @@ import net.minecraft.block.*
 import net.minecraft.command.argument.Vec3ArgumentType
 import net.minecraft.datafixer.DataFixTypes
 import net.minecraft.entity.Entity
-import net.minecraft.entity.Saddleable
 import net.minecraft.entity.decoration.ArmorStandEntity
 import net.minecraft.entity.decoration.ItemFrameEntity
+import net.minecraft.entity.passive.AbstractHorseEntity
 import net.minecraft.entity.passive.AllayEntity
 import net.minecraft.entity.passive.AnimalEntity
 import net.minecraft.entity.passive.SheepEntity
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.item.*
 import net.minecraft.item.HoneycombItem.UNWAXED_TO_WAXED_BLOCKS
+import net.minecraft.nbt.NbtCompound
+import net.minecraft.nbt.NbtOps
 import net.minecraft.network.packet.s2c.play.EntityTrackerUpdateS2CPacket
 import net.minecraft.registry.RegistryKey
 import net.minecraft.registry.tag.BlockTags
@@ -57,12 +63,15 @@ import net.minecraft.server.network.ServerPlayNetworkHandler
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.server.world.ServerWorld
 import net.minecraft.text.Text
-import net.minecraft.util.*
+import net.minecraft.util.ActionResult
+import net.minecraft.util.Formatting
+import net.minecraft.util.Hand
+import net.minecraft.util.Identifier
 import net.minecraft.util.hit.BlockHitResult
 import net.minecraft.util.hit.HitResult
 import net.minecraft.util.math.BlockPos
 import net.minecraft.util.math.ChunkPos
-import net.minecraft.world.PersistentState
+import net.minecraft.world.PersistentStateType
 import net.minecraft.world.RaycastContext
 import net.minecraft.world.World
 import org.slf4j.Logger
@@ -208,7 +217,7 @@ object ServerMain: ModInitializer {
                         else -> false
                     }
                 }
-                put(Permission.HORSE) { it.entity is Saddleable }
+                put(Permission.HORSE) { it.entity is AbstractHorseEntity }
                 put(Permission.FEED_ANIMAL) {
                     it.entity is AnimalEntity && it.entity.isBreedingItem(it.item.defaultStack)
                 }
@@ -473,17 +482,17 @@ object ServerMain: ModInitializer {
                     .map { it.key }
                     .map { permission ->
                         if (checkPermission(player, permission, blockPos)) {
-                            return@map TypedActionResult.pass(player.getStackInHand(hand))
+                            return@map ActionResult.PASS
                         } else {
                             player.currentScreenHandler.syncState()
                             player.sendMessage(permission.getNoPermissionMsg(player))
-                            return@map TypedActionResult.fail(player.getStackInHand(hand))
+                            return@map ActionResult.FAIL
                         }
                     }
-                    .filter { result -> result.result != ActionResult.PASS }
-                    .firstOrNull() ?: TypedActionResult.pass(player.getStackInHand(hand))
+                    .filter { result -> result != ActionResult.PASS }
+                    .firstOrNull() ?: ActionResult.PASS
             }
-            return@register TypedActionResult.pass(player.getStackInHand(hand))
+            return@register ActionResult.PASS
         }
         AttackBlockCallback.EVENT.register(id) { player, world, _, pos, _ ->
             if (player is ServerPlayerEntity) {
@@ -507,7 +516,7 @@ object ServerMain: ModInitializer {
         UseEntityCallback.EVENT.register { player, world, hand, entity, _ ->
             if (entity is ArmorStandEntity) {
                 if (!checkPermission(world!!, entity.getBlockPos(), player, Permission.ARMOR_STAND)) {
-                    player.sendMessage(Permission.ARMOR_STAND.getNoPermissionMsg(player))
+                    player.sendMessage(Permission.ARMOR_STAND.getNoPermissionMsg(player), true)
                     player.currentScreenHandler.syncState()
                     // We don't need to sync entity in this situation
                     return@register ActionResult.FAIL
@@ -543,33 +552,18 @@ object ServerMain: ModInitializer {
                 "Loading enclosures in {}...",
                 world.registryKey.value
             )
-            val update = AtomicBoolean(false)
-            val type = PersistentState.Type({
-                val enclosureList = EnclosureList(world, true)
-                enclosureList.markDirty()
-                enclosureList
-            }, { nbtCompound, loopup ->
-                var nbtCompound = nbtCompound
-                val version = nbtCompound.getInt(DATA_VERSION_KEY)
-                if (version != DATA_VERSION) {
-                    LOGGER.info(
-                        "Updating enclosure data from version {} to {}",
-                        version,
-                        DATA_VERSION
-                    )
-                    for (i in version until DATA_VERSION) {
-                        nbtCompound = DataUpdater.update(i, nbtCompound)
-                    }
-                    update.plain = true
-                    update.set(true)
-                }
-                val enclosureList = EnclosureList(nbtCompound, world, true)
-                if (update.get()) {
+            val type = PersistentStateType(
+                ENCLOSURE_LIST_KEY,
+                {
+                    val enclosureList = EnclosureList(world, true)
                     enclosureList.markDirty()
-                }
-                enclosureList
-            }, DataFixTypes.SAVED_DATA_MAP_DATA)
-            world.chunkManager.persistentStateManager.getOrCreate(type, ENCLOSURE_LIST_KEY)
+                    enclosureList
+                },
+                EnclosureCodec(world),
+                DataFixTypes.SAVED_DATA_MAP_DATA
+            )
+
+            world.chunkManager.persistentStateManager.getOrCreate(type)
         })
         ServerLifecycleEvents.SERVER_STARTED.register {
             //backupManager = BackupManager()
@@ -592,5 +586,49 @@ object ServerMain: ModInitializer {
         }
 
         LOGGER.info("Enclosure enabled now!")
+    }
+
+    class EnclosureCodec(private val world: ServerWorld) : Codec<EnclosureList> {
+        override fun <T> encode(
+            input: EnclosureList,
+            ops: DynamicOps<T?>,
+            prefix: T
+        ): DataResult<T> {
+            val nbtCompound = NbtCompound()
+            input.writeNbt(nbtCompound, null)
+
+            @Suppress("UNCHECKED_CAST")
+            return DataResult.success(nbtCompound as T)
+        }
+
+        override fun <T> decode(
+            ops: DynamicOps<T>,
+            input: T
+        ): DataResult<Pair<EnclosureList, T>> {
+            var nbtCompound = ops.convertTo(NbtOps.INSTANCE, input) as NbtCompound
+
+            val version = nbtCompound.getInt(DATA_VERSION_KEY, 0)
+            val update = AtomicBoolean(false)
+
+            if (version != DATA_VERSION) {
+                LOGGER.info(
+                    "Updating enclosure data from version {} to {}",
+                    version,
+                    DATA_VERSION
+                )
+                for (i in version until DATA_VERSION) {
+                    nbtCompound = DataUpdater.update(i, nbtCompound)
+                }
+                update.plain = true
+                update.set(true)
+            }
+            val enclosureList = EnclosureList(nbtCompound, world, true)
+            if (update.get()) {
+                enclosureList.markDirty()
+            }
+
+            return DataResult.success(Pair.of(enclosureList, ops.empty()))
+        }
+
     }
 }

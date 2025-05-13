@@ -55,7 +55,7 @@ public class PermissionTargetListWidget<T extends ButtonWidget> extends ElementL
     public void showPlayers() {
         clearEntries();
         mode = Mode.Players;
-        setScrollAmount(0);
+        setScrollY(0);
         addEntry(searchEntry);
         area.getPermissionsMap().keySet().stream()
                 .filter(uuid -> !uuid.equals(CONSOLE))
@@ -67,7 +67,7 @@ public class PermissionTargetListWidget<T extends ButtonWidget> extends ElementL
     public void showUnlistedPlayers() {
         clearEntries();
         mode = Mode.Unspecified;
-        setScrollAmount(0);
+        setScrollY(0);
         addEntry(searchEntry);
         ClientMain.uuid2name.keySet().stream()
                 .filter(uuid -> !CONSOLE.equals(uuid))

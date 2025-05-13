@@ -13,8 +13,8 @@ import net.fabricmc.fabric.api.networking.v1.PacketByteBufs
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking
 import net.minecraft.nbt.NbtCompound
 import net.minecraft.nbt.NbtDouble
-import net.minecraft.nbt.NbtElement
 import net.minecraft.nbt.NbtList
+import net.minecraft.network.packet.s2c.play.PositionFlag
 import net.minecraft.registry.RegistryWrapper
 import net.minecraft.server.command.ServerCommandSource
 import net.minecraft.server.network.ServerPlayerEntity
@@ -95,49 +95,49 @@ open class EnclosureArea : PersistentState, EnclosureView {
      */
     constructor(compound: NbtCompound, world: ServerWorld) {
         this.world = world
-        name = compound.getString("name")
-        minX = compound.getInt("min_x")
-        minY = compound.getInt("min_y")
-        minZ = compound.getInt("min_z")
-        maxX = compound.getInt("max_x")
-        maxY = compound.getInt("max_y")
-        maxZ = compound.getInt("max_z")
-        yaw = compound.getFloat("yaw")
-        pitch = compound.getFloat("pitch")
-        enterMessage = compound.getString("enter_msg")
-        leaveMessage = compound.getString("leave_msg")
-        createdOn = compound.getLong("created_on")
+        name = compound.getString("name").orElseThrow()
+        minX = compound.getInt("min_x").orElseThrow()
+        minY = compound.getInt("min_y").orElseThrow()
+        minZ = compound.getInt("min_z").orElseThrow()
+        maxX = compound.getInt("max_x").orElseThrow()
+        maxY = compound.getInt("max_y").orElseThrow()
+        maxZ = compound.getInt("max_z").orElseThrow()
+        yaw = compound.getFloat("yaw").orElseThrow()
+        pitch = compound.getFloat("pitch").orElseThrow()
+        enterMessage = compound.getString("enter_msg").orElseThrow()
+        leaveMessage = compound.getString("leave_msg").orElseThrow()
+        createdOn = compound.getLong("created_on").orElseThrow()
         val tpPos = (compound["tp_pos"] as NbtList?)!!
         teleportPos = Vec3d(
-            tpPos.getDouble(0),
-            tpPos.getDouble(1),
-            tpPos.getDouble(2)
+            tpPos.getDouble(0).orElseThrow(),
+            tpPos.getDouble(1).orElseThrow(),
+            tpPos.getDouble(2).orElseThrow()
         )
-        for (playerUuid in compound.getCompound("permission").keys) {
+        for (playerUuid in compound.getCompound("permission").orElseThrow().keys) {
             val perm: MutableMap<String, Boolean> = HashMap()
-            val nbtPerm = compound.getCompound("permission").getCompound(playerUuid)
+            val nbtPerm = compound.getCompound("permission").orElseThrow().getCompound(playerUuid).orElseThrow()
             for (key in nbtPerm.keys) {
-                perm[key] = nbtPerm.getBoolean(key)
+                perm[key] = nbtPerm.getBoolean(key).orElseThrow()
             }
             permissionsMap[UUID.fromString(playerUuid)] = perm
         }
         owner = compound.getUuid("owner")
-        uuid = if (compound.containsUuid("uuid")) {
+        uuid = if (compound.contains("uuid")) {
             compound.getUuid("uuid")
         } else {
             UUID.randomUUID()
         }
-        music = if (compound.contains("music", NbtElement.STRING_TYPE.toInt())) {
-            Identifier.of(compound.getString("music"))
+        music = if (compound.contains("music")) {
+            Identifier.of(compound.getString("music").get())
         } else {
             null
         }
-        ticket = if (compound.contains("ticket", NbtElement.COMPOUND_TYPE.toInt())) {
-            val ticket = compound.getCompound("ticket")
+        ticket = if (compound.contains("ticket")) {
+            val ticket = compound.getCompound("ticket").orElseThrow()
             ForceLoadTicket(
-                GameProfile(ticket.getUuid("executor"), ticket.getString("executor_name")),
-                ticket.getInt("remaining_ticks"),
-                ticket.getInt("level")
+                GameProfile(ticket.getUuid("executor"), ticket.getString("executor_name").orElseThrow()),
+                ticket.getInt("remaining_ticks").orElseThrow(),
+                ticket.getInt("level").orElseThrow()
             )
         } else null
     }
@@ -186,14 +186,14 @@ open class EnclosureArea : PersistentState, EnclosureView {
             val overworld = player.server.overworld
             val spawnPos = overworld.spawnPos
             player.teleport(
-                overworld, spawnPos.x.toDouble() + 0.5, spawnPos.y.toDouble(), spawnPos.z.toDouble() + 0.5, 0f, 0f
+                overworld, spawnPos.x.toDouble() + 0.5, spawnPos.y.toDouble(), spawnPos.z.toDouble() + 0.5, EnumSet.noneOf(PositionFlag::class.java), 0f, 0f, true
             )
         } else {
-            player.teleport(world, x.toDouble(), y.toDouble(), z.toDouble(), 0f, 0f)
+            player.teleport(world, x.toDouble(), y.toDouble(), z.toDouble(), EnumSet.noneOf(PositionFlag::class.java), 0f, 0f, true)
         }
     }
 
-    override fun writeNbt(nbt: NbtCompound, registryLookup: RegistryWrapper.WrapperLookup?): NbtCompound {
+    open fun writeNbt(nbt: NbtCompound, registryLookup: RegistryWrapper.WrapperLookup?): NbtCompound {
         nbt.putString("name", name)
         nbt.putInt("min_x", minX)
         nbt.putInt("min_y", minY)
@@ -368,7 +368,7 @@ open class EnclosureArea : PersistentState, EnclosureView {
 
             SerializationSettings.Summarize -> {
                 val text = serialize(SerializationSettings.Name, player).gold().styled {
-                    it.withClickEvent(ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, "/enclosure tp $fullName"))
+                    it.withClickEvent(ClickEvent.SuggestCommand("/enclosure tp $fullName"))
                         .hoverText(serialize(SerializationSettings.Hover, player))
                 }
                 text += TrT.of("enclosure.info.created_by").white()
@@ -386,10 +386,7 @@ open class EnclosureArea : PersistentState, EnclosureView {
                         .hoverText(father!!.serialize(SerializationSettings.Hover, player))
                         .styled {
                             it.withClickEvent(
-                                ClickEvent(
-                                    ClickEvent.Action.SUGGEST_COMMAND,
-                                    "/enclosure info ${father!!.fullName}"
-                                )
+                                ClickEvent.SuggestCommand("/enclosure info ${father!!.fullName}")
                             )
                         }
                     text.append("\n")
@@ -425,7 +422,7 @@ open class EnclosureArea : PersistentState, EnclosureView {
         ServerMain.getAllEnclosures(world).markDirty()
         if (ticket != null) {
             toBlockBox().streamChunkPos().forEach {
-                world.chunkManager.addTicket(FORCED, it, MAX_CHUNK_LEVEL - ticket!!.level, it)
+                world.chunkManager.addTicket(FORCED, it, MAX_CHUNK_LEVEL - ticket!!.level)
             }
         }
         super.markDirty()
@@ -443,7 +440,7 @@ open class EnclosureArea : PersistentState, EnclosureView {
         if (player.isSleeping) {
             player.wakeUp()
         }
-        player.teleport(world, teleportPos!!.x, teleportPos!!.y, teleportPos!!.z, yaw, pitch)
+        player.teleport(world, teleportPos!!.x, teleportPos!!.y, teleportPos!!.z, EnumSet.noneOf(PositionFlag::class.java), yaw, pitch, true)
     }
 
     override fun onRemoveChild(child: PermissionHolder) {
@@ -505,4 +502,12 @@ fun Map<String, Boolean>?.toNbt(): NbtCompound {
         nbt.putBoolean(key, value)
     }
     return nbt
+}
+
+fun NbtCompound.getUuid(key: String): UUID {
+    return Utils.toUuid(this.get(key))
+}
+
+fun NbtCompound.putUuid(key: String, uuid: UUID) {
+    this.put(key, Utils.fromUuid(uuid))
 }

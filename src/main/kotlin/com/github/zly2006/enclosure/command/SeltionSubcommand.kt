@@ -92,7 +92,7 @@ fun BuilderScope<*>.registerSelection() {
                         session.trySync()
                         source.sendMessage(
                             TrT.of(key).append(amount.toString())
-                                .append(TrT.of("enclosure.message.resized." + direction.getName()))
+                                .append(TrT.of("enclosure.message.resized." + direction.name))
                         )
                     }
                 }

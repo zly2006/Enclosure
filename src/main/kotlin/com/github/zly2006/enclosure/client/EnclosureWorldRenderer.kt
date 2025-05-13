@@ -1,19 +1,30 @@
 package com.github.zly2006.enclosure.client
 
 import com.github.zly2006.enclosure.command.ClientSession
+import com.mojang.blaze3d.buffers.BufferType
+import com.mojang.blaze3d.buffers.BufferUsage
+import com.mojang.blaze3d.buffers.GpuBuffer
+import com.mojang.blaze3d.opengl.GlStateManager
+import com.mojang.blaze3d.systems.ProjectionType
 import com.mojang.blaze3d.systems.RenderSystem
+import com.mojang.blaze3d.vertex.VertexFormat
+import com.mojang.blaze3d.vertex.VertexFormat.DrawMode
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents
 import net.minecraft.client.MinecraftClient
+import net.minecraft.client.gl.RenderPipelines
 import net.minecraft.client.render.*
 import net.minecraft.client.util.math.MatrixStack
 import net.minecraft.util.math.Vec3d
 import org.joml.Matrix4f
+import java.util.*
 import kotlin.math.max
 import kotlin.math.min
 
 object EnclosureWorldRenderer {
     private const val DELTA = 0.001f
+    private var buffer: GpuBuffer? = null
+
     fun register() {
         WorldRenderEvents.BEFORE_BLOCK_OUTLINE.register a@{ context: WorldRenderContext, _ ->
             val client = MinecraftClient.getInstance()
@@ -28,9 +39,9 @@ object EnclosureWorldRenderer {
             if (client.options.hudHidden) return@a
             val session = ClientMain.clientSession ?: return@a
             val cameraPos = context.camera().pos
-            RenderSystem.enableBlend()
+            GlStateManager._enableBlend()
             drawSessionFaces(context.matrixStack()!!, session, cameraPos)
-            RenderSystem.disableBlend()
+            GlStateManager._disableBlend()
         }
     }
 
@@ -54,7 +65,7 @@ object EnclosureWorldRenderer {
         val matrix4f = matrices.peek().positionMatrix
         val matrix3f = matrices.peek()
         // Render two points
-        WorldRenderer.drawBox(
+        VertexRendering.drawBox(
             matrices, linesBuffer,
             session.pos1.x - cameraPos.x,
             session.pos1.y - cameraPos.y,
@@ -64,7 +75,7 @@ object EnclosureWorldRenderer {
             session.pos1.z + 1 - cameraPos.z,
             1f, 0.25f, 0.25f, alpha
         )
-        WorldRenderer.drawBox(
+        VertexRendering.drawBox(
             matrices, linesBuffer,
             session.pos2.x - cameraPos.getX(),
             session.pos2.y - cameraPos.getY(),
@@ -89,38 +100,47 @@ object EnclosureWorldRenderer {
         renderLine(linesBuffer, matrix4f, matrix3f, maxX, minY, minZ, 2, maxZ, 0f, 0f, blue, alpha)
     }
 
+
     fun drawSessionFaces(matrices: MatrixStack, session: ClientSession, cameraPos: Vec3d) {
-        val minX = (min(session.pos1.x, session.pos2.x) - cameraPos.getX() - DELTA).toFloat()
-        val minY = (min(session.pos1.y, session.pos2.y) - cameraPos.getY() - DELTA).toFloat()
-        val minZ = (min(session.pos1.z, session.pos2.z) - cameraPos.getZ() - DELTA).toFloat()
-        val maxX = (max(session.pos1.x, session.pos2.x) + 1 - cameraPos.getX() + DELTA).toFloat()
-        val maxY = (max(session.pos1.y, session.pos2.y) + 1 - cameraPos.getY() + DELTA).toFloat()
-        val maxZ = (max(session.pos1.z, session.pos2.z) + 1 - cameraPos.getZ() + DELTA).toFloat()
-        val red = 1f
-        val green = 1f
-        val blue = 1f
-        val alpha = 0.15f
-        val matrix4f = matrices.peek().positionMatrix
-        matrices.push()
-        RenderSystem.disableCull()
-        RenderSystem.setShader { GameRenderer.getPositionColorProgram() }
-        fun drawFace(x1: Float, y1: Float, z1: Float, x2: Float, y2: Float, z2: Float, x3: Float, y3: Float, z3: Float, x4: Float, y4: Float, z4: Float, red: Float, green: Float, blue: Float, alpha: Float) {
-            val bufferBuilder = Tessellator.getInstance().begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_COLOR)
-            bufferBuilder.vertex(matrix4f, x1, y1, z1).color(red, green, blue, alpha)
-            bufferBuilder.vertex(matrix4f, x2, y2, z2).color(red, green, blue, alpha)
-            bufferBuilder.vertex(matrix4f, x3, y3, z3).color(red, green, blue, alpha)
-            bufferBuilder.vertex(matrix4f, x4, y4, z4).color(red, green, blue, alpha)
-            BufferRenderer.drawWithGlobalProgram(bufferBuilder.end())
-        }
-        drawFace(minX, minY, minZ, minX, minY, maxZ, minX, maxY, maxZ, minX, maxY, minZ, red, green, blue, alpha)
-        drawFace(maxX, minY, minZ, maxX, minY, maxZ, maxX, maxY, maxZ, maxX, maxY, minZ, red, green, blue, alpha)
-        drawFace(minX, minY, minZ, minX, minY, maxZ, maxX, minY, maxZ, maxX, minY, minZ, red, green, blue, alpha)
-        drawFace(minX, maxY, minZ, minX, maxY, maxZ, maxX, maxY, maxZ, maxX, maxY, minZ, red, green, blue, alpha)
-        drawFace(minX, minY, minZ, minX, maxY, minZ, maxX, maxY, minZ, maxX, minY, minZ, red, green, blue, alpha)
-        drawFace(minX, minY, maxZ, minX, maxY, maxZ, maxX, maxY, maxZ, maxX, minY, maxZ, red, green, blue, alpha)
-        RenderSystem.enableCull()
-        matrices.pop()
+        // TODO: 实现面渲染
     }
+
+//    fun drawSessionFaces(matrices: MatrixStack, session: ClientSession, cameraPos: Vec3d) {
+//        val minX = (min(session.pos1.x, session.pos2.x) - cameraPos.getX() - DELTA).toFloat()
+//        val minY = (min(session.pos1.y, session.pos2.y) - cameraPos.getY() - DELTA).toFloat()
+//        val minZ = (min(session.pos1.z, session.pos2.z) - cameraPos.getZ() - DELTA).toFloat()
+//        val maxX = (max(session.pos1.x, session.pos2.x) + 1 - cameraPos.getX() + DELTA).toFloat()
+//        val maxY = (max(session.pos1.y, session.pos2.y) + 1 - cameraPos.getY() + DELTA).toFloat()
+//        val maxZ = (max(session.pos1.z, session.pos2.z) + 1 - cameraPos.getZ() + DELTA).toFloat()
+//        val red = 1f
+//        val green = 1f
+//        val blue = 1f
+//        val alpha = 0.15f
+//        val matrix4f = matrices.peek().positionMatrix
+//        matrices.push()
+//        GlStateManager._disableCull()
+//        RenderSystem.setShader { GameRenderer.getPositionColorProgram() }
+//        fun drawFace(x1: Float, y1: Float, z1: Float, x2: Float, y2: Float, z2: Float, x3: Float, y3: Float, z3: Float, x4: Float, y4: Float, z4: Float, red: Float, green: Float, blue: Float, alpha: Float) {
+//            val bufferBuilder = Tessellator.getInstance().begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_COLOR)
+//            bufferBuilder.vertex(matrix4f, x1, y1, z1).color(red, green, blue, alpha)
+//            bufferBuilder.vertex(matrix4f, x2, y2, z2).color(red, green, blue, alpha)
+//            bufferBuilder.vertex(matrix4f, x3, y3, z3).color(red, green, blue, alpha)
+//            bufferBuilder.vertex(matrix4f, x4, y4, z4).color(red, green, blue, alpha)
+//
+//            bufferBuilder.end().use { builtBuffer ->
+//                val commandEncoder = RenderSystem.getDevice().createCommandEncoder()
+//                commandEncoder.writeToBuffer(this.vertexBuffer, builtBuffer.buffer, 0)
+//            }
+//        }
+//        drawFace(minX, minY, minZ, minX, minY, maxZ, minX, maxY, maxZ, minX, maxY, minZ, red, green, blue, alpha)
+//        drawFace(maxX, minY, minZ, maxX, minY, maxZ, maxX, maxY, maxZ, maxX, maxY, minZ, red, green, blue, alpha)
+//        drawFace(minX, minY, minZ, minX, minY, maxZ, maxX, minY, maxZ, maxX, minY, minZ, red, green, blue, alpha)
+//        drawFace(minX, maxY, minZ, minX, maxY, maxZ, maxX, maxY, maxZ, maxX, maxY, minZ, red, green, blue, alpha)
+//        drawFace(minX, minY, minZ, minX, maxY, minZ, maxX, maxY, minZ, maxX, minY, minZ, red, green, blue, alpha)
+//        drawFace(minX, minY, maxZ, minX, maxY, maxZ, maxX, maxY, maxZ, maxX, minY, maxZ, red, green, blue, alpha)
+//        GlStateManager._enableCull()
+//        matrices.pop()
+//    }
 
     /**
      * 线条太大会浮点精度丢失，所以分段画

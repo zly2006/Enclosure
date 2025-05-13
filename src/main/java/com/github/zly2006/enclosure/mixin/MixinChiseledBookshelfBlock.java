@@ -9,7 +9,6 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
-import net.minecraft.util.ItemActionResult;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
@@ -35,7 +34,7 @@ public class MixinChiseledBookshelfBlock {
     )
     private void onUse(BlockState state, World world, BlockPos pos, PlayerEntity player, BlockHitResult hit, CallbackInfoReturnable<ActionResult> cir, @Local OptionalInt optionalInt) {
         if (optionalInt.isPresent() && !ServerMain.INSTANCE.checkPermission(world, pos, player, Permission.CONTAINER)) {
-            player.sendMessage(CONTAINER.getNoPermissionMsg(player));
+            player.sendMessage(CONTAINER.getNoPermissionMsg(player), true);
             cir.setReturnValue(ActionResult.FAIL);
         }
     }
@@ -48,10 +47,10 @@ public class MixinChiseledBookshelfBlock {
             ),
             cancellable = true
     )
-    private void onUseWithItem(ItemStack stack, BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, BlockHitResult hit, CallbackInfoReturnable<ItemActionResult> cir, @Local OptionalInt optionalInt) {
+    private void onUseWithItem(ItemStack stack, BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, BlockHitResult hit, CallbackInfoReturnable<ActionResult> cir, @Local OptionalInt optionalInt) {
         if (optionalInt.isPresent() && !ServerMain.INSTANCE.checkPermission(world, pos, player, Permission.CONTAINER)) {
-            player.sendMessage(CONTAINER.getNoPermissionMsg(player));
-            cir.setReturnValue(ItemActionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION);
+            player.sendMessage(CONTAINER.getNoPermissionMsg(player), true);
+            cir.setReturnValue(ActionResult.PASS_TO_DEFAULT_BLOCK_ACTION);
         }
     }
 }

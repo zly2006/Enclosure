@@ -83,7 +83,7 @@ public class PermissionScreen extends Screen implements EnclosureGui {
     public void syncPermission(@NotNull NbtCompound permission) {
         Map<String, Boolean> perms = new HashMap<>();
         for (String key : permission.getKeys()) {
-            perms.put(key, permission.getBoolean(key));
+            perms.put(key, permission.getBoolean(key, false));
         }
         area.getPermissionsMap().put(uuid, perms);
     }

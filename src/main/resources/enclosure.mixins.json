@@ -12,14 +12,14 @@
     "MixinArmorStandEntity",
     "MixinBlockAttachedEntity",
     "MixinBlockItem",
-    "MixinBoatEntity",
+    "MixinAbstractBoatEntity",
     "MixinBowItem",
     "MixinBucketItem",
     "MixinCampfireBlock",
     "MixinChestBlock",
     "MixinChestBoatEntity",
     "MixinChiseledBookshelfBlock",
-    "MixinChorusFruitItem",
+    "MixinTeleportRandomlyConsumeEffect",
     "MixinCreeperEntity",
     "MixinCrossBowItem",
     "MixinDispenserBlock",
@@ -68,8 +68,5 @@
     "workaround.MixinRegistrySyncManager",
     "workaround.MixinServerPlayerInteractionManager",
     "workaround.MixinServerPlayNetworkHandler"
-  ],
-  "client": [
-    "workaround.MixinCPH"
   ]
 }

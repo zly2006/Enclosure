@@ -6,8 +6,8 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.CrossbowItem;
 import net.minecraft.item.ItemStack;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
-import net.minecraft.util.TypedActionResult;
 import net.minecraft.world.World;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -19,12 +19,12 @@ import static com.github.zly2006.enclosure.utils.Permission.SHOOT;
 @Mixin(CrossbowItem.class)
 public class MixinCrossBowItem {
     @Inject(method = "use", at = @At(value = "INVOKE",target = "Lnet/minecraft/item/CrossbowItem;shootAll(Lnet/minecraft/world/World;Lnet/minecraft/entity/LivingEntity;Lnet/minecraft/util/Hand;Lnet/minecraft/item/ItemStack;FFLnet/minecraft/entity/LivingEntity;)V"), cancellable = true)
-    private void onShoot(World world, PlayerEntity user, Hand hand, CallbackInfoReturnable<TypedActionResult<ItemStack>> cir, @Local ItemStack itemStack) {
+    private void onShoot(World world, PlayerEntity user, Hand hand, CallbackInfoReturnable<ActionResult> cir, @Local ItemStack itemStack) {
         if (user instanceof ServerPlayerEntity player) {
             if (!ServerMain.INSTANCE.checkPermission(player, SHOOT, player.getBlockPos())) {
                 player.sendMessage(SHOOT.getNoPermissionMsg(player));
                 player.currentScreenHandler.syncState();  // update player's inventory
-                cir.setReturnValue(TypedActionResult.fail(itemStack));
+                cir.setReturnValue(ActionResult.FAIL);
             }
         }
     }

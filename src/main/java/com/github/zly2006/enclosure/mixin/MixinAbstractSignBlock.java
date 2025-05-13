@@ -21,7 +21,7 @@ public class MixinAbstractSignBlock {
             @SuppressWarnings("DataFlowIssue")
             EnclosureArea area = ServerMain.INSTANCE.getSmallestEnclosure((ServerWorld) blockEntity.getWorld(), blockEntity.getPos());
             if (area != null && !area.hasPerm((ServerPlayerEntity) player, Permission.EDIT_SIGN)) {
-                player.sendMessage(Permission.EDIT_SIGN.getNoPermissionMsg(player));
+                player.sendMessage(Permission.EDIT_SIGN.getNoPermissionMsg(player), true);
                 ci.cancel();
             }
         }
