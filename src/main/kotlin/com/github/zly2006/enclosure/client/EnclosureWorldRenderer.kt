@@ -26,7 +26,7 @@ object EnclosureWorldRenderer {
             drawSessionOutline(context.matrixStack()!!, session, cameraPos, context.consumers())
             true
         }
-        WorldRenderEvents.BEFORE_DEBUG_RENDER.register a@{ context: WorldRenderContext ->
+        WorldRenderEvents.AFTER_TRANSLUCENT.register a@{ context: WorldRenderContext ->
             val client = MinecraftClient.getInstance()
             if (client.options.hudHidden) return@a
             val session = ClientMain.clientSession ?: return@a
@@ -115,16 +115,11 @@ object EnclosureWorldRenderer {
         GlStateManager._disableCull()
         val consumer = consumers.getBuffer(RenderLayer.getDebugQuads())
         fun drawFace(x1: Float, y1: Float, z1: Float, x2: Float, y2: Float, z2: Float, x3: Float, y3: Float, z3: Float, x4: Float, y4: Float, z4: Float, red: Float, green: Float, blue: Float, alpha: Float) {
-//            val bufferBuilder = Tessellator.getInstance().begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_COLOR)
             consumer.vertex(matrix4f, x1, y1, z1).color(red, green, blue, alpha)
             consumer.vertex(matrix4f, x2, y2, z2).color(red, green, blue, alpha)
             consumer.vertex(matrix4f, x3, y3, z3).color(red, green, blue, alpha)
             consumer.vertex(matrix4f, x4, y4, z4).color(red, green, blue, alpha)
 
-//            bufferBuilder.end().use { builtBuffer ->
-//                val commandEncoder = RenderSystem.getDevice().createCommandEncoder()
-//                commandEncoder.writeToBuffer(this.vertexBuffer, builtBuffer.buffer, 0)
-//            }
         }
         drawFace(minX, minY, minZ, minX, minY, maxZ, minX, maxY, maxZ, minX, maxY, minZ, red, green, blue, alpha)
         drawFace(maxX, minY, minZ, maxX, minY, maxZ, maxX, maxY, maxZ, maxX, maxY, minZ, red, green, blue, alpha)
