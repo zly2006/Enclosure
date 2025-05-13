@@ -12,15 +12,30 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+
+import java.util.Optional;
 
 @Mixin(Entity.class)
 public abstract class MixinEntity {
     @Shadow public abstract BlockPos getBlockPos();
 
     @Shadow public abstract World getWorld();
+
+    @Inject(
+            method = "interact",
+            at = @At(
+                    value = "INVOKE",
+                    target = "Lnet/minecraft/entity/Leashable;getLeashHolder()Lnet/minecraft/entity/Entity;"
+            ),
+            cancellable = true
+    )
+    private void canBeDetachLeash(PlayerEntity player, Hand hand, CallbackInfoReturnable<ActionResult> cir) {
+        checkLeashPermission(player).ifPresent(cir::setReturnValue);
+    }
 
     @SuppressWarnings("UnreachableCode")
     @Inject(
@@ -31,14 +46,21 @@ public abstract class MixinEntity {
             ),
             cancellable = true
     )
-    private void canBeLeashedBy(PlayerEntity pe, Hand hand, CallbackInfoReturnable<ActionResult> cir) {
-        if (pe instanceof ServerPlayerEntity player) {
-            if (!ServerMain.INSTANCE.checkPermission(getWorld(), getBlockPos(), player, Permission.LEASH)) {
-                player.networkHandler.sendPacket(new EntityAttachS2CPacket((Entity) (Object) this, null));
-                player.sendMessage(Permission.LEASH.getNoPermissionMsg(player));
-                player.currentScreenHandler.syncState();
-                cir.setReturnValue(ActionResult.PASS);
+    private void canBeLeashedBy(PlayerEntity player, Hand hand, CallbackInfoReturnable<ActionResult> cir) {
+        checkLeashPermission(player).ifPresent(cir::setReturnValue);
+    }
+
+    @Unique
+    private Optional<ActionResult> checkLeashPermission(PlayerEntity player) {
+        if (player instanceof ServerPlayerEntity serverPlayer) {
+            if (!ServerMain.INSTANCE.checkPermission(getWorld(), getBlockPos(), serverPlayer, Permission.LEASH)) {
+                serverPlayer.networkHandler.sendPacket(new EntityAttachS2CPacket((Entity) (Object) this, null));
+                serverPlayer.sendMessage(Permission.LEASH.getNoPermissionMsg(serverPlayer));
+                serverPlayer.currentScreenHandler.syncState();
+                return Optional.of(ActionResult.PASS);
             }
         }
+
+        return Optional.empty();
     }
 }

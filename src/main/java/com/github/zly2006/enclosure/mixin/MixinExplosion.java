@@ -38,12 +38,8 @@ public abstract class MixinExplosion {
             )
     )
     private boolean protectBlock(ExplosionBehavior instance, Explosion explosion, BlockView world, BlockPos pos, BlockState state, float power) {
-        if (this.world.isClient) {
-            return instance.canDestroyBlock(explosion, world, pos, state, power);
-        }
-
         EnclosureArea area = ServerMain.INSTANCE.getSmallestEnclosure((ServerWorld) world, pos);
-        return area != null && !area.hasPubPerm(Permission.EXPLOSION);
+        return area == null || area.hasPubPerm(Permission.EXPLOSION);
     }
 
     @Inject(
@@ -56,12 +52,8 @@ public abstract class MixinExplosion {
             cancellable = true
     )
     private void protectEntities(CallbackInfo ci, float f, int i, int j, int k, int l, int m, int n, List<Object> list, Iterator<Object> var9, Entity entity, double d, double e, double g, double h, double o, boolean bl, float p, float q) {
-        if (world.isClient) {
-            return;
-        }
-
         BlockPos pos = entity.getBlockPos();
-        EnclosureArea area = ServerMain.INSTANCE.getSmallestEnclosure((ServerWorld) world, pos);
+        EnclosureArea area = ServerMain.INSTANCE.getSmallestEnclosure(world, pos);
         if (area != null && !area.hasPubPerm(Permission.EXPLOSION)) {
             ci.cancel();
         }

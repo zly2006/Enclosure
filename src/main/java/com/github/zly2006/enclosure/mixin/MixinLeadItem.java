@@ -2,6 +2,7 @@ package com.github.zly2006.enclosure.mixin;
 
 import com.github.zly2006.enclosure.ServerMain;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.item.ItemUsageContext;
 import net.minecraft.item.LeadItem;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.math.BlockPos;
@@ -19,7 +20,7 @@ public class MixinLeadItem {
     private static void onAttachHeldMobsToBlock(PlayerEntity player, World world, BlockPos pos, CallbackInfoReturnable<ActionResult> cir) {
         if (!ServerMain.INSTANCE.checkPermission(world, pos, player, LEASH)) {
             player.sendMessage(LEASH.getNoPermissionMsg(player), true);
-            cir.setReturnValue(ActionResult.PASS);
+            cir.setReturnValue(ActionResult.FAIL);
         }
     }
 }

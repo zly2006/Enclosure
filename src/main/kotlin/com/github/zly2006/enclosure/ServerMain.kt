@@ -231,6 +231,7 @@ object ServerMain: ModInitializer {
                 put(Permission.REDSTONE) {
                     it.block is ButtonBlock || it.block === Blocks.LEVER || it.block === Blocks.DAYLIGHT_DETECTOR
                             || it.block === Blocks.REPEATER || it.block === Blocks.COMPARATOR || it.block === Blocks.REDSTONE_WIRE
+                            || it.block === Blocks.TARGET
                 }
                 put(Permission.STRIP_LOG) { (it.state?.isIn(BlockTags.LOGS) ?: false) && it.item is AxeItem }
                 put(Permission.VEHICLE) { it.item is BoatItem || it.item is MinecartItem }
@@ -239,7 +240,7 @@ object ServerMain: ModInitializer {
                 put(Permission.COPPER) {
                     when (it.item) {
                         Items.HONEYCOMB -> it.block in UNWAXED_TO_WAXED_BLOCKS.get()
-                        is AxeItem -> it.block is Oxidizable || UNWAXED_TO_WAXED_BLOCKS.get().containsValue(it.block)
+                        is AxeItem -> it.block is Oxidizable && UNWAXED_TO_WAXED_BLOCKS.get().containsValue(it.block) && it.player.isSneaking
                         else -> false
                     }
                 }

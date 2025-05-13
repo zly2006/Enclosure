@@ -20,8 +20,8 @@ public abstract class MixinFlowableFluid {
     @Inject(method = "canFlowThrough(Lnet/minecraft/world/BlockView;Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/BlockState;Lnet/minecraft/util/math/Direction;Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/BlockState;Lnet/minecraft/fluid/FluidState;)Z", at = @At("HEAD"), cancellable = true)
     private void protectFluid(BlockView world, BlockPos pos, BlockState state, Direction face, BlockPos fromPos, BlockState fromState, FluidState fluidState, CallbackInfoReturnable<Boolean> cir) {
         if (world instanceof ServerWorld serverWorld) {
-            EnclosureArea from = ServerMain.INSTANCE.getSmallestEnclosure(serverWorld, fromPos);
-            EnclosureArea to = ServerMain.INSTANCE.getSmallestEnclosure(serverWorld, pos);
+            EnclosureArea from = ServerMain.INSTANCE.getSmallestEnclosure(serverWorld, pos);
+            EnclosureArea to = ServerMain.INSTANCE.getSmallestEnclosure(serverWorld, fromPos);
             if (to != null && to != from) {
                 if (!to.hasPubPerm(Permission.FLUID)) {
                     cir.setReturnValue(false);
