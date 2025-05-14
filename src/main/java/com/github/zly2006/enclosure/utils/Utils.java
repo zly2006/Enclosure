@@ -129,7 +129,7 @@ public class Utils {
             EnclosureArea area = ServerMain.INSTANCE.getSmallestEnclosure(serverWorld, pos);
             if (source.getAttacker() instanceof ServerPlayerEntity attacker) {
                 if (area != null && !area.hasPerm(attacker, permission)) {
-                    attacker.sendMessage(permission.getNoPermissionMsg(attacker), true);
+                    attacker.sendMessage(permission.getNoPermissionMsg(attacker), ServerMain.INSTANCE.getCommonConfig().useActionBarMessage);
                     return false;
                 }
             }

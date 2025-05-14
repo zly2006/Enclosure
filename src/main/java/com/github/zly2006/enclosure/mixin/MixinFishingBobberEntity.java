@@ -38,7 +38,7 @@ public abstract class MixinFishingBobberEntity extends ProjectileEntity {
         if (tick % 10 != 0) return;  // 每10tick执行一次，减少判断的压力
 
         var owner = this.getPlayerOwner();
-        if (owner == null) return;
+        if (!(owner instanceof ServerPlayerEntity)) return;
         if (ServerMain.INSTANCE.checkPermission((ServerPlayerEntity) owner, Permission.FISH, getBlockPos())) return;
 
         this.discard();
