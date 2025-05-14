@@ -22,7 +22,7 @@ public class MixinCrossBowItem {
     private void onShoot(World world, PlayerEntity user, Hand hand, CallbackInfoReturnable<ActionResult> cir, @Local ItemStack itemStack) {
         if (user instanceof ServerPlayerEntity player) {
             if (!ServerMain.INSTANCE.checkPermission(player, SHOOT, player.getBlockPos())) {
-                player.sendMessage(SHOOT.getNoPermissionMsg(player), true);
+                player.sendMessage(SHOOT.getNoPermissionMsg(player), ServerMain.INSTANCE.getCommonConfig().useActionBarMessage);
                 player.currentScreenHandler.syncState();  // update player's inventory
                 cir.setReturnValue(ActionResult.FAIL);
             }

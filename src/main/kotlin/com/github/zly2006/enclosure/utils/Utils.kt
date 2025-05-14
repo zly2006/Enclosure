@@ -114,7 +114,7 @@ fun formatSelection(
     )
 }
 
-fun checkPermission(player: ServerPlayerEntity, perm: String) = false  // checkPermission(player.commandSource, perm)  TODO: 修改
+fun checkPermission(player: ServerPlayerEntity, perm: String) = checkPermission(player.commandSource, perm)
 
 fun checkPermission(source: ServerCommandSource, perm: String) =
     Permissions.check(source, perm, BuilderScope.map[perm]?.get(source) ?: false)

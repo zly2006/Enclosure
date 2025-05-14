@@ -3,6 +3,7 @@ package com.github.zly2006.enclosure.mixin;
 import com.github.zly2006.enclosure.ServerMain;
 import com.github.zly2006.enclosure.utils.Permission;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.Leashable;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.network.packet.s2c.play.EntityAttachS2CPacket;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -34,7 +35,7 @@ public abstract class MixinEntity {
             cancellable = true
     )
     private void canBeDetachLeash(PlayerEntity player, Hand hand, CallbackInfoReturnable<ActionResult> cir) {
-        checkLeashPermission(player).ifPresent(cir::setReturnValue);
+        if (this instanceof Leashable) checkLeashPermission(player).ifPresent(cir::setReturnValue);
     }
 
     @SuppressWarnings("UnreachableCode")
@@ -47,7 +48,7 @@ public abstract class MixinEntity {
             cancellable = true
     )
     private void canBeLeashedBy(PlayerEntity player, Hand hand, CallbackInfoReturnable<ActionResult> cir) {
-        checkLeashPermission(player).ifPresent(cir::setReturnValue);
+        if (this instanceof Leashable) checkLeashPermission(player).ifPresent(cir::setReturnValue);
     }
 
     @Unique
@@ -55,7 +56,7 @@ public abstract class MixinEntity {
         if (player instanceof ServerPlayerEntity serverPlayer) {
             if (!ServerMain.INSTANCE.checkPermission(getWorld(), getBlockPos(), serverPlayer, Permission.LEASH)) {
                 serverPlayer.networkHandler.sendPacket(new EntityAttachS2CPacket((Entity) (Object) this, null));
-                serverPlayer.sendMessage(Permission.LEASH.getNoPermissionMsg(serverPlayer), true);
+                serverPlayer.sendMessage(Permission.LEASH.getNoPermissionMsg(serverPlayer), ServerMain.INSTANCE.getCommonConfig().useActionBarMessage);
                 serverPlayer.currentScreenHandler.syncState();
                 return Optional.of(ActionResult.PASS);
             }

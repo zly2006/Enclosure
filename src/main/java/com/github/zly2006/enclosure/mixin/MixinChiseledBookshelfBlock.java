@@ -34,7 +34,7 @@ public class MixinChiseledBookshelfBlock {
     )
     private void onUse(BlockState state, World world, BlockPos pos, PlayerEntity player, BlockHitResult hit, CallbackInfoReturnable<ActionResult> cir, @Local OptionalInt optionalInt) {
         if (optionalInt.isPresent() && !ServerMain.INSTANCE.checkPermission(world, pos, player, Permission.CONTAINER)) {
-            player.sendMessage(CONTAINER.getNoPermissionMsg(player), true);
+            player.sendMessage(CONTAINER.getNoPermissionMsg(player), ServerMain.INSTANCE.getCommonConfig().useActionBarMessage);
             cir.setReturnValue(ActionResult.FAIL);
         }
     }
@@ -49,7 +49,7 @@ public class MixinChiseledBookshelfBlock {
     )
     private void onUseWithItem(ItemStack stack, BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, BlockHitResult hit, CallbackInfoReturnable<ActionResult> cir, @Local OptionalInt optionalInt) {
         if (optionalInt.isPresent() && !ServerMain.INSTANCE.checkPermission(world, pos, player, Permission.CONTAINER)) {
-            player.sendMessage(CONTAINER.getNoPermissionMsg(player), true);
+            player.sendMessage(CONTAINER.getNoPermissionMsg(player), ServerMain.INSTANCE.getCommonConfig().useActionBarMessage);
             cir.setReturnValue(ActionResult.PASS_TO_DEFAULT_BLOCK_ACTION);
         }
     }

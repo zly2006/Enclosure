@@ -128,7 +128,7 @@ object ServerMain: ModInitializer {
             val limits = reloadLimits()
             LOGGER.info("Loaded limits config")
             limits
-        } catch (e: IOException) {
+        } catch (_: IOException) {
             val limits = mapOf("default" to LandLimits())
             BuilderScope.map["enclosure.limits.default"] = BuilderScope.Companion.DefaultPermission.TRUE
             saveLimits(limits)
@@ -144,7 +144,7 @@ object ServerMain: ModInitializer {
             )
             LOGGER.info("Loaded common config")
             common
-        } catch (e: IOException) {
+        } catch (_: IOException) {
             val common = Common()
             saveCommon(common)
             LOGGER.info("Created common config")
@@ -167,7 +167,7 @@ object ServerMain: ModInitializer {
                     ResourceLoader.getLanguageFile("en_us"),
                     JsonObject::class.java
                 )
-            } catch (ex: IOException) {
+            } catch (_: IOException) {
                 LOGGER.error("Failed to load en_us language file")
                 LOGGER.error("Please report this issue to the author")
                 e.printStackTrace()
@@ -243,7 +243,7 @@ object ServerMain: ModInitializer {
                 put(Permission.COPPER) {
                     when (it.item) {
                         Items.HONEYCOMB -> it.block in UNWAXED_TO_WAXED_BLOCKS.get()
-                        is AxeItem -> it.block is Oxidizable && UNWAXED_TO_WAXED_BLOCKS.get().containsValue(it.block)
+                        is AxeItem -> it.block is Oxidizable || UNWAXED_TO_WAXED_BLOCKS.get().containsValue(it.block)
                         else -> false
                     }
                 }
@@ -458,7 +458,7 @@ object ServerMain: ModInitializer {
                         return@register ActionResult.PASS
                     } else {
                         player.currentScreenHandler.syncState()
-                        player.sendMessage(Permission.PLACE_BLOCK.getNoPermissionMsg(player), true)
+                        player.sendMessage(Permission.PLACE_BLOCK.getNoPermissionMsg(player), commonConfig.useActionBarMessage)
                         return@register ActionResult.FAIL
                     }
                 }
@@ -467,7 +467,7 @@ object ServerMain: ModInitializer {
                         return@map ActionResult.PASS
                     } else {
                         player.currentScreenHandler.syncState()
-                        player.sendMessage(permission.getNoPermissionMsg(player), true)
+                        player.sendMessage(permission.getNoPermissionMsg(player), commonConfig.useActionBarMessage)
                         return@map ActionResult.FAIL
                     }
                 }.firstOrNull { it != ActionResult.PASS } ?: ActionResult.PASS
@@ -489,7 +489,7 @@ object ServerMain: ModInitializer {
                             return@map ActionResult.PASS
                         } else {
                             player.currentScreenHandler.syncState()
-                            player.sendMessage(permission.getNoPermissionMsg(player), true)
+                            player.sendMessage(permission.getNoPermissionMsg(player), commonConfig.useActionBarMessage)
                             return@map ActionResult.FAIL
                         }
                     }
@@ -510,7 +510,7 @@ object ServerMain: ModInitializer {
                     }
                 }
                 if (!checkPermission(player, Permission.BREAK_BLOCK, pos)) {
-                    player.sendMessage(Permission.BREAK_BLOCK.getNoPermissionMsg(player), true)
+                    player.sendMessage(Permission.BREAK_BLOCK.getNoPermissionMsg(player), commonConfig.useActionBarMessage)
                     return@register ActionResult.FAIL
                 }
             }
@@ -519,8 +519,8 @@ object ServerMain: ModInitializer {
         AttackBlockCallback.EVENT.addPhaseOrdering(SessionListener.ID, id)
         UseEntityCallback.EVENT.register { player, world, hand, entity, _ ->
             if (entity is ArmorStandEntity) {
-                if (!checkPermission(world!!, entity.getBlockPos(), player, Permission.ARMOR_STAND)) {
-                    player.sendMessage(Permission.ARMOR_STAND.getNoPermissionMsg(player), true)
+                if (!checkPermission(world!!, entity.blockPos, player, Permission.ARMOR_STAND)) {
+                    player.sendMessage(Permission.ARMOR_STAND.getNoPermissionMsg(player), commonConfig.useActionBarMessage)
                     player.currentScreenHandler.syncState()
                     // We don't need to sync entity in this situation
                     return@register ActionResult.FAIL
@@ -538,7 +538,7 @@ object ServerMain: ModInitializer {
                             ActionResult.PASS
                         } else {
                             player.currentScreenHandler.syncState()
-                            player.sendMessage(permission.getNoPermissionMsg(player), true)
+                            player.sendMessage(permission.getNoPermissionMsg(player), commonConfig.useActionBarMessage)
                             player.networkHandler.sendPacket(EntityTrackerUpdateS2CPacket(
                                 entity.id, entity.dataTracker.entries.map { it.toSerialized() }
                             ))

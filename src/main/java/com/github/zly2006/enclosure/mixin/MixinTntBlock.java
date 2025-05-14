@@ -28,7 +28,7 @@ public class MixinTntBlock {
         if (player instanceof ServerPlayerEntity serverPlayer) {
             EnclosureArea area = ServerMain.INSTANCE.getSmallestEnclosure((ServerWorld) world, pos);
             if (area != null && !area.hasPerm(serverPlayer, Permission.PRIME_TNT)) {
-                player.sendMessage(Permission.PRIME_TNT.getNoPermissionMsg(player), true);
+                player.sendMessage(Permission.PRIME_TNT.getNoPermissionMsg(player), ServerMain.INSTANCE.getCommonConfig().useActionBarMessage);
                 cir.setReturnValue(ActionResult.FAIL);
             }
         }
@@ -38,7 +38,7 @@ public class MixinTntBlock {
         EnclosureArea area = ServerMain.INSTANCE.getSmallestEnclosure((ServerWorld) world, hit.getBlockPos());
         if (projectile.getOwner() instanceof ServerPlayerEntity player) {
             if (area != null && !area.hasPerm(player, Permission.PRIME_TNT)) {
-                player.sendMessage(Permission.PRIME_TNT.getNoPermissionMsg(player), true);
+                player.sendMessage(Permission.PRIME_TNT.getNoPermissionMsg(player), ServerMain.INSTANCE.getCommonConfig().useActionBarMessage);
                 ci.cancel();
             }
         }

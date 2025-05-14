@@ -38,7 +38,7 @@ public abstract class MixinAnimalEntity extends Entity {
         }
         EnclosureArea area = ServerMain.INSTANCE.getSmallestEnclosure((ServerWorld) this.getWorld(), getBlockPos());
         if (area != null && !area.hasPerm((ServerPlayerEntity) player, FEED_ANIMAL)) {
-            player.sendMessage(FEED_ANIMAL.getNoPermissionMsg(player), true);
+            player.sendMessage(FEED_ANIMAL.getNoPermissionMsg(player), ServerMain.INSTANCE.getCommonConfig().useActionBarMessage);
             cir.setReturnValue(ActionResult.FAIL);
         }
     }

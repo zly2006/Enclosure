@@ -37,7 +37,7 @@ public abstract class MixinPotionEntity extends ThrownItemEntity {
             EnclosureArea area = ServerMain.INSTANCE.getSmallestEnclosure((ServerWorld) getWorld(), pos);
             if (area != null && !area.hasPubPerm(Permission.USE_CAMPFIRE)) {
                 if (getOwner() instanceof ServerPlayerEntity player) {
-                    player.sendMessage(USE_CAMPFIRE.getNoPermissionMsg(player), true);
+                    player.sendMessage(USE_CAMPFIRE.getNoPermissionMsg(player), ServerMain.INSTANCE.getCommonConfig().useActionBarMessage);
                 }
                 getWorld().setBlockState(pos, getWorld().getBlockState(pos).with(WATERLOGGED, false).with(LIT, true), 252);
                 ci.cancel();

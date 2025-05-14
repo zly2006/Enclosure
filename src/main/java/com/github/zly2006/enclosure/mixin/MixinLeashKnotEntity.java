@@ -31,7 +31,7 @@ public abstract class MixinLeashKnotEntity extends BlockAttachedEntity {
         if (this.getWorld().isClient) return;
 
         if (!ServerMain.INSTANCE.checkPermission(this.getWorld(), this.attachedBlockPos, player, LEASH)) {
-            player.sendMessage(LEASH.getNoPermissionMsg(player), true);
+            player.sendMessage(LEASH.getNoPermissionMsg(player), ServerMain.INSTANCE.getCommonConfig().useActionBarMessage);
             cir.setReturnValue(ActionResult.FAIL);
         }
     }

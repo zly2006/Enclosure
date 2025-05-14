@@ -234,7 +234,7 @@ public abstract class MixinServerPlayerEntity extends PlayerEntity implements Pl
             if (area != null && !isSpectator()) {
                 visitedEnclosures.add(area.getUuid());
                 if (!area.hasPerm(player, MOVE)) {
-                    player.sendMessage(MOVE.getNoPermissionMsg(player), true);
+                    player.sendMessage(MOVE.getNoPermissionMsg(player), ServerMain.INSTANCE.getCommonConfig().useActionBarMessage);
                     if (area != lastArea && lastWorld != null && lastPos != null) {
                         // teleport back
                         player.teleport(lastWorld, lastPos.x, lastPos.y, lastPos.z, EnumSet.noneOf(PositionFlag.class), 0, 0, true);
