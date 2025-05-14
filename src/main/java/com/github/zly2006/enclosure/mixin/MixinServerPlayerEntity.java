@@ -142,7 +142,7 @@ public abstract class MixinServerPlayerEntity extends PlayerEntity implements Pl
             }
             if (attackerArea != null && !attackerArea.hasPubPerm(Permission.PVP)
                     && UtilsKt.checkPermission(attacker, "enclosure.bypass")) {
-                attacker.sendMessage(PVP.getNoPermissionMsg(attacker));
+                attacker.sendMessage(PVP.getNoPermissionMsg(attacker), true);
                 cir.setReturnValue(false);
             }
         }
@@ -234,7 +234,7 @@ public abstract class MixinServerPlayerEntity extends PlayerEntity implements Pl
             if (area != null && !isSpectator()) {
                 visitedEnclosures.add(area.getUuid());
                 if (!area.hasPerm(player, MOVE)) {
-                    player.sendMessage(MOVE.getNoPermissionMsg(player));
+                    player.sendMessage(MOVE.getNoPermissionMsg(player), true);
                     if (area != lastArea && lastWorld != null && lastPos != null) {
                         // teleport back
                         player.teleport(lastWorld, lastPos.x, lastPos.y, lastPos.z, EnumSet.noneOf(PositionFlag.class), 0, 0, true);

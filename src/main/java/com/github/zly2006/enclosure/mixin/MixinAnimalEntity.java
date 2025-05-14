@@ -27,8 +27,7 @@ public abstract class MixinAnimalEntity extends Entity {
     @Inject(
             at = @At(
                     value = "INVOKE",
-                    target = "Lnet/minecraft/entity/passive/AnimalEntity;getBreedingAge()I",
-                    shift = At.Shift.BEFORE
+                    target = "Lnet/minecraft/entity/passive/AnimalEntity;getBreedingAge()I"
             ),
             method = "interactMob",
             cancellable = true

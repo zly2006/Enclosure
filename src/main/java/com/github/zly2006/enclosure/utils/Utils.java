@@ -129,7 +129,7 @@ public class Utils {
             EnclosureArea area = ServerMain.INSTANCE.getSmallestEnclosure(serverWorld, pos);
             if (source.getAttacker() instanceof ServerPlayerEntity attacker) {
                 if (area != null && !area.hasPerm(attacker, permission)) {
-                    attacker.sendMessage(permission.getNoPermissionMsg(attacker));
+                    attacker.sendMessage(permission.getNoPermissionMsg(attacker), true);
                     return false;
                 }
             }
@@ -143,7 +143,7 @@ public class Utils {
             if (area == null) return true;
             if (source.getAttacker() instanceof ServerPlayerEntity attacker) {
                 if (!area.hasPerm(attacker, permission)) {
-                    attacker.sendMessage(permission.getNoPermissionMsg(attacker));
+                    attacker.sendMessage(permission.getNoPermissionMsg(attacker), true);
                     return false;
                 }
             } else {

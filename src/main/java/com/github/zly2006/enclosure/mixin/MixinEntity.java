@@ -55,7 +55,7 @@ public abstract class MixinEntity {
         if (player instanceof ServerPlayerEntity serverPlayer) {
             if (!ServerMain.INSTANCE.checkPermission(getWorld(), getBlockPos(), serverPlayer, Permission.LEASH)) {
                 serverPlayer.networkHandler.sendPacket(new EntityAttachS2CPacket((Entity) (Object) this, null));
-                serverPlayer.sendMessage(Permission.LEASH.getNoPermissionMsg(serverPlayer));
+                serverPlayer.sendMessage(Permission.LEASH.getNoPermissionMsg(serverPlayer), true);
                 serverPlayer.currentScreenHandler.syncState();
                 return Optional.of(ActionResult.PASS);
             }

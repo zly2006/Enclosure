@@ -36,7 +36,7 @@ public class MixinRaidManager {
             if (area != null) {
                 LOGGER.info("Raid {} started by {} in enclosure {} at {} {} {}.", raid.hashCode(), player.getNameForScoreboard(), area.getName(), pos.getX(), pos.getY(), pos.getZ());
                 if (!area.hasPubPerm(Permission.RAID)) {
-                    player.sendMessage(Permission.RAID.getNoPermissionMsg(player));
+                    player.sendMessage(Permission.RAID.getNoPermissionMsg(player), true);
                     cir.setReturnValue(null);
                 }
             }

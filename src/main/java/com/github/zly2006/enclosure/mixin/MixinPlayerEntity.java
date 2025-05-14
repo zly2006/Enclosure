@@ -46,7 +46,7 @@ public abstract class MixinPlayerEntity extends LivingEntity {
     private void protectPlacing(BlockPos pos, Direction facing, ItemStack stack, CallbackInfoReturnable<Boolean> cir) {
         if (((LivingEntity) this) instanceof ServerPlayerEntity serverPlayer) {
             if (!ServerMain.INSTANCE.checkPermission(serverPlayer, PLACE_BLOCK, pos)) {
-                serverPlayer.sendMessage(PLACE_BLOCK.getNoPermissionMsg(serverPlayer));
+                serverPlayer.sendMessage(PLACE_BLOCK.getNoPermissionMsg(serverPlayer), true);
                 serverPlayer.currentScreenHandler.syncState();
                 cir.setReturnValue(false);
             }

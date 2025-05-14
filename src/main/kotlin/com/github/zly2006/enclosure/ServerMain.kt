@@ -43,6 +43,7 @@ import net.minecraft.block.*
 import net.minecraft.command.argument.Vec3ArgumentType
 import net.minecraft.datafixer.DataFixTypes
 import net.minecraft.entity.Entity
+import net.minecraft.entity.EquipmentSlot
 import net.minecraft.entity.decoration.ArmorStandEntity
 import net.minecraft.entity.decoration.ItemFrameEntity
 import net.minecraft.entity.passive.AbstractHorseEntity
@@ -54,6 +55,7 @@ import net.minecraft.item.*
 import net.minecraft.item.HoneycombItem.UNWAXED_TO_WAXED_BLOCKS
 import net.minecraft.nbt.NbtCompound
 import net.minecraft.nbt.NbtOps
+import net.minecraft.network.packet.s2c.play.EntityEquipmentUpdateS2CPacket
 import net.minecraft.network.packet.s2c.play.EntityTrackerUpdateS2CPacket
 import net.minecraft.registry.RegistryKey
 import net.minecraft.registry.tag.BlockTags
@@ -84,6 +86,7 @@ import java.util.*
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.function.Consumer
 import java.util.function.Predicate
+import kotlin.sequences.map
 
 const val MOD_ID = "enclosure" // 模组标识符
 @JvmField
@@ -178,7 +181,7 @@ object ServerMain: ModInitializer {
             updateChecker.check()
             try {
                 Thread.sleep((1000 * 60 * 60 * 12).toLong()) // 12 hours
-            } catch (e: InterruptedException) {
+            } catch (_: InterruptedException) {
                 return@Thread
             }
         }
@@ -240,7 +243,7 @@ object ServerMain: ModInitializer {
                 put(Permission.COPPER) {
                     when (it.item) {
                         Items.HONEYCOMB -> it.block in UNWAXED_TO_WAXED_BLOCKS.get()
-                        is AxeItem -> it.block is Oxidizable && UNWAXED_TO_WAXED_BLOCKS.get().containsValue(it.block) && it.player.isSneaking
+                        is AxeItem -> it.block is Oxidizable && UNWAXED_TO_WAXED_BLOCKS.get().containsValue(it.block)
                         else -> false
                     }
                 }
@@ -455,7 +458,7 @@ object ServerMain: ModInitializer {
                         return@register ActionResult.PASS
                     } else {
                         player.currentScreenHandler.syncState()
-                        player.sendMessage(Permission.PLACE_BLOCK.getNoPermissionMsg(player))
+                        player.sendMessage(Permission.PLACE_BLOCK.getNoPermissionMsg(player), true)
                         return@register ActionResult.FAIL
                     }
                 }
@@ -464,7 +467,7 @@ object ServerMain: ModInitializer {
                         return@map ActionResult.PASS
                     } else {
                         player.currentScreenHandler.syncState()
-                        player.sendMessage(permission.getNoPermissionMsg(player))
+                        player.sendMessage(permission.getNoPermissionMsg(player), true)
                         return@map ActionResult.FAIL
                     }
                 }.firstOrNull { it != ActionResult.PASS } ?: ActionResult.PASS
@@ -486,7 +489,7 @@ object ServerMain: ModInitializer {
                             return@map ActionResult.PASS
                         } else {
                             player.currentScreenHandler.syncState()
-                            player.sendMessage(permission.getNoPermissionMsg(player))
+                            player.sendMessage(permission.getNoPermissionMsg(player), true)
                             return@map ActionResult.FAIL
                         }
                     }
@@ -507,7 +510,7 @@ object ServerMain: ModInitializer {
                     }
                 }
                 if (!checkPermission(player, Permission.BREAK_BLOCK, pos)) {
-                    player.sendMessage(Permission.BREAK_BLOCK.getNoPermissionMsg(player))
+                    player.sendMessage(Permission.BREAK_BLOCK.getNoPermissionMsg(player), true)
                     return@register ActionResult.FAIL
                 }
             }
@@ -535,10 +538,22 @@ object ServerMain: ModInitializer {
                             ActionResult.PASS
                         } else {
                             player.currentScreenHandler.syncState()
-                            player.sendMessage(permission.getNoPermissionMsg(player))
+                            player.sendMessage(permission.getNoPermissionMsg(player), true)
                             player.networkHandler.sendPacket(EntityTrackerUpdateS2CPacket(
                                 entity.id, entity.dataTracker.entries.map { it.toSerialized() }
                             ))
+
+                            if (entity is AllayEntity) {
+                                val list = listOf(
+                                    Pair(EquipmentSlot.MAINHAND, entity.getStackInHand(Hand.MAIN_HAND)),
+                                    Pair(EquipmentSlot.OFFHAND, entity.getStackInHand(Hand.OFF_HAND))
+                                )
+
+                                // 强制同步悦灵的背包
+                                (world as ServerWorld).chunkManager.sendToNearbyPlayers(entity,
+                                    EntityEquipmentUpdateS2CPacket(entity.id, list)
+                                )
+                            }
                             ActionResult.FAIL
                         }
                     }.firstOrNull { result -> result != ActionResult.PASS } ?: ActionResult.PASS

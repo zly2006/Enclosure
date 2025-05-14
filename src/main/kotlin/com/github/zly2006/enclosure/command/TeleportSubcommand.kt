@@ -20,7 +20,7 @@ fun BuilderScope<*>.registerTeleport() {
                 val area = getEnclosure(this)
 
                 if (!area.hasPerm(player, Permission.COMMAND_TP)) {
-                    player.sendMessage(Permission.COMMAND_TP.getNoPermissionMsg(player))
+                    player.sendMessage(Permission.COMMAND_TP.getNoPermissionMsg(player), true)
                     return@executes
                 }
                 if (!source.hasPermissionLevel(4) && cd > 0 && lastTeleportTimeSpan < cd) {

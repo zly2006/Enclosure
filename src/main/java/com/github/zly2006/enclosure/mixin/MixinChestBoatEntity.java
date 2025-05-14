@@ -28,10 +28,10 @@ public abstract class MixinChestBoatEntity extends Entity {
     private void canPlayerUse(PlayerEntity player, CallbackInfoReturnable<Boolean> cir) {
         if (player instanceof ServerPlayerEntity serverPlayer) {
             if (!ServerMain.INSTANCE.checkPermission(getWorld(), getBlockPos(), player, CONTAINER)) {
-                serverPlayer.sendMessage(CONTAINER.getNoPermissionMsg(serverPlayer));
+                serverPlayer.sendMessage(CONTAINER.getNoPermissionMsg(serverPlayer), true);
                 cir.setReturnValue(false);
             } else if (!ServerMain.INSTANCE.checkPermission(getWorld(), getBlockPos(), player, VEHICLE)) {
-                serverPlayer.sendMessage(VEHICLE.getNoPermissionMsg(serverPlayer));
+                serverPlayer.sendMessage(VEHICLE.getNoPermissionMsg(serverPlayer), true);
                 cir.setReturnValue(false);
             }
         }

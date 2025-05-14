@@ -24,7 +24,7 @@ public class MixinTeleportRandomlyConsumeEffect {
         if (user instanceof ServerPlayerEntity player) {
             BlockPos pos = Utils.toBlockPos(d, e, f);
             if (!ServerMain.INSTANCE.checkPermission(player, TELEPORT, pos)) {
-                player.sendMessage(TELEPORT.getNoPermissionMsg(player));
+                player.sendMessage(TELEPORT.getNoPermissionMsg(player), true);
                 cir.setReturnValue(false);
             }
         }
