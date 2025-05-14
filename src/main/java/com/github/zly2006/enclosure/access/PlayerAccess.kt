@@ -1,5 +1,6 @@
 package com.github.zly2006.enclosure.access
 
+import com.github.zly2006.enclosure.ServerMain
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.text.Text
@@ -26,7 +27,7 @@ interface PlayerAccess {
     fun sendMessageWithCD(text: Text?) {
         if (permissionDeniedMsgTime + 1000 < System.currentTimeMillis()) {
             permissionDeniedMsgTime = System.currentTimeMillis()
-            (this as PlayerEntity).sendMessage(text, false)
+            (this as PlayerEntity).sendMessage(text, ServerMain.commonConfig.useActionBarMessage)
         }
     }
 

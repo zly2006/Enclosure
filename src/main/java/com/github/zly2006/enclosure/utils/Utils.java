@@ -143,7 +143,7 @@ public class Utils {
             if (area == null) return true;
             if (source.getAttacker() instanceof ServerPlayerEntity attacker) {
                 if (!area.hasPerm(attacker, permission)) {
-                    attacker.sendMessage(permission.getNoPermissionMsg(attacker), true);
+                    attacker.sendMessage(permission.getNoPermissionMsg(attacker), ServerMain.INSTANCE.getCommonConfig().useActionBarMessage);
                     return false;
                 }
             } else {

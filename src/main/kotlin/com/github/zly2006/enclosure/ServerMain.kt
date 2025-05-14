@@ -14,6 +14,7 @@ import com.github.zly2006.enclosure.network.config.EnclosureInstalledC2SPacket
 import com.github.zly2006.enclosure.network.config.UUIDCacheS2CPacket
 import com.github.zly2006.enclosure.network.play.*
 import com.github.zly2006.enclosure.utils.Permission
+import com.github.zly2006.enclosure.utils.Permission.Companion.ALLAY
 import com.github.zly2006.enclosure.utils.ResourceLoader
 import com.github.zly2006.enclosure.utils.checkPermission
 import com.google.gson.Gson
@@ -191,14 +192,14 @@ object ServerMain: ModInitializer {
      * 判断某个情况是否适用某个权限
      * 此处的使用不一定是唯一用途
      */
-    private val USE_PREDICATES: MutableMap<Permission, Predicate<UseContext>> =
-        object : HashMap<Permission, Predicate<UseContext>>() {
+    private val USE_PREDICATES: MutableMap<Permission, (UseContext) -> Boolean> =
+        object : HashMap<Permission, (UseContext) -> Boolean>() {
             init {
                 put(Permission.RESPAWN_ANCHOR) { it.block === Blocks.RESPAWN_ANCHOR }
                 put(Permission.ANVIL) { it.block is AnvilBlock }
                 put(Permission.BED) { it.block is BedBlock }
                 put(Permission.BEACON) { it.block === Blocks.BEACON }
-                put(Permission.HONEY) { it.block is BeehiveBlock && it.item == Items.GLASS_BOTTLE || it.item == Items.SHEARS }
+                put(Permission.HONEY) { it.block is BeehiveBlock && (it.item == Items.GLASS_BOTTLE || it.item == Items.SHEARS) }
                 put(Permission.DRAGON_EGG) { it.block === Blocks.DRAGON_EGG }
                 put(Permission.NOTE) { it.block === Blocks.NOTE_BLOCK }
                 put(Permission.SHEAR) {
@@ -228,7 +229,7 @@ object ServerMain: ModInitializer {
                 put(Permission.USE_BONE_MEAL) { it.item === Items.BONE_MEAL }
                 put(Permission.USE_CAMPFIRE) { it.block === Blocks.CAMPFIRE || it.block === Blocks.SOUL_CAMPFIRE }
                 put(Permission.USE_DIRT) {
-                    it.block === Blocks.GRASS_BLOCK && (it.item is ShovelItem || it.item === Items.BONE_MEAL) || it.block === Blocks.DIRT && it.item is PotionItem
+                    (it.block === Blocks.GRASS_BLOCK && (it.item is ShovelItem || it.item is HoeItem || it.item === Items.BONE_MEAL)) || (it.block === Blocks.DIRT && (it.item is PotionItem || it.item is HoeItem))
                 }
                 put(Permission.USE_JUKEBOX) { it.block === Blocks.JUKEBOX }
                 put(Permission.REDSTONE) {
@@ -447,7 +448,7 @@ object ServerMain: ModInitializer {
                     player.getStackInHand(hand).item,
                     null
                 )
-                val permissionList = USE_PREDICATES.entries.filter { it.value.test(context) }.map { it.key }.toList()
+                val permissionList = USE_PREDICATES.entries.filter { it.value.invoke(context) }.map { it.key }.toList()
                 if (permissionList.isEmpty() && (context.item === Items.FLINT_AND_STEEL
                             || context.item === Items.FIRE_CHARGE
                             || context.item === Items.ARMOR_STAND
@@ -482,7 +483,7 @@ object ServerMain: ModInitializer {
                 val context = UseContext(player, null, null, null, player.getStackInHand(hand).item, null)
                 return@register USE_PREDICATES.entries
                     .asSequence()
-                    .filter { it.value.test(context) }
+                    .filter { it.value.invoke(context) }
                     .map { it.key }
                     .map { permission ->
                         if (checkPermission(player, permission, blockPos)) {
@@ -517,7 +518,7 @@ object ServerMain: ModInitializer {
             return@register ActionResult.PASS
         }
         AttackBlockCallback.EVENT.addPhaseOrdering(SessionListener.ID, id)
-        UseEntityCallback.EVENT.register { player, world, hand, entity, _ ->
+        UseEntityCallback.EVENT.register { player, world, hand, entity, c ->
             if (entity is ArmorStandEntity) {
                 if (!checkPermission(world!!, entity.blockPos, player, Permission.ARMOR_STAND)) {
                     player.sendMessage(Permission.ARMOR_STAND.getNoPermissionMsg(player), commonConfig.useActionBarMessage)
@@ -531,13 +532,14 @@ object ServerMain: ModInitializer {
                 val context = UseContext(player, entity.blockPos, null, null, usingItem, entity)
                 return@register USE_PREDICATES.entries
                     .asSequence()
-                    .filter { it.value.test(context) }
+                    .filter { it.value.invoke(context) }
                     .map { it.key }
                     .map { permission: Permission ->
                         if (checkPermission(player, permission, entity.blockPos)) {
                             ActionResult.PASS
                         } else {
                             player.currentScreenHandler.syncState()
+
                             player.sendMessage(permission.getNoPermissionMsg(player), commonConfig.useActionBarMessage)
                             player.networkHandler.sendPacket(EntityTrackerUpdateS2CPacket(
                                 entity.id, entity.dataTracker.entries.map { it.toSerialized() }

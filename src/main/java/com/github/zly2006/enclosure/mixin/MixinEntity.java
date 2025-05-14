@@ -35,7 +35,7 @@ public abstract class MixinEntity {
             cancellable = true
     )
     private void canBeDetachLeash(PlayerEntity player, Hand hand, CallbackInfoReturnable<ActionResult> cir) {
-        if (this instanceof Leashable) checkLeashPermission(player).ifPresent(cir::setReturnValue);
+        if (this instanceof Leashable && ((Leashable) this).isLeashed()) checkLeashPermission(player).ifPresent(cir::setReturnValue);
     }
 
     @SuppressWarnings("UnreachableCode")
