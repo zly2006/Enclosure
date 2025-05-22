@@ -3,14 +3,9 @@ package com.github.zly2006.enclosure.mixin;
 import com.github.zly2006.enclosure.EnclosureArea;
 import com.github.zly2006.enclosure.ServerMain;
 import com.github.zly2006.enclosure.utils.Permission;
-import net.minecraft.block.BlockState;
 import net.minecraft.entity.Entity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.BlockView;
-import net.minecraft.world.World;
-import net.minecraft.world.explosion.Explosion;
-import net.minecraft.world.explosion.ExplosionBehavior;
 import net.minecraft.world.explosion.ExplosionImpl;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -23,6 +18,7 @@ import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 
 import java.util.Iterator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Mixin(ExplosionImpl.class)
 public abstract class MixinExplosion {
@@ -31,15 +27,20 @@ public abstract class MixinExplosion {
     private ServerWorld world;
 
     @Redirect(
-            method = "getBlocksToDestroy",
+            method = "explode",
             at = @At(
                     value = "INVOKE",
-                    target = "Lnet/minecraft/world/explosion/ExplosionBehavior;canDestroyBlock(Lnet/minecraft/world/explosion/Explosion;Lnet/minecraft/world/BlockView;Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/BlockState;F)Z"
+                    target = "Lnet/minecraft/world/explosion/ExplosionImpl;destroyBlocks(Ljava/util/List;)V"
             )
     )
-    private boolean protectBlock(ExplosionBehavior instance, Explosion explosion, BlockView world, BlockPos pos, BlockState state, float power) {
-        EnclosureArea area = ServerMain.INSTANCE.getSmallestEnclosure((ServerWorld) world, pos);
-        return area == null || area.hasPubPerm(Permission.EXPLOSION);
+    private void protectBlock(ExplosionImpl instance, List<BlockPos> positions) {
+        instance.destroyBlocks(positions.stream()
+               .filter(pos -> {
+                   EnclosureArea area = ServerMain.INSTANCE.getSmallestEnclosure(world, pos);
+                   return area == null || area.hasPubPerm(Permission.EXPLOSION);
+               })
+               .collect(Collectors.toList())
+       );
     }
 
     @Inject(

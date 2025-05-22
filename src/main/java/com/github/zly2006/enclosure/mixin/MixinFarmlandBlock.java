@@ -27,6 +27,9 @@ public class MixinFarmlandBlock {
             }
         }
 
+        if (entity == null) return;
+        if (!(entity.getWorld() instanceof ServerWorld)) return;
+
         EnclosureArea area = ServerMain.INSTANCE.getSmallestEnclosure((ServerWorld) entity.getWorld(), pos);
         if (area == null) return;
         if (area.hasPubPerm(Permission.FARMLAND_DESTROY)) return;

@@ -17,3 +17,4 @@ accessible field net/minecraft/server/world/ServerChunkLoadingManager$EntityTrac
 accessible field net/minecraft/inventory/DoubleInventory first Lnet/minecraft/inventory/Inventory;
 accessible field net/minecraft/inventory/DoubleInventory second Lnet/minecraft/inventory/Inventory;
 accessible field net/minecraft/server/world/ServerChunkManager ticketManager Lnet/minecraft/server/world/ChunkTicketManager;
+accessible method net/minecraft/world/explosion/ExplosionImpl destroyBlocks (Ljava/util/List;)V
