@@ -65,12 +65,16 @@ public class MixinFireBlock {
         return true;
     }
 
-    @Redirect(method = "trySpreadingFire", at = @At(value = "INVOKE", target = "Lnet/minecraft/block/TntBlock;primeTnt(Lnet/minecraft/world/World;Lnet/minecraft/util/math/BlockPos;)V"))
-    private void redirectSetter(World instance, BlockPos pos) {
-        if (instance.isClient) return;
+    @Redirect(method = "trySpreadingFire", at = @At(value = "INVOKE", target = "Lnet/minecraft/block/TntBlock;primeTnt(Lnet/minecraft/world/World;Lnet/minecraft/util/math/BlockPos;)Z"))
+    private boolean redirectSetter(World instance, BlockPos pos) {
+        if (instance.isClient) return false;
+
         EnclosureArea area = ServerMain.INSTANCE.getSmallestEnclosure((ServerWorld) instance, pos);
         if (area == null || area.hasPubPerm(Permission.FIRE_SPREADING)) {
             TntBlock.primeTnt(instance, pos);
-        }  // 不允许火点燃TNT
+            return true;
+        }
+
+        return false;  // 无权限时不允许火点燃TNT
     }
 }

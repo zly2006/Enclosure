@@ -10,15 +10,20 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.mob.Monster;
 import net.minecraft.entity.passive.*;
+import net.minecraft.nbt.NbtElement;
+import net.minecraft.nbt.NbtIntArray;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.*;
 import net.minecraft.util.Formatting;
+import net.minecraft.util.Uuids;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
+import net.minecraft.world.Heightmap;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.spongepowered.asm.mixin.Unique;
 
 import java.util.List;
 import java.util.UUID;
@@ -61,20 +66,18 @@ public class Utils {
         }
         ret.append(TrT.of("enclosure.menu.previous")
                 .setStyle(Style.EMPTY.withColor(firstPage ? Formatting.GRAY : Formatting.DARK_GREEN)
-                        .withHoverEvent(firstPage ? null : new HoverEvent(HoverEvent.Action.SHOW_TEXT, Text.of("Page " + (page - 1))))
-                        .withClickEvent(firstPage ? null : new ClickEvent(ClickEvent.Action.RUN_COMMAND,
-                                "%s %d".formatted(command, page - 1)))));
+                        .withHoverEvent(firstPage ? null : new HoverEvent.ShowText(Text.of("Page " + (page - 1))))
+                        .withClickEvent(firstPage ? null : new ClickEvent.RunCommand("%s %d".formatted(command, page - 1)))));
         ret.append("    ");
         ret.append(TrT.of("enclosure.menu.next")
                 .setStyle(Style.EMPTY.withColor(lastPage ? Formatting.GRAY : Formatting.DARK_GREEN)
-                        .withHoverEvent(lastPage ? null : new HoverEvent(HoverEvent.Action.SHOW_TEXT, Text.of("Page " + (page + 1))))
-                        .withClickEvent(lastPage ? null : new ClickEvent(ClickEvent.Action.RUN_COMMAND,
-                                "%s %d".formatted(command, page + 1)))));
+                        .withHoverEvent(lastPage ? null : new HoverEvent.ShowText(Text.of("Page " + (page + 1))))
+                        .withClickEvent(lastPage ? null : new ClickEvent.RunCommand("%s %d".formatted(command, page + 1)))));
         return ret;
     }
 
     public static int topYOf(ServerWorld world, int x, int z) {
-        return topYOf(world, x, z, world.getTopY() - 1);
+        return topYOf(world, x, z, world.getTopY(Heightmap.Type.WORLD_SURFACE, x, z) - 1);
     }
 
     public static int topYOf(ServerWorld world, int x, int z, int startY) {
@@ -126,7 +129,7 @@ public class Utils {
             EnclosureArea area = ServerMain.INSTANCE.getSmallestEnclosure(serverWorld, pos);
             if (source.getAttacker() instanceof ServerPlayerEntity attacker) {
                 if (area != null && !area.hasPerm(attacker, permission)) {
-                    attacker.sendMessage(permission.getNoPermissionMsg(attacker));
+                    attacker.sendMessage(permission.getNoPermissionMsg(attacker), ServerMain.INSTANCE.getCommonConfig().useActionBarMessage);
                     return false;
                 }
             }
@@ -140,7 +143,7 @@ public class Utils {
             if (area == null) return true;
             if (source.getAttacker() instanceof ServerPlayerEntity attacker) {
                 if (!area.hasPerm(attacker, permission)) {
-                    attacker.sendMessage(permission.getNoPermissionMsg(attacker));
+                    attacker.sendMessage(permission.getNoPermissionMsg(attacker), ServerMain.INSTANCE.getCommonConfig().useActionBarMessage);
                     return false;
                 }
             } else {
@@ -190,5 +193,24 @@ public class Utils {
 
     public static BlockPos toBlockPos(double g, double h, double j) {
         return new BlockPos((int) g, (int) h, (int) j);
+    }
+
+    public static UUID toUuid(NbtElement element) {
+        if (element.getNbtType() != NbtIntArray.TYPE) {
+            throw new IllegalArgumentException(
+                    "Expected UUID-Tag to be of type " + NbtIntArray.TYPE.getCrashReportName() + ", but found " + element.getNbtType().getCrashReportName() + "."
+            );
+        } else {
+            int[] is = ((NbtIntArray)element).getIntArray();
+            if (is.length != 4) {
+                throw new IllegalArgumentException("Expected UUID-Array to be of length 4, but found " + is.length + ".");
+            } else {
+                return Uuids.toUuid(is);
+            }
+        }
+    }
+
+    public static NbtIntArray fromUuid(UUID uuid) {
+        return new NbtIntArray(Uuids.toIntArray(uuid));
     }
 }

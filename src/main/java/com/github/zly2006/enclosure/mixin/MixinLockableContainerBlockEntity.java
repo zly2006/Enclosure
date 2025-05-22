@@ -32,7 +32,7 @@ public class MixinLockableContainerBlockEntity extends BlockEntity {
             }
             EnclosureArea area = ServerMain.INSTANCE.getSmallestEnclosure((ServerWorld) player.getWorld(), getPos());
             if (area != null && !area.hasPerm(player, CONTAINER)) {
-                player.sendMessage(CONTAINER.getNoPermissionMsg(player));
+                player.sendMessage(CONTAINER.getNoPermissionMsg(player), ServerMain.INSTANCE.getCommonConfig().useActionBarMessage);
                 cir.setReturnValue(false);
             }
         }

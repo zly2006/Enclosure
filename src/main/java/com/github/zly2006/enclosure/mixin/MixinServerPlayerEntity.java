@@ -20,14 +20,16 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
-import net.minecraft.nbt.NbtHelper;
+import net.minecraft.nbt.NbtIntArray;
 import net.minecraft.nbt.NbtList;
+import net.minecraft.network.packet.s2c.play.PositionFlag;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayNetworkHandler;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
+import net.minecraft.util.Uuids;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
@@ -42,12 +44,15 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
+import java.util.EnumSet;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
 import static com.github.zly2006.enclosure.command.EnclosureCommandKt.CONSOLE;
 import static com.github.zly2006.enclosure.utils.Permission.*;
+import static com.github.zly2006.enclosure.utils.Utils.fromUuid;
+import static com.github.zly2006.enclosure.utils.Utils.toUuid;
 
 @SuppressWarnings("UnreachableCode")
 @Mixin(ServerPlayerEntity.class)
@@ -79,7 +84,7 @@ public abstract class MixinServerPlayerEntity extends PlayerEntity implements Pl
         if (nbt.contains("visited_enclosures")) {
             NbtElement element = nbt.get("visited_enclosures");
             if (element instanceof NbtList list) {
-                list.forEach(item -> visitedEnclosures.add(NbtHelper.toUuid(item)));
+                list.forEach(item -> visitedEnclosures.add(toUuid(item)));
             }
         }
     }
@@ -90,7 +95,7 @@ public abstract class MixinServerPlayerEntity extends PlayerEntity implements Pl
     )
     private void writeCustomDataToNbt(NbtCompound nbt, CallbackInfo ci) {
         NbtList list = new NbtList();
-        visitedEnclosures.forEach(uuid -> list.add(NbtHelper.fromUuid(uuid)));
+        visitedEnclosures.forEach(uuid -> list.add(fromUuid(uuid)));
         nbt.put("visited_enclosures", list);
     }
 
@@ -102,7 +107,7 @@ public abstract class MixinServerPlayerEntity extends PlayerEntity implements Pl
         visitedEnclosures = Sets.newHashSet(((PlayerAccess) oldPlayer).enclosure$getVisitedEnclosures());
     }
 
-    public Set<UUID> enclosure$getVisitedEnclosures() {
+    public @NotNull Set<UUID> enclosure$getVisitedEnclosures() {
         return visitedEnclosures;
     }
 
@@ -127,7 +132,7 @@ public abstract class MixinServerPlayerEntity extends PlayerEntity implements Pl
     }
 
     @Inject(method = "damage", at = @At("HEAD"), cancellable = true)
-    private void protectPVP(DamageSource source, float amount, CallbackInfoReturnable<Boolean> cir) {
+    private void protectPVP(ServerWorld world, DamageSource source, float amount, CallbackInfoReturnable<Boolean> cir) {
         if (source.getAttacker() instanceof ServerPlayerEntity attacker) {
             //pvp
             EnclosureArea area = ServerMain.INSTANCE.getSmallestEnclosure((ServerWorld) getWorld(), getBlockPos());
@@ -137,7 +142,7 @@ public abstract class MixinServerPlayerEntity extends PlayerEntity implements Pl
             }
             if (attackerArea != null && !attackerArea.hasPubPerm(Permission.PVP)
                     && UtilsKt.checkPermission(attacker, "enclosure.bypass")) {
-                attacker.sendMessage(PVP.getNoPermissionMsg(attacker));
+                attacker.sendMessage(PVP.getNoPermissionMsg(attacker), true);
                 cir.setReturnValue(false);
             }
         }
@@ -181,7 +186,7 @@ public abstract class MixinServerPlayerEntity extends PlayerEntity implements Pl
                 Optional.ofNullable(Utils.getNameByUUID(area.getOwner()))
                         .orElse("§cUnknown§r");
         return Text.of(
-                message.replace("%player%", player.getDisplayName().getString())
+                message.replace("%player%", Optional.ofNullable(player.getDisplayName()).orElse(player.getName()).getString())
                         .replace("%name%", area.getName())
                         .replace("%owner%", username)
                         .replace("%world%", area.getWorld().getRegistryKey().getValue().toString())
@@ -212,7 +217,7 @@ public abstract class MixinServerPlayerEntity extends PlayerEntity implements Pl
         player.sendMessage(text, ServerMain.INSTANCE.getCommonConfig().useActionBarMessage);
     }
 
-    @SuppressWarnings("UnreachableCode")
+    // @SuppressWarnings("UnreachableCode")
     @Inject(method = "tick", at = @At("HEAD"))
     private void onTick(CallbackInfo ci) {
         if (server.getTicks() % 10 == 0) {
@@ -229,10 +234,10 @@ public abstract class MixinServerPlayerEntity extends PlayerEntity implements Pl
             if (area != null && !isSpectator()) {
                 visitedEnclosures.add(area.getUuid());
                 if (!area.hasPerm(player, MOVE)) {
-                    player.sendMessage(MOVE.getNoPermissionMsg(player));
+                    player.sendMessage(MOVE.getNoPermissionMsg(player), ServerMain.INSTANCE.getCommonConfig().useActionBarMessage);
                     if (area != lastArea && lastWorld != null && lastPos != null) {
                         // teleport back
-                        player.teleport(lastWorld, lastPos.x, lastPos.y, lastPos.z, 0, 0);
+                        player.teleport(lastWorld, lastPos.x, lastPos.y, lastPos.z, EnumSet.noneOf(PositionFlag.class), 0, 0, true);
                     } else {
                         // kick
                         area.kickPlayer(player);

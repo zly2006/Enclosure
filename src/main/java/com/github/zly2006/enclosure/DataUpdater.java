@@ -17,9 +17,9 @@ public class DataUpdater {
             if (compound.contains("tp_pos") && !compound.contains("yaw")) {
                 NbtList nbtList = (NbtList) compound.get("tp_pos");
                 assert nbtList != null;
-                int x = nbtList.getInt(0);
-                int y = nbtList.getInt(1);
-                int z = nbtList.getInt(2);
+                int x = nbtList.getInt(0).orElseThrow();
+                int y = nbtList.getInt(1).orElseThrow();
+                int z = nbtList.getInt(2).orElseThrow();
                 nbtList.clear();
                 nbtList.add(NbtDouble.of(x));
                 nbtList.add(NbtDouble.of(y));
@@ -40,8 +40,8 @@ public class DataUpdater {
             compound.getKeys().forEach(key -> {
                 if (compound.get(key) instanceof NbtCompound nbt) {
                     compound.put(key, updater.update(nbt));
-                    if (compound.getCompound(key).contains(EnclosureListKt.SUB_ENCLOSURES_KEY)) {
-                        NbtCompound update = update(versionBefore, compound.getCompound(key));
+                    if (compound.getCompound(key).orElseThrow().contains(EnclosureListKt.SUB_ENCLOSURES_KEY)) {
+                        NbtCompound update = update(versionBefore, compound.getCompound(key).orElseThrow());
                         nbt.put(EnclosureListKt.SUB_ENCLOSURES_KEY, update);
                     }
                 }

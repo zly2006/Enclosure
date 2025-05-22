@@ -16,15 +16,15 @@ import net.minecraft.util.math.BlockPos
 import net.minecraft.util.math.Box
 
 fun MutableText.hoverText(text: Text): MutableText {
-    return this.styled { it.withHoverEvent(HoverEvent(HoverEvent.Action.SHOW_TEXT, text)) }
+    return this.styled { it.withHoverEvent(HoverEvent.ShowText(text)) }
 }
 
 fun Style.hoverText(text: Text): Style {
-    return this.withHoverEvent(HoverEvent(HoverEvent.Action.SHOW_TEXT, text))
+    return this.withHoverEvent(HoverEvent.ShowText(text))
 }
 
 fun Style.clickRun(command: String): Style {
-    return this.withClickEvent(ClickEvent(ClickEvent.Action.RUN_COMMAND, command))
+    return this.withClickEvent(ClickEvent.RunCommand(command))
 }
 
 operator fun MutableText.plusAssign(text: Text) {
@@ -68,7 +68,7 @@ fun literalText(text: Any): MutableText {
 }
 
 fun ServerWorld.mark4updateChecked(pos: BlockPos): Boolean {
-    if (worldBorder.contains(pos) && pos.y >= bottomY && pos.y < topY) {
+    if (worldBorder.contains(pos) && pos.y >= bottomY && pos.y < this.topYInclusive) {
         chunkManager.markForUpdate(pos)
         return true
     }

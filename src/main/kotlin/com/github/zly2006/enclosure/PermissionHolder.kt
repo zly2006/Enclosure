@@ -111,7 +111,7 @@ interface PermissionHolder : Serializable2Text {
         permissionsMap.entries.map { (key, value) ->
             var ordinal = -1
             var style = Style.EMPTY
-                .withClickEvent(ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, getSetPermissionCommand(key)))
+                .withClickEvent(ClickEvent.SuggestCommand(getSetPermissionCommand(key)))
                 .hoverText(
                     if (key == CONSOLE) serializePermission(value) else  // 不是默认的，就显示uuid
                         Text.literal("UUID=$key: ").gold() + serializePermission(value)

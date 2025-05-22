@@ -19,7 +19,7 @@ public class MixinBlockItem {
     private void canPlace(ItemPlacementContext context, BlockState state, CallbackInfoReturnable<Boolean> cir) {
         if (context.getPlayer() instanceof ServerPlayerEntity serverPlayer) {
             if (!ServerMain.INSTANCE.checkPermission(serverPlayer, Permission.PLACE_BLOCK, context.getBlockPos())) {
-                serverPlayer.sendMessage(PLACE_BLOCK.getNoPermissionMsg(serverPlayer));
+                serverPlayer.sendMessage(PLACE_BLOCK.getNoPermissionMsg(serverPlayer), ServerMain.INSTANCE.getCommonConfig().useActionBarMessage);
                 serverPlayer.currentScreenHandler.syncState();
                 cir.setReturnValue(false);
             }

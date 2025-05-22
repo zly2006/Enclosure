@@ -26,7 +26,7 @@ class EnclosureList(world: ServerWorld, private val isRoot: Boolean) : Persisten
 
     constructor(nbt: NbtCompound, world: ServerWorld, isRoot: Boolean) : this(world, isRoot) {
         (nbt[ENCLOSURE_LIST_KEY] as? NbtList)?.forEach {
-            val name = (it as? NbtString)?.asString() ?: return@forEach
+            val name = (it as? NbtString)?.asString()?.get() ?: return@forEach
             val compound = nbt[name] as? NbtCompound ?: return@forEach
             if (compound.keys.contains(SUB_ENCLOSURES_KEY)) {
                 areaMap[name] = Enclosure(compound, world)
@@ -41,11 +41,10 @@ class EnclosureList(world: ServerWorld, private val isRoot: Boolean) : Persisten
         if (isRoot) {
             enclosures[world.registryKey] = this
             LOGGER.debug("Creating new enclosure list for world {}", world.registryKey.value)
-            boundWorld.chunkManager.persistentStateManager[ENCLOSURE_LIST_KEY] = this
         }
     }
 
-    override fun writeNbt(nbt: NbtCompound, registryLookup: RegistryWrapper.WrapperLookup?): NbtCompound {
+    fun writeNbt(nbt: NbtCompound, registryLookup: RegistryWrapper.WrapperLookup?): NbtCompound {
         val list = NbtList()
         for (area in areaMap.values) {
             list.add(NbtString.of(area.name))
@@ -137,10 +136,10 @@ class EnclosureList(world: ServerWorld, private val isRoot: Boolean) : Persisten
                     .minOfOrNull { it.ticket!!.level }
                     ?: ChunkLevels.getLevelFromType(ChunkLevelType.FULL) // chunk border level
                 if (targetLevel > area.ticket!!.level) {
-                    world.chunkManager.removeTicket(FORCED, it, MAX_CHUNK_LEVEL - area.ticket!!.level, it)
+                    world.chunkManager.removeTicket(FORCED, it, MAX_CHUNK_LEVEL - area.ticket!!.level)
                 }
             } else {
-                world.chunkManager.removeTicket(FORCED, it, MAX_CHUNK_LEVEL - area.ticket!!.level, it)
+                world.chunkManager.removeTicket(FORCED, it, MAX_CHUNK_LEVEL - area.ticket!!.level)
             }
         }
     }
@@ -150,7 +149,7 @@ class EnclosureList(world: ServerWorld, private val isRoot: Boolean) : Persisten
             if (area.ticket != null) {
                 if (area.ticket!!.remainingTicks > 0) {
                     area.toBlockBox().streamChunkPos().forEach {
-                        world.chunkManager.addTicket(FORCED, it, MAX_CHUNK_LEVEL - area.ticket!!.level, it)
+                        world.chunkManager.addTicket(FORCED, it, MAX_CHUNK_LEVEL - area.ticket!!.level)
                     }
                     // todo: message
                 }

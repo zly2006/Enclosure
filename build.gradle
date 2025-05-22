@@ -1,5 +1,5 @@
 plugins {
-    id "fabric-loom" version "1.10-SNAPSHOT"
+    id "fabric-loom" version "1.10.5"
     id "maven-publish"
     id "org.ajoberstar.grgit" version "5.2.2"
     id "org.jetbrains.kotlin.jvm" version "2.0.0"
@@ -54,7 +54,7 @@ dependencies {
     include(modImplementation("org.yaml:snakeyaml:1.33"))
 
     // Fabric Permissions API. To check the permissions
-    include(modImplementation('me.lucko:fabric-permissions-api:0.2-SNAPSHOT'))
+    include(modImplementation('me.lucko:fabric-permissions-api:0.3.3'))
     // REI. To avoid the REI GUI overlap with the Enclosure GUI
     modCompileOnly "me.shedaniel:RoughlyEnoughItems-api-fabric:${project.rei_version}"
 }

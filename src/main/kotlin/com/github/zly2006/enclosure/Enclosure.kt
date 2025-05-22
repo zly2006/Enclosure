@@ -23,7 +23,7 @@ class Enclosure : EnclosureArea {
      */
     constructor(compound: NbtCompound, world: ServerWorld?) : super(compound, world!!) {
         // process sub enclosures
-        val sub = compound.getCompound(SUB_ENCLOSURES_KEY)
+        val sub = compound.getCompound(SUB_ENCLOSURES_KEY).orElseThrow()
         subEnclosures = EnclosureList(sub, world, false)
         subEnclosures.areas.forEach(this::addChild)
     }

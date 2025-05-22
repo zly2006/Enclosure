@@ -5,10 +5,12 @@ import com.github.zly2006.enclosure.utils.TrT;
 import com.mojang.authlib.GameProfile;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtDouble;
+import net.minecraft.nbt.NbtIntArray;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.MutableText;
+import net.minecraft.util.Uuids;
 import net.minecraft.world.World;
 import org.yaml.snakeyaml.Yaml;
 
@@ -18,6 +20,7 @@ import java.util.*;
 
 import static com.github.zly2006.enclosure.ServerMainKt.LOGGER;
 import static com.github.zly2006.enclosure.ServerMainKt.minecraftServer;
+import static com.github.zly2006.enclosure.utils.Utils.fromUuid;
 
 public class Converter {
 
@@ -143,7 +146,7 @@ public class Converter {
                 UUID ownerUuid = UUID.fromString((String) (((Map<String, Object>) (value.get("Permissions"))).get("OwnerUUID")));
                 String ownerName = (String) ((Map<String, Object>) (value.get("Permissions"))).get("OwnerLastKnownName");
 
-                nbt.putUuid("owner", ownerUuid);
+                nbt.put("owner", fromUuid(ownerUuid));
 
                 minecraftServer.getUserCache().add(new GameProfile(ownerUuid, ownerName));
 

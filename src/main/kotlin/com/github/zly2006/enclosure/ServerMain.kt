@@ -14,12 +14,17 @@ import com.github.zly2006.enclosure.network.config.EnclosureInstalledC2SPacket
 import com.github.zly2006.enclosure.network.config.UUIDCacheS2CPacket
 import com.github.zly2006.enclosure.network.play.*
 import com.github.zly2006.enclosure.utils.Permission
+import com.github.zly2006.enclosure.utils.Permission.Companion.ALLAY
 import com.github.zly2006.enclosure.utils.ResourceLoader
 import com.github.zly2006.enclosure.utils.checkPermission
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import com.google.gson.JsonObject
 import com.mojang.brigadier.arguments.FloatArgumentType
+import com.mojang.datafixers.util.Pair
+import com.mojang.serialization.Codec
+import com.mojang.serialization.DataResult
+import com.mojang.serialization.DynamicOps
 import me.lucko.fabric.api.permissions.v0.Options
 import net.fabricmc.api.EnvType
 import net.fabricmc.api.ModInitializer
@@ -39,15 +44,19 @@ import net.minecraft.block.*
 import net.minecraft.command.argument.Vec3ArgumentType
 import net.minecraft.datafixer.DataFixTypes
 import net.minecraft.entity.Entity
-import net.minecraft.entity.Saddleable
+import net.minecraft.entity.EquipmentSlot
 import net.minecraft.entity.decoration.ArmorStandEntity
 import net.minecraft.entity.decoration.ItemFrameEntity
+import net.minecraft.entity.passive.AbstractHorseEntity
 import net.minecraft.entity.passive.AllayEntity
 import net.minecraft.entity.passive.AnimalEntity
 import net.minecraft.entity.passive.SheepEntity
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.item.*
 import net.minecraft.item.HoneycombItem.UNWAXED_TO_WAXED_BLOCKS
+import net.minecraft.nbt.NbtCompound
+import net.minecraft.nbt.NbtOps
+import net.minecraft.network.packet.s2c.play.EntityEquipmentUpdateS2CPacket
 import net.minecraft.network.packet.s2c.play.EntityTrackerUpdateS2CPacket
 import net.minecraft.registry.RegistryKey
 import net.minecraft.registry.tag.BlockTags
@@ -57,12 +66,15 @@ import net.minecraft.server.network.ServerPlayNetworkHandler
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.server.world.ServerWorld
 import net.minecraft.text.Text
-import net.minecraft.util.*
+import net.minecraft.util.ActionResult
+import net.minecraft.util.Formatting
+import net.minecraft.util.Hand
+import net.minecraft.util.Identifier
 import net.minecraft.util.hit.BlockHitResult
 import net.minecraft.util.hit.HitResult
 import net.minecraft.util.math.BlockPos
 import net.minecraft.util.math.ChunkPos
-import net.minecraft.world.PersistentState
+import net.minecraft.world.PersistentStateType
 import net.minecraft.world.RaycastContext
 import net.minecraft.world.World
 import org.slf4j.Logger
@@ -75,6 +87,7 @@ import java.util.*
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.function.Consumer
 import java.util.function.Predicate
+import kotlin.sequences.map
 
 const val MOD_ID = "enclosure" // 模组标识符
 @JvmField
@@ -116,7 +129,7 @@ object ServerMain: ModInitializer {
             val limits = reloadLimits()
             LOGGER.info("Loaded limits config")
             limits
-        } catch (e: IOException) {
+        } catch (_: IOException) {
             val limits = mapOf("default" to LandLimits())
             BuilderScope.map["enclosure.limits.default"] = BuilderScope.Companion.DefaultPermission.TRUE
             saveLimits(limits)
@@ -132,7 +145,7 @@ object ServerMain: ModInitializer {
             )
             LOGGER.info("Loaded common config")
             common
-        } catch (e: IOException) {
+        } catch (_: IOException) {
             val common = Common()
             saveCommon(common)
             LOGGER.info("Created common config")
@@ -155,7 +168,7 @@ object ServerMain: ModInitializer {
                     ResourceLoader.getLanguageFile("en_us"),
                     JsonObject::class.java
                 )
-            } catch (ex: IOException) {
+            } catch (_: IOException) {
                 LOGGER.error("Failed to load en_us language file")
                 LOGGER.error("Please report this issue to the author")
                 e.printStackTrace()
@@ -169,7 +182,7 @@ object ServerMain: ModInitializer {
             updateChecker.check()
             try {
                 Thread.sleep((1000 * 60 * 60 * 12).toLong()) // 12 hours
-            } catch (e: InterruptedException) {
+            } catch (_: InterruptedException) {
                 return@Thread
             }
         }
@@ -179,14 +192,14 @@ object ServerMain: ModInitializer {
      * 判断某个情况是否适用某个权限
      * 此处的使用不一定是唯一用途
      */
-    private val USE_PREDICATES: MutableMap<Permission, Predicate<UseContext>> =
-        object : HashMap<Permission, Predicate<UseContext>>() {
+    private val USE_PREDICATES: MutableMap<Permission, (UseContext) -> Boolean> =
+        object : HashMap<Permission, (UseContext) -> Boolean>() {
             init {
                 put(Permission.RESPAWN_ANCHOR) { it.block === Blocks.RESPAWN_ANCHOR }
                 put(Permission.ANVIL) { it.block is AnvilBlock }
                 put(Permission.BED) { it.block is BedBlock }
                 put(Permission.BEACON) { it.block === Blocks.BEACON }
-                put(Permission.HONEY) { it.block is BeehiveBlock && it.item == Items.GLASS_BOTTLE || it.item == Items.SHEARS }
+                put(Permission.HONEY) { it.block is BeehiveBlock && (it.item == Items.GLASS_BOTTLE || it.item == Items.SHEARS) }
                 put(Permission.DRAGON_EGG) { it.block === Blocks.DRAGON_EGG }
                 put(Permission.NOTE) { it.block === Blocks.NOTE_BLOCK }
                 put(Permission.SHEAR) {
@@ -208,7 +221,7 @@ object ServerMain: ModInitializer {
                         else -> false
                     }
                 }
-                put(Permission.HORSE) { it.entity is Saddleable }
+                put(Permission.HORSE) { it.entity is AbstractHorseEntity }
                 put(Permission.FEED_ANIMAL) {
                     it.entity is AnimalEntity && it.entity.isBreedingItem(it.item.defaultStack)
                 }
@@ -216,12 +229,13 @@ object ServerMain: ModInitializer {
                 put(Permission.USE_BONE_MEAL) { it.item === Items.BONE_MEAL }
                 put(Permission.USE_CAMPFIRE) { it.block === Blocks.CAMPFIRE || it.block === Blocks.SOUL_CAMPFIRE }
                 put(Permission.USE_DIRT) {
-                    it.block === Blocks.GRASS_BLOCK && (it.item is ShovelItem || it.item === Items.BONE_MEAL) || it.block === Blocks.DIRT && it.item is PotionItem
+                    (it.block === Blocks.GRASS_BLOCK && (it.item is ShovelItem || it.item is HoeItem || it.item === Items.BONE_MEAL)) || (it.block === Blocks.DIRT && (it.item is PotionItem || it.item is HoeItem))
                 }
                 put(Permission.USE_JUKEBOX) { it.block === Blocks.JUKEBOX }
                 put(Permission.REDSTONE) {
                     it.block is ButtonBlock || it.block === Blocks.LEVER || it.block === Blocks.DAYLIGHT_DETECTOR
                             || it.block === Blocks.REPEATER || it.block === Blocks.COMPARATOR || it.block === Blocks.REDSTONE_WIRE
+                            || it.block === Blocks.TARGET
                 }
                 put(Permission.STRIP_LOG) { (it.state?.isIn(BlockTags.LOGS) ?: false) && it.item is AxeItem }
                 put(Permission.VEHICLE) { it.item is BoatItem || it.item is MinecartItem }
@@ -434,7 +448,7 @@ object ServerMain: ModInitializer {
                     player.getStackInHand(hand).item,
                     null
                 )
-                val permissionList = USE_PREDICATES.entries.filter { it.value.test(context) }.map { it.key }.toList()
+                val permissionList = USE_PREDICATES.entries.filter { it.value.invoke(context) }.map { it.key }.toList()
                 if (permissionList.isEmpty() && (context.item === Items.FLINT_AND_STEEL
                             || context.item === Items.FIRE_CHARGE
                             || context.item === Items.ARMOR_STAND
@@ -445,7 +459,7 @@ object ServerMain: ModInitializer {
                         return@register ActionResult.PASS
                     } else {
                         player.currentScreenHandler.syncState()
-                        player.sendMessage(Permission.PLACE_BLOCK.getNoPermissionMsg(player))
+                        player.sendMessage(Permission.PLACE_BLOCK.getNoPermissionMsg(player), commonConfig.useActionBarMessage)
                         return@register ActionResult.FAIL
                     }
                 }
@@ -454,7 +468,7 @@ object ServerMain: ModInitializer {
                         return@map ActionResult.PASS
                     } else {
                         player.currentScreenHandler.syncState()
-                        player.sendMessage(permission.getNoPermissionMsg(player))
+                        player.sendMessage(permission.getNoPermissionMsg(player), commonConfig.useActionBarMessage)
                         return@map ActionResult.FAIL
                     }
                 }.firstOrNull { it != ActionResult.PASS } ?: ActionResult.PASS
@@ -469,21 +483,21 @@ object ServerMain: ModInitializer {
                 val context = UseContext(player, null, null, null, player.getStackInHand(hand).item, null)
                 return@register USE_PREDICATES.entries
                     .asSequence()
-                    .filter { it.value.test(context) }
+                    .filter { it.value.invoke(context) }
                     .map { it.key }
                     .map { permission ->
                         if (checkPermission(player, permission, blockPos)) {
-                            return@map TypedActionResult.pass(player.getStackInHand(hand))
+                            return@map ActionResult.PASS
                         } else {
                             player.currentScreenHandler.syncState()
-                            player.sendMessage(permission.getNoPermissionMsg(player))
-                            return@map TypedActionResult.fail(player.getStackInHand(hand))
+                            player.sendMessage(permission.getNoPermissionMsg(player), commonConfig.useActionBarMessage)
+                            return@map ActionResult.FAIL
                         }
                     }
-                    .filter { result -> result.result != ActionResult.PASS }
-                    .firstOrNull() ?: TypedActionResult.pass(player.getStackInHand(hand))
+                    .filter { result -> result != ActionResult.PASS }
+                    .firstOrNull() ?: ActionResult.PASS
             }
-            return@register TypedActionResult.pass(player.getStackInHand(hand))
+            return@register ActionResult.PASS
         }
         AttackBlockCallback.EVENT.register(id) { player, world, _, pos, _ ->
             if (player is ServerPlayerEntity) {
@@ -497,17 +511,17 @@ object ServerMain: ModInitializer {
                     }
                 }
                 if (!checkPermission(player, Permission.BREAK_BLOCK, pos)) {
-                    player.sendMessage(Permission.BREAK_BLOCK.getNoPermissionMsg(player))
+                    player.sendMessage(Permission.BREAK_BLOCK.getNoPermissionMsg(player), commonConfig.useActionBarMessage)
                     return@register ActionResult.FAIL
                 }
             }
             return@register ActionResult.PASS
         }
         AttackBlockCallback.EVENT.addPhaseOrdering(SessionListener.ID, id)
-        UseEntityCallback.EVENT.register { player, world, hand, entity, _ ->
+        UseEntityCallback.EVENT.register { player, world, hand, entity, c ->
             if (entity is ArmorStandEntity) {
-                if (!checkPermission(world!!, entity.getBlockPos(), player, Permission.ARMOR_STAND)) {
-                    player.sendMessage(Permission.ARMOR_STAND.getNoPermissionMsg(player))
+                if (!checkPermission(world!!, entity.blockPos, player, Permission.ARMOR_STAND)) {
+                    player.sendMessage(Permission.ARMOR_STAND.getNoPermissionMsg(player), commonConfig.useActionBarMessage)
                     player.currentScreenHandler.syncState()
                     // We don't need to sync entity in this situation
                     return@register ActionResult.FAIL
@@ -518,17 +532,30 @@ object ServerMain: ModInitializer {
                 val context = UseContext(player, entity.blockPos, null, null, usingItem, entity)
                 return@register USE_PREDICATES.entries
                     .asSequence()
-                    .filter { it.value.test(context) }
+                    .filter { it.value.invoke(context) }
                     .map { it.key }
                     .map { permission: Permission ->
                         if (checkPermission(player, permission, entity.blockPos)) {
                             ActionResult.PASS
                         } else {
                             player.currentScreenHandler.syncState()
-                            player.sendMessage(permission.getNoPermissionMsg(player))
+
+                            player.sendMessage(permission.getNoPermissionMsg(player), commonConfig.useActionBarMessage)
                             player.networkHandler.sendPacket(EntityTrackerUpdateS2CPacket(
                                 entity.id, entity.dataTracker.entries.map { it.toSerialized() }
                             ))
+
+                            if (entity is AllayEntity) {
+                                val list = listOf(
+                                    Pair(EquipmentSlot.MAINHAND, entity.getStackInHand(Hand.MAIN_HAND)),
+                                    Pair(EquipmentSlot.OFFHAND, entity.getStackInHand(Hand.OFF_HAND))
+                                )
+
+                                // 强制同步悦灵的背包
+                                (world as ServerWorld).chunkManager.sendToNearbyPlayers(entity,
+                                    EntityEquipmentUpdateS2CPacket(entity.id, list)
+                                )
+                            }
                             ActionResult.FAIL
                         }
                     }.firstOrNull { result -> result != ActionResult.PASS } ?: ActionResult.PASS
@@ -543,33 +570,18 @@ object ServerMain: ModInitializer {
                 "Loading enclosures in {}...",
                 world.registryKey.value
             )
-            val update = AtomicBoolean(false)
-            val type = PersistentState.Type({
-                val enclosureList = EnclosureList(world, true)
-                enclosureList.markDirty()
-                enclosureList
-            }, { nbtCompound, loopup ->
-                var nbtCompound = nbtCompound
-                val version = nbtCompound.getInt(DATA_VERSION_KEY)
-                if (version != DATA_VERSION) {
-                    LOGGER.info(
-                        "Updating enclosure data from version {} to {}",
-                        version,
-                        DATA_VERSION
-                    )
-                    for (i in version until DATA_VERSION) {
-                        nbtCompound = DataUpdater.update(i, nbtCompound)
-                    }
-                    update.plain = true
-                    update.set(true)
-                }
-                val enclosureList = EnclosureList(nbtCompound, world, true)
-                if (update.get()) {
+            val type = PersistentStateType(
+                ENCLOSURE_LIST_KEY,
+                {
+                    val enclosureList = EnclosureList(world, true)
                     enclosureList.markDirty()
-                }
-                enclosureList
-            }, DataFixTypes.SAVED_DATA_MAP_DATA)
-            world.chunkManager.persistentStateManager.getOrCreate(type, ENCLOSURE_LIST_KEY)
+                    enclosureList
+                },
+                EnclosureCodec(world),
+                DataFixTypes.SAVED_DATA_MAP_DATA
+            )
+
+            world.chunkManager.persistentStateManager.getOrCreate(type)
         })
         ServerLifecycleEvents.SERVER_STARTED.register {
             //backupManager = BackupManager()
@@ -592,5 +604,49 @@ object ServerMain: ModInitializer {
         }
 
         LOGGER.info("Enclosure enabled now!")
+    }
+
+    class EnclosureCodec(private val world: ServerWorld) : Codec<EnclosureList> {
+        override fun <T> encode(
+            input: EnclosureList,
+            ops: DynamicOps<T?>,
+            prefix: T
+        ): DataResult<T> {
+            val nbtCompound = NbtCompound()
+            input.writeNbt(nbtCompound, null)
+
+            @Suppress("UNCHECKED_CAST")
+            return DataResult.success(nbtCompound as T)
+        }
+
+        override fun <T> decode(
+            ops: DynamicOps<T>,
+            input: T
+        ): DataResult<Pair<EnclosureList, T>> {
+            var nbtCompound = ops.convertTo(NbtOps.INSTANCE, input) as NbtCompound
+
+            val version = nbtCompound.getInt(DATA_VERSION_KEY, 0)
+            val update = AtomicBoolean(false)
+
+            if (version != DATA_VERSION) {
+                LOGGER.info(
+                    "Updating enclosure data from version {} to {}",
+                    version,
+                    DATA_VERSION
+                )
+                for (i in version until DATA_VERSION) {
+                    nbtCompound = DataUpdater.update(i, nbtCompound)
+                }
+                update.plain = true
+                update.set(true)
+            }
+            val enclosureList = EnclosureList(nbtCompound, world, true)
+            if (update.get()) {
+                enclosureList.markDirty()
+            }
+
+            return DataResult.success(Pair.of(enclosureList, ops.empty()))
+        }
+
     }
 }

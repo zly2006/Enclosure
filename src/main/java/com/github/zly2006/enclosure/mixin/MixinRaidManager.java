@@ -34,9 +34,9 @@ public class MixinRaidManager {
             BlockPos pos = raid.getCenter();
             EnclosureArea area = ServerMain.INSTANCE.getSmallestEnclosure(player.getServerWorld(), pos);
             if (area != null) {
-                LOGGER.info("Raid {} started by {} in enclosure {} at {} {} {}.", raid.getRaidId(), player.getNameForScoreboard(), area.getName(), pos.getX(), pos.getY(), pos.getZ());
+                LOGGER.info("Raid {} started by {} in enclosure {} at {} {} {}.", raid.hashCode(), player.getNameForScoreboard(), area.getName(), pos.getX(), pos.getY(), pos.getZ());
                 if (!area.hasPubPerm(Permission.RAID)) {
-                    player.sendMessage(Permission.RAID.getNoPermissionMsg(player));
+                    player.sendMessage(Permission.RAID.getNoPermissionMsg(player), ServerMain.INSTANCE.getCommonConfig().useActionBarMessage);
                     cir.setReturnValue(null);
                 }
             }

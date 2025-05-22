@@ -180,7 +180,7 @@
   "enclosure.permission.note": "Allows to use note block",
   "enclosure.permission.parrot_cookie": "Allows to feed cookies to the parrot",
   "enclosure.permission.pick_berries": "Allows to pick berries",
-  "enclosure.permission.pickup_item": "Allows to pick up items",
+  "enclosure.permission.pickup_item": "Allows player to pick up items",
   "enclosure.permission.piston": "Allows piston to move blocks",
   "enclosure.permission.place_block": "Allows to place block",
   "enclosure.permission.prime_tnt": "Allows to prime TNT",

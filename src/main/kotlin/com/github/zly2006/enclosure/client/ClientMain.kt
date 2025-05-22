@@ -28,11 +28,13 @@ class ClientMain : ClientModInitializer {
     override fun onInitializeClient() {
         HandledScreens.register(EnclosureScreenHandler.ENCLOSURE_SCREEN_HANDLER, ::EnclosureScreen)
         EnclosureWorldRenderer.register()
+
         ClientConfigurationConnectionEvents.START.register { _, _ ->
             clientSession = ClientSession()
             uuid2name = hashMapOf()
             if (ClientConfigurationNetworking.canSend(EnclosureInstalledC2SPacket.ID))
                 ClientConfigurationNetworking.send(EnclosureInstalledC2SPacket(MOD_VERSION))
+
         }
         ClientPlayConnectionEvents.DISCONNECT.register(ClientPlayConnectionEvents.Disconnect { handler: ClientPlayNetworkHandler?, client: MinecraftClient? ->
             isEnclosureInstalled = false

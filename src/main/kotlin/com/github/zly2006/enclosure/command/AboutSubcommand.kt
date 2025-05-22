@@ -8,6 +8,7 @@ import com.github.zly2006.enclosure.utils.TrT
 import com.github.zly2006.enclosure.utils.gold
 import net.minecraft.text.ClickEvent
 import net.minecraft.text.Text
+import java.net.URI
 
 fun BuilderScope<*>.registerAbout() {
     literal("about") {
@@ -16,7 +17,7 @@ fun BuilderScope<*>.registerAbout() {
             val player = source.player
             source.sendMessage(TrT.of("enclosure.about.author"))
             source.sendMessage(TrT.of("enclosure.about.source").styled {
-                it.withClickEvent(ClickEvent(ClickEvent.Action.OPEN_URL, "https://github.com/zly2006/Enclosure"))
+                it.withClickEvent(ClickEvent.OpenUrl(URI("https://github.com/zly2006/Enclosure")))
             })
             source.sendMessage(TrT.of("enclosure.about.team_page"))
             source.sendMessage(

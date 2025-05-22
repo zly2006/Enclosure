@@ -27,8 +27,7 @@ public abstract class MixinAnimalEntity extends Entity {
     @Inject(
             at = @At(
                     value = "INVOKE",
-                    target = "Lnet/minecraft/entity/passive/AnimalEntity;getBreedingAge()I",
-                    shift = At.Shift.BEFORE
+                    target = "Lnet/minecraft/entity/passive/AnimalEntity;getBreedingAge()I"
             ),
             method = "interactMob",
             cancellable = true
@@ -39,7 +38,7 @@ public abstract class MixinAnimalEntity extends Entity {
         }
         EnclosureArea area = ServerMain.INSTANCE.getSmallestEnclosure((ServerWorld) this.getWorld(), getBlockPos());
         if (area != null && !area.hasPerm((ServerPlayerEntity) player, FEED_ANIMAL)) {
-            player.sendMessage(FEED_ANIMAL.getNoPermissionMsg(player));
+            player.sendMessage(FEED_ANIMAL.getNoPermissionMsg(player), ServerMain.INSTANCE.getCommonConfig().useActionBarMessage);
             cir.setReturnValue(ActionResult.FAIL);
         }
     }

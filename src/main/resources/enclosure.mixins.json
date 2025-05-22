@@ -7,19 +7,18 @@
   "package": "com.github.zly2006.enclosure.mixin",
   "required": true,
   "mixins": [
+    "MixinAbstractBoatEntity",
     "MixinAbstractSignBlock",
     "MixinAnimalEntity",
     "MixinArmorStandEntity",
     "MixinBlockAttachedEntity",
     "MixinBlockItem",
-    "MixinBoatEntity",
     "MixinBowItem",
     "MixinBucketItem",
     "MixinCampfireBlock",
     "MixinChestBlock",
     "MixinChestBoatEntity",
     "MixinChiseledBookshelfBlock",
-    "MixinChorusFruitItem",
     "MixinCreeperEntity",
     "MixinCrossBowItem",
     "MixinDispenserBlock",
@@ -32,12 +31,14 @@
     "MixinFarmlandBlock",
     "MixinFireBlock",
     "MixinFishingBobber",
+    "MixinFishingBobberEntity",
     "MixinFlowableFluid",
     "MixinHopperBlockEntity",
     "MixinHopperMinecartEntity",
     "MixinItemEntity",
     "MixinItemFrameEntity",
     "MixinLeadItem",
+    "MixinLeashKnotEntity",
     "MixinLecternBlockEntity",
     "MixinLecternScreenHandler",
     "MixinLeveledCauldronBlock",
@@ -58,6 +59,7 @@
     "MixinServerPlayerEntity",
     "MixinStorageMinecartEntity",
     "MixinTadpoleEntity",
+    "MixinTeleportRandomlyConsumeEffect",
     "MixinTntBlock",
     "MixinTntMinecartEntity",
     "MixinTurtleEggBlock",
@@ -68,8 +70,5 @@
     "workaround.MixinRegistrySyncManager",
     "workaround.MixinServerPlayerInteractionManager",
     "workaround.MixinServerPlayNetworkHandler"
-  ],
-  "client": [
-    "workaround.MixinCPH"
   ]
 }

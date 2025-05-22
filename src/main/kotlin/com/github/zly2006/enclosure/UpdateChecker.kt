@@ -58,7 +58,7 @@ class UpdateChecker {
             .styled {
                 it
                     .withColor(Formatting.YELLOW)
-                    .withClickEvent(ClickEvent(ClickEvent.Action.OPEN_URL, latestVersion!!.url))
+                    .withClickEvent(ClickEvent.OpenUrl(URI(latestVersion!!.url)))
             }
             .append(Text.literal(latestVersion!!.versionNumber.toString()).formatted(latestVersion!!.versionType.toColor()))
             .append(Text.literal("\nClick here to download.").formatted(Formatting.AQUA)), false)
@@ -120,10 +120,10 @@ class UpdateChecker {
                 }
             }
             lastCheckTime = System.currentTimeMillis()
-        } catch (ignored: IOException) {
-        } catch (ignored: URISyntaxException) {
-        } catch (ignored: InterruptedException) {
-        } catch (ignored: VersionParsingException) {
+        } catch (_: IOException) {
+        } catch (_: URISyntaxException) {
+        } catch (_: InterruptedException) {
+        } catch (_: VersionParsingException) {
         }
     }
 }

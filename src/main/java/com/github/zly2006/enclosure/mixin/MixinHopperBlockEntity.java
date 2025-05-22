@@ -16,7 +16,6 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
-import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 
 import java.util.UUID;
 
@@ -26,7 +25,7 @@ public class MixinHopperBlockEntity extends BlockEntity {
         super(type, pos, state);
     }
 
-    @Inject(method = "canExtract", at = @At("HEAD"), locals = LocalCapture.CAPTURE_FAILSOFT, cancellable = true)
+    @Inject(method = "canExtract", at = @At("HEAD"), cancellable = true)
     private static void checkCanExtract(Inventory hopperInventory, Inventory fromInventory, ItemStack stack, int slot, Direction facing, CallbackInfoReturnable<Boolean> cir) {
         if (!MixinHopperKt.canExtractFromInventory((Hopper) hopperInventory, fromInventory)) {
             cir.setReturnValue(false);

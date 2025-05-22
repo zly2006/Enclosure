@@ -1,11 +1,14 @@
 package com.github.zly2006.enclosure.client
 
 import com.github.zly2006.enclosure.command.ClientSession
-import com.mojang.blaze3d.systems.RenderSystem
+import com.mojang.blaze3d.opengl.GlStateManager
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents
 import net.minecraft.client.MinecraftClient
-import net.minecraft.client.render.*
+import net.minecraft.client.render.RenderLayer
+import net.minecraft.client.render.VertexConsumer
+import net.minecraft.client.render.VertexConsumerProvider
+import net.minecraft.client.render.VertexRendering
 import net.minecraft.client.util.math.MatrixStack
 import net.minecraft.util.math.Vec3d
 import org.joml.Matrix4f
@@ -28,9 +31,11 @@ object EnclosureWorldRenderer {
             if (client.options.hudHidden) return@a
             val session = ClientMain.clientSession ?: return@a
             val cameraPos = context.camera().pos
-            RenderSystem.enableBlend()
-            drawSessionFaces(context.matrixStack()!!, session, cameraPos)
-            RenderSystem.disableBlend()
+            GlStateManager._enableBlend()
+            context.consumers()?.let { consumers ->
+                drawSessionFaces(context.matrixStack()!!, session, cameraPos, consumers)
+            }
+            GlStateManager._disableBlend()
         }
     }
 
@@ -54,7 +59,7 @@ object EnclosureWorldRenderer {
         val matrix4f = matrices.peek().positionMatrix
         val matrix3f = matrices.peek()
         // Render two points
-        WorldRenderer.drawBox(
+        VertexRendering.drawBox(
             matrices, linesBuffer,
             session.pos1.x - cameraPos.x,
             session.pos1.y - cameraPos.y,
@@ -64,7 +69,7 @@ object EnclosureWorldRenderer {
             session.pos1.z + 1 - cameraPos.z,
             1f, 0.25f, 0.25f, alpha
         )
-        WorldRenderer.drawBox(
+        VertexRendering.drawBox(
             matrices, linesBuffer,
             session.pos2.x - cameraPos.getX(),
             session.pos2.y - cameraPos.getY(),
@@ -89,7 +94,12 @@ object EnclosureWorldRenderer {
         renderLine(linesBuffer, matrix4f, matrix3f, maxX, minY, minZ, 2, maxZ, 0f, 0f, blue, alpha)
     }
 
-    fun drawSessionFaces(matrices: MatrixStack, session: ClientSession, cameraPos: Vec3d) {
+    fun drawSessionFaces(
+        matrices: MatrixStack,
+        session: ClientSession,
+        cameraPos: Vec3d,
+        consumers: VertexConsumerProvider
+    ) {
         val minX = (min(session.pos1.x, session.pos2.x) - cameraPos.getX() - DELTA).toFloat()
         val minY = (min(session.pos1.y, session.pos2.y) - cameraPos.getY() - DELTA).toFloat()
         val minZ = (min(session.pos1.z, session.pos2.z) - cameraPos.getZ() - DELTA).toFloat()
@@ -102,15 +112,14 @@ object EnclosureWorldRenderer {
         val alpha = 0.15f
         val matrix4f = matrices.peek().positionMatrix
         matrices.push()
-        RenderSystem.disableCull()
-        RenderSystem.setShader { GameRenderer.getPositionColorProgram() }
+        GlStateManager._disableCull()
+        val consumer = consumers.getBuffer(RenderLayer.getDebugQuads())
         fun drawFace(x1: Float, y1: Float, z1: Float, x2: Float, y2: Float, z2: Float, x3: Float, y3: Float, z3: Float, x4: Float, y4: Float, z4: Float, red: Float, green: Float, blue: Float, alpha: Float) {
-            val bufferBuilder = Tessellator.getInstance().begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_COLOR)
-            bufferBuilder.vertex(matrix4f, x1, y1, z1).color(red, green, blue, alpha)
-            bufferBuilder.vertex(matrix4f, x2, y2, z2).color(red, green, blue, alpha)
-            bufferBuilder.vertex(matrix4f, x3, y3, z3).color(red, green, blue, alpha)
-            bufferBuilder.vertex(matrix4f, x4, y4, z4).color(red, green, blue, alpha)
-            BufferRenderer.drawWithGlobalProgram(bufferBuilder.end())
+            consumer.vertex(matrix4f, x1, y1, z1).color(red, green, blue, alpha)
+            consumer.vertex(matrix4f, x2, y2, z2).color(red, green, blue, alpha)
+            consumer.vertex(matrix4f, x3, y3, z3).color(red, green, blue, alpha)
+            consumer.vertex(matrix4f, x4, y4, z4).color(red, green, blue, alpha)
+
         }
         drawFace(minX, minY, minZ, minX, minY, maxZ, minX, maxY, maxZ, minX, maxY, minZ, red, green, blue, alpha)
         drawFace(maxX, minY, minZ, maxX, minY, maxZ, maxX, maxY, maxZ, maxX, maxY, minZ, red, green, blue, alpha)
@@ -118,7 +127,7 @@ object EnclosureWorldRenderer {
         drawFace(minX, maxY, minZ, minX, maxY, maxZ, maxX, maxY, maxZ, maxX, maxY, minZ, red, green, blue, alpha)
         drawFace(minX, minY, minZ, minX, maxY, minZ, maxX, maxY, minZ, maxX, minY, minZ, red, green, blue, alpha)
         drawFace(minX, minY, maxZ, minX, maxY, maxZ, maxX, maxY, maxZ, maxX, minY, maxZ, red, green, blue, alpha)
-        RenderSystem.enableCull()
+        GlStateManager._enableCull()
         matrices.pop()
     }
 
